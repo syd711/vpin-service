@@ -26,16 +26,19 @@ import java.text.DecimalFormat;
 public class HighscoreParser {
   private final static Logger LOG = LoggerFactory.getLogger(HighscoreParser.class);
 
-  public Highscore parseHighscore(String cmdOutput) {
-    Highscore highscore = new Highscore();
+  public Highscore parseHighscore(String cmdOutput) throws Exception {
+    Highscore highscore = new Highscore(cmdOutput);
     String[] lines = cmdOutput.split("\\n");
     if (lines.length == 1) {
-      LOG.error("Error parsing highscore command output: {}", lines[0]);
-      return null;
+      throw new Exception("Error parsing highscore command output: " + lines[0]);
+    }
+
+    if(lines.length == 2) {
+      throw new Exception("No score set. (" + cmdOutput + ")");
     }
 
     for (String line : lines) {
-      if (line.startsWith("1)")) {
+      if (line.startsWith("1)") || line.startsWith("#1")) {
         String initials = line.substring(3, 6);
         String score = line.substring(7).trim();
         highscore.setUserInitials(initials);
@@ -47,6 +50,10 @@ public class HighscoreParser {
         String score = line.substring(7).trim();
         highscore.getScores().add(new Score(shortName, score, pos));
       }
+    }
+
+    if(highscore.getScores().isEmpty()) {
+      throw new Exception("Failed to read scores from output: " + cmdOutput);
     }
 
     return highscore;

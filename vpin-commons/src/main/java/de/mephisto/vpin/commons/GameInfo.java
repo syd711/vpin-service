@@ -16,6 +16,8 @@ public class GameInfo {
 
   private long lastModified;
 
+  private String gameStatus;
+
   public GameInfo() {
   }
 
@@ -81,5 +83,18 @@ public class GameInfo {
 
   public void setRomFile(File romFile) {
     this.romFile = romFile;
+  }
+
+  public String getGameStatus() {
+    return gameStatus;
+  }
+
+  public void setGameStatus(String gameStatus) {
+    this.gameStatus = gameStatus;
+  }
+
+  @Override
+  public String toString() {
+    return this.getGameDisplayName();
   }
 }

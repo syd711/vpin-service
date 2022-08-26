@@ -61,6 +61,7 @@ public class GameRepository {
 
         if (romName == null) {
           LOG.error("Failed to determine ROM name of " + game.getGameDisplayName() + ", ignoring table.");
+          game.setGameStatus("Failed to determine ROM name");
           this.errornousTables.add(game);
           continue;
         }
@@ -68,6 +69,7 @@ public class GameRepository {
 
       if(!game.getRomFile().exists()) {
         LOG.info("No rom file '" + game.getRomFile().getName() + "' found for " + game.getVpxFile().getAbsolutePath() + ", ignoring table.");
+        game.setGameStatus("No rom file '" + game.getRomFile().getName() + "' found");
         this.errornousTables.add(game);
         continue;
       }

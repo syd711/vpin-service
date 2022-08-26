@@ -29,26 +29,26 @@ public class HighsoreResolver {
   /**
    * Return a highscore object for the given table or null if no highscore has been achieved or created yet.
    */
-  public Highscore getHighscore(GameInfo gameInfo) {
+  public Highscore getHighscore(GameInfo gameInfo) throws Exception {
     try {
       Highscore highscore = parseNvHighscore(gameInfo);
       if (highscore == null) {
         highscore = parseVRegHighscore(gameInfo);
       }
 
-      if(highscore == null) {
-        LOG.warn("Read highscore for '" + gameInfo.getGameDisplayName() + "' [No nvram highscore and no VPReg.stg entry found with rom " +  gameInfo.getRom() + "]");
-      }
-      else {
-        LOG.info("Read highscore for '{}'" + gameInfo.getGameDisplayName() + "[ OK ]", gameInfo.getGameDisplayName());
-      }
+      if (highscore == null) {
+        String msg = "Read highscore for '" + gameInfo.getGameDisplayName() + "' [No nvram highscore and no VPReg.stg entry found with rom " + gameInfo.getRom() + "]";
+        if(gameInfo.getGameStatus() == null) {
+          gameInfo.setGameStatus(msg);
+        }
 
+        LOG.warn(msg);
+      }
       return highscore;
     } catch (Exception e) {
       LOG.error("Failed to find highscore for table {}: {}", gameInfo.getGameFileName(), e.getMessage(), e);
+      throw e;
     }
-
-    return null;
   }
 
   /**
@@ -85,7 +85,7 @@ public class HighsoreResolver {
         highScoreValue = HighscoreParser.formatScore(highScoreValue);
         String initials = readFileString(tableHighscoreNameFile);
 
-        Highscore highscore = new Highscore();
+        Highscore highscore = new Highscore(highScoreValue);
         highscore.setPosition(0);
         highscore.setUserInitials(initials);
         highscore.setScore(highScoreValue);
@@ -112,6 +112,7 @@ public class HighsoreResolver {
 
   /**
    * Uses 7zip to unzip the stg file into the configured target folder
+   *
    * @param targetFolder
    */
   private void updateUserScores(File targetFolder) throws Exception {
@@ -125,11 +126,11 @@ public class HighsoreResolver {
     StringBuilder standardErrorFromCommand = executor.getStandardErrorFromCommand();
     if (!StringUtils.isEmpty(standardErrorFromCommand.toString())) {
       LOG.error("7zip command failed: {}", standardErrorFromCommand.toString());
-      throw new Exception("7zip command failed: " +standardErrorFromCommand.toString());
+      throw new Exception("7zip command failed: " + standardErrorFromCommand.toString());
     }
   }
 
-  private Highscore parseNvHighscore(GameInfo gameInfo) {
+  private Highscore parseNvHighscore(GameInfo gameInfo) throws Exception {
     File nvRam = gameInfo.getNvRamFile();
     File commandFile = new File(PINEMHI_FOLDER, PINEMHI_COMMAND);
 
@@ -141,20 +142,27 @@ public class HighsoreResolver {
 
     SystemCommandExecutor executor = new SystemCommandExecutor(Arrays.asList(commandFile.getName(), nvRam.getName()));
     executor.setDir(commandFile.getParentFile());
+    executor.executeCommand();
+    StringBuilder standardOutputFromCommand = executor.getStandardOutputFromCommand();
+    StringBuilder standardErrorFromCommand = executor.getStandardErrorFromCommand();
+    if (!StringUtils.isEmpty(standardErrorFromCommand.toString())) {
+      String error = "Pinemhi command (" + commandFile.getAbsolutePath() + ") failed: " + standardErrorFromCommand;
+      LOG.error(error);
+      throw new Exception(error);
+    }
+
+    String s = standardOutputFromCommand.toString();
+    Highscore highscore = null;
     try {
-      executor.executeCommand();
-      StringBuilder standardOutputFromCommand = executor.getStandardOutputFromCommand();
-      StringBuilder standardErrorFromCommand = executor.getStandardErrorFromCommand();
-      if (!StringUtils.isEmpty(standardErrorFromCommand.toString())) {
-        LOG.error("Pinemhi command failed: {}", standardErrorFromCommand.toString());
-      } else {
-        String s = standardOutputFromCommand.toString();
-        return parser.parseHighscore(s);
+      highscore = parser.parseHighscore(s);
+      if (highscore.getScores().isEmpty()) {
+        gameInfo.setGameStatus("Unable to parse highscore info from string '" + s + "'");
+        return null;
       }
     } catch (Exception e) {
-      LOG.error("Failed to parse {}: {}", nvRam.getAbsolutePath(), e);
+      gameInfo.setGameStatus(e.getMessage());
     }
-    return null;
+    return highscore;
   }
 
   /**

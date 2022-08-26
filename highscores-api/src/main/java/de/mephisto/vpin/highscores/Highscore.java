@@ -10,6 +10,12 @@ public class Highscore {
   private String score;
   private int position;
 
+  private String raw;
+
+  public Highscore(String cmdOutput) {
+    this.raw = cmdOutput;
+  }
+
   public List<Score> getScores() {
     return scores;
   }
@@ -40,5 +46,14 @@ public class Highscore {
 
   public void setPosition(int position) {
     this.position = position;
+  }
+
+  public String getRaw() {
+    return raw;
+  }
+
+  @Override
+  public String toString() {
+    return this.raw;
   }
 }
