@@ -17,7 +17,8 @@
     </properties>
 
     <modules>
-        <module>pinup-popper-api</module>
+        <module>highscores-api</module>
+        <module>vpin-commons</module>
     </modules>
 
 </project>
