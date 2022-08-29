@@ -17,7 +17,7 @@ import java.util.List;
 public class HighsoreResolver {
   private final static Logger LOG = LoggerFactory.getLogger(HighsoreResolver.class);
 
-  private static final String PINEMHI_FOLDER = "../pinemhi";
+  private static final String PINEMHI_FOLDER = "pinemhi";
   private static final String PINEMHI_COMMAND = "PINemHi.exe";
 
   private final HighscoreParser parser;
@@ -133,6 +133,9 @@ public class HighsoreResolver {
   private Highscore parseNvHighscore(GameInfo gameInfo) throws Exception {
     File nvRam = gameInfo.getNvRamFile();
     File commandFile = new File(PINEMHI_FOLDER, PINEMHI_COMMAND);
+    if(!commandFile.exists()) {
+      commandFile = new File("../" + PINEMHI_FOLDER, PINEMHI_COMMAND);
+    }
 
     if (!nvRam.exists()) {
       return null;

@@ -13,12 +13,23 @@ public class GameInfo {
   private File vpxFile;
   private File romFile;
   private File nvRamFile;
+  private File wheelIconFile;
 
   private long lastModified;
 
   private String gameStatus;
 
+  private boolean scanned;
+
   public GameInfo() {
+  }
+
+  public boolean isScanned() {
+    return scanned;
+  }
+
+  public void setScanned(boolean scanned) {
+    this.scanned = scanned;
   }
 
   public long getLastModified() {
@@ -27,6 +38,14 @@ public class GameInfo {
 
   public void setLastModified(long lastModified) {
     this.lastModified = lastModified;
+  }
+
+  public File getWheelIconFile() {
+    return wheelIconFile;
+  }
+
+  public void setWheelIconFile(File wheelIconFile) {
+    this.wheelIconFile = wheelIconFile;
   }
 
   public File getNvRamFile() {

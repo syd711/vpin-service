@@ -1,5 +1,6 @@
 package de.mephisto.vpin.commons;
 
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +55,10 @@ public class SqliteConnector {
         String rom = rs.getString("ROM");
         String gameFileName = rs.getString("GameFileName");
         String gameDisplayName = rs.getString("GameDisplay");
+        String tags = rs.getString("TAGS");
+        boolean scanned = tags != null && tags.contains("scanned");
+
+        File wheelIconFile = new File(systemInfo.getPinUPSystemFolder() + "/POPMedia/Visual Pinball X/Wheel/", FilenameUtils.getBaseName(gameFileName) + ".png");
         File nvRamFolder = new File(systemInfo.getMameFolder(), "nvram");
         File nvRamFile = new File(nvRamFolder, rom + ".nv");
         File vpxFile = new File(systemInfo.getVPXTablesFolder(), gameFileName);
@@ -64,8 +69,10 @@ public class SqliteConnector {
 
         info.setId(id);
         info.setRom(rom);
+        info.setScanned(scanned);
         info.setGameFileName(gameFileName);
         info.setGameDisplayName(gameDisplayName);
+        info.setWheelIconFile(wheelIconFile);
         info.setVpxFile(vpxFile);
         info.setNvRamFile(nvRamFile);
         info.setRomFile(new File(systemInfo.getMameRomFolder(), rom + ".zip"));
@@ -94,6 +101,30 @@ public class SqliteConnector {
       LOG.error("Failed to read startup script or " + emuName + ": " + e.getMessage(), e);
     }
     return script;
+  }
+
+  public void resetAll() {
+    List<GameInfo> games = this.getGames();
+    for (GameInfo game : games) {
+      resetGame(game);
+    }
+  }
+
+  public void resetGame(GameInfo gameInfo) {
+    String gameFileName = gameInfo.getGameFileName();
+    try {
+      Statement stmt = conn.createStatement();
+      String sql = "UPDATE Games SET 'TAGS'='' WHERE GameID = " + gameInfo.getId() + ";";
+      stmt.executeUpdate(sql);
+      stmt.close();
+
+      stmt = conn.createStatement();
+      sql = "UPDATE Games SET 'ROM'='' WHERE GameID = " + gameInfo.getId() + ";";
+      stmt.executeUpdate(sql);
+      stmt.close();
+    } catch (Exception e) {
+      LOG.error("Failed to reset table info for " + gameFileName + ": " + e.getMessage(), e);
+    }
   }
 
   public String getEmulatorExitScript(String emuName) {
@@ -153,6 +184,24 @@ public class SqliteConnector {
       }
     } catch (Exception e) {
       LOG.error("Failed to update script script " + gameFileName + ": " + e.getMessage(), e);
+    }
+  }
+
+  public void markAsScanned(GameInfo gameInfo) {
+    String gameFileName = gameInfo.getGameFileName();
+    try {
+      Statement stmt = conn.createStatement();
+      String sql = "UPDATE Games SET 'TAGS'='scanned' WHERE GameID = " + gameInfo.getId() + ";";
+      int result = stmt.executeUpdate(sql);
+      stmt.close();
+      if (result > 0) {
+        LOG.info("Update of " + gameFileName + " successful, table marked as scanned.");
+      }
+      else {
+        LOG.error("Failed to mark table " + gameFileName + " as marked.");
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to update table marker info for " + gameFileName + ": " + e.getMessage(), e);
     }
   }
 }

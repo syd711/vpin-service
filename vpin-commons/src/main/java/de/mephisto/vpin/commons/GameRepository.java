@@ -30,7 +30,7 @@ public class GameRepository {
   }
 
   public List<GameInfo> getGameInfos() {
-    if(gameInfoByRom.isEmpty()) {
+    if (gameInfoByRom.isEmpty()) {
       this.reload();
     }
 
@@ -47,37 +47,64 @@ public class GameRepository {
     this.loadTableInfos();
   }
 
+  public void reset() {
+    this.sqliteConnector.resetAll();
+  }
+
   private void loadTableInfos() {
     LOG.info("*********************** Executing ROM Checks **********************************************************");
     List<GameInfo> games = sqliteConnector.getGames();
+    int count = games.size();
     for (GameInfo game : games) {
       String romName = game.getRom();
-      if(StringUtils.isAllEmpty(romName)) {
-        LOG.info("No rom found in database, checking ROM name for " + game.getGameFileName());
-        romName = extractRomName(game.getVpxFile());
-        if (romName != null && romName.length() > 0) {
-          sqliteConnector.updateRomName(game.getGameFileName(), romName);
+      if (StringUtils.isEmpty(romName) && !game.isScanned()) {
+        sqliteConnector.markAsScanned(game);
+        if (updateRomName(game)) {
+          LOG.info("Loaded ROM for game '" + game.getGameDisplayName() + "' [" + game.getRom() + "]");
         }
-
-        if (romName == null) {
-          LOG.error("Failed to determine ROM name of " + game.getGameDisplayName() + ", ignoring table.");
-          game.setGameStatus("Failed to determine ROM name");
-          this.errornousTables.add(game);
+        else {
           continue;
         }
       }
 
-      if(!game.getRomFile().exists()) {
-        LOG.info("No rom file '" + game.getRomFile().getName() + "' found for " + game.getVpxFile().getAbsolutePath() + ", ignoring table.");
-        game.setGameStatus("No rom file '" + game.getRomFile().getName() + "' found");
-        this.errornousTables.add(game);
-        continue;
+      if(!StringUtils.isEmpty(game.getRom())) {
+        gameInfoByRom.put(game.getRom(), game);
       }
-
-
-      LOG.info("Loaded ROM for game '" + game.getGameDisplayName() + "' [" + romName+ "]");
-      gameInfoByRom.put(romName, game);
     }
+  }
+
+  private boolean updateRomName(GameInfo game) {
+    String romName = game.getRom();
+    if (StringUtils.isAllEmpty(romName)) {
+      LOG.info("Searching ROM for " + game.getGameFileName() + "...");
+      romName = extractRomName(game.getVpxFile());
+      if (romName != null && romName.length() > 0) {
+        game.setRom(romName);
+
+        File romFile = new File(SystemInfo.getInstance().getMameRomFolder(), romName + ".zip");
+        if (romFile.exists()) {
+          game.setRomFile(romFile);
+          sqliteConnector.updateRomName(game.getGameFileName(), romName);
+        }
+        else {
+          return false;
+        }
+      }
+      else {
+        LOG.error("Failed to determine ROM name of " + game.getGameDisplayName() + ", ignoring table.");
+        game.setGameStatus("Failed to determine ROM name");
+        this.errornousTables.add(game);
+        return false;
+      }
+    }
+    else if (!game.getRomFile().exists()) {
+      LOG.info("No rom file '" + game.getRomFile().getName() + "' found for " + game.getVpxFile().getAbsolutePath() + ", ignoring table.");
+      game.setGameStatus("No rom file '" + game.getRomFile().getName() + "' found");
+      this.errornousTables.add(game);
+      return false;
+    }
+
+    return true;
   }
 
   private String extractRomName(File vpxTable) {

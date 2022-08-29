@@ -12,6 +12,7 @@ public class GameRepositoryTest {
   @Test
   public void testTableRepository() {
     GameRepository repository = GameRepository.create();
+    repository.reset();
     assertFalse(repository.getGameInfos().isEmpty());
 
     List<GameInfo> tables = repository.getGameInfos();
@@ -21,4 +22,15 @@ public class GameRepositoryTest {
     }
   }
 
+  @Test
+  public void testTableRepositorWithoutReset() {
+    GameRepository repository = GameRepository.create();
+    assertFalse(repository.getGameInfos().isEmpty());
+
+    List<GameInfo> tables = repository.getGameInfos();
+    for (GameInfo table : tables) {
+      assertTrue(table.getRomFile().exists());
+      assertTrue(table.getVpxFile().exists());
+    }
+  }
 }
