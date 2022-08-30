@@ -21,9 +21,12 @@ public class HighsoreResolver {
   private static final String PINEMHI_COMMAND = "PINemHi.exe";
 
   private final HighscoreParser parser;
+  private final File rootFolder;
 
-  public HighsoreResolver() {
+  public HighsoreResolver(File rootFolder) {
+    this.rootFolder = rootFolder;
     this.parser = new HighscoreParser();
+    this.refresh();
   }
 
   /**
@@ -38,7 +41,7 @@ public class HighsoreResolver {
 
       if (highscore == null) {
         String msg = "Read highscore for '" + gameInfo.getGameDisplayName() + "' [No nvram highscore and no VPReg.stg entry found with rom " + gameInfo.getRom() + "]";
-        if(gameInfo.getGameStatus() == null) {
+        if (gameInfo.getGameStatus() == null) {
           gameInfo.setGameStatus(msg);
         }
 
@@ -54,8 +57,8 @@ public class HighsoreResolver {
   /**
    * Refreshes the extraction of the VPReg.stg file.
    */
-  public void refresh() throws Exception {
-    File targetFolder = new File("../", "VPReg");
+  public void refresh() {
+    File targetFolder = new File(rootFolder, "VPReg");
     if (!targetFolder.exists()) {
       targetFolder.mkdirs();
     }
@@ -65,14 +68,14 @@ public class HighsoreResolver {
   }
 
   /**
-   * We use the manual setted rom name to find the highscore in the "/User/VPReg.stg" file.
+   * We use the manual set rom name to find the highscore in the "/User/VPReg.stg" file.
    *
    * @param gameInfo
    * @return
    * @throws IOException
    */
   private Highscore parseVRegHighscore(GameInfo gameInfo) throws IOException {
-    File targetFolder = new File("../", "VPReg");
+    File targetFolder = new File(rootFolder, "VPReg");
     File tableHighscoreFolder = new File(targetFolder, gameInfo.getRom());
 
     if (tableHighscoreFolder.exists()) {
@@ -105,8 +108,13 @@ public class HighsoreResolver {
 
         return highscore;
       }
+      else {
+        LOG.info("No VPReg highscore file found: " + tableHighscoreFile.getAbsolutePath());
+      }
     }
-
+    else {
+      LOG.info("VPReg highscore folder does not exist: " + tableHighscoreFolder.getAbsolutePath());
+    }
     return null;
   }
 
@@ -115,25 +123,28 @@ public class HighsoreResolver {
    *
    * @param targetFolder
    */
-  private void updateUserScores(File targetFolder) throws Exception {
-    String unzipCommand = SystemInfo.getInstance().get7ZipCommand();
-    List<String> commands = Arrays.asList("\"" + unzipCommand + "\"", "-aoa", "x", "\"" + SystemInfo.getInstance().getVPRegFile().getAbsolutePath() + "\"", "-o\"" + targetFolder.getAbsolutePath() + "\"");
-    SystemCommandExecutor executor = new SystemCommandExecutor(commands, false);
-    executor.setDir(targetFolder);
-    executor.executeCommand();
+  private void updateUserScores(File targetFolder) {
+    try {
+      String unzipCommand = SystemInfo.getInstance().get7ZipCommand();
+      List<String> commands = Arrays.asList("\"" + unzipCommand + "\"", "-aoa", "x", "\"" + SystemInfo.getInstance().getVPRegFile().getAbsolutePath() + "\"", "-o\"" + targetFolder.getAbsolutePath() + "\"");
+      SystemCommandExecutor executor = new SystemCommandExecutor(commands, false);
+      executor.setDir(targetFolder);
+      executor.executeCommand();
 
-    StringBuilder standardOutputFromCommand = executor.getStandardOutputFromCommand();
-    StringBuilder standardErrorFromCommand = executor.getStandardErrorFromCommand();
-    if (!StringUtils.isEmpty(standardErrorFromCommand.toString())) {
-      LOG.error("7zip command failed: {}", standardErrorFromCommand.toString());
-      throw new Exception("7zip command failed: " + standardErrorFromCommand.toString());
+      StringBuilder standardOutputFromCommand = executor.getStandardOutputFromCommand();
+      StringBuilder standardErrorFromCommand = executor.getStandardErrorFromCommand();
+      if (!StringUtils.isEmpty(standardErrorFromCommand.toString())) {
+        LOG.error("7zip command failed: {}", standardErrorFromCommand.toString());
+      }
+    } catch (Exception e) {
+      LOG.info("Failed to init VPReg: " + e.getMessage(), e);
     }
   }
 
   private Highscore parseNvHighscore(GameInfo gameInfo) throws Exception {
     File nvRam = gameInfo.getNvRamFile();
     File commandFile = new File(PINEMHI_FOLDER, PINEMHI_COMMAND);
-    if(!commandFile.exists()) {
+    if (!commandFile.exists()) {
       commandFile = new File("../" + PINEMHI_FOLDER, PINEMHI_COMMAND);
     }
 

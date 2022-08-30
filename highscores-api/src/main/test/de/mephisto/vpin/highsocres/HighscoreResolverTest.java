@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class HighscoreResolverTest {
 
   @Test
   public void testHighscoreResolver() throws Exception {
-    HighsoreResolver highsoreResolver = new HighsoreResolver();
+    HighsoreResolver highsoreResolver = new HighsoreResolver(new File("../"));
     highsoreResolver.refresh();
 
     GameRepository repository = GameRepository.create();
