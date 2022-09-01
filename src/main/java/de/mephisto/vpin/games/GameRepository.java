@@ -72,7 +72,7 @@ public class GameRepository {
         LOG.info("Update of " + game.getVpxFile().getName() + " successful, written ROM name '" + romName + "'");
       }
       else {
-        LOG.info("Skipped Update of " + game.getVpxFile().getName() + ", no rom file found.");
+        LOG.info("Skipped Update of " + game.getVpxFile().getName() + ", rom file (" + romFile.getAbsolutePath() + ") found.");
       }
     }
     else {

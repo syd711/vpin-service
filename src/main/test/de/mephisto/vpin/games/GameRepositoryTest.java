@@ -1,7 +1,5 @@
 package de.mephisto.vpin.games;
 
-import de.mephisto.vpin.games.GameInfo;
-import de.mephisto.vpin.games.GameRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
