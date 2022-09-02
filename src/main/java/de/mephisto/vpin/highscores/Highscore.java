@@ -1,12 +1,14 @@
 package de.mephisto.vpin.highscores;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Highscore {
   private List<Score> scores = new ArrayList<>();
 
-  private String userInitials;
+  private String userInitials = "???";
   private String score;
   private int position;
 
@@ -29,7 +31,9 @@ public class Highscore {
   }
 
   public void setUserInitials(String userInitials) {
-    this.userInitials = userInitials;
+    if(!StringUtils.isEmpty(userInitials)) {
+      this.userInitials = userInitials;
+    }
   }
 
   public String getScore() {

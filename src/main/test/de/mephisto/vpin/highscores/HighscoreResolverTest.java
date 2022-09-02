@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class HighscoreResolverTest {
   private final static Logger LOG = LoggerFactory.getLogger(HighscoreResolverTest.class);
@@ -42,6 +43,15 @@ public class HighscoreResolverTest {
     for (GameInfo gameInfo : valid) {
       LOG.info(new Date(gameInfo.getLastModified()) + ": " + gameInfo.getGameDisplayName());
     }
+  }
+
+
+  @Test
+  public void testHighscore() {
+    GameRepository gameRepository = GameRepository.create();
+    GameInfo game = gameRepository.getGameByRom("mm_109c");
+    assertNotNull(game.getHighscore());
+    LOG.info(game.getHighscore().getRaw());
   }
 
 }

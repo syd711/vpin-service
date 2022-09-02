@@ -19,11 +19,15 @@ public class PropertiesStore {
       store.propertiesFile = new File(resources,"repository.properties");
       if(!resources.exists()) {
         resources.mkdirs();
+      }
+
+      if(!store.propertiesFile.exists()) {
         store.properties.store(new FileOutputStream(store.propertiesFile), null);
         LOG.info("Created " + store.propertiesFile.getAbsolutePath());
       }
+
       store.properties.load(new FileInputStream(store.propertiesFile));
-    } catch (IOException e) {
+    } catch (Exception e) {
      LOG.error("Failed to load data store: " + e.getMessage(), e);
     }
     return store;

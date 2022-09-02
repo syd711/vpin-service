@@ -1,7 +1,9 @@
 package de.mephisto.vpin.highscores;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class Score {
-  private String userInitials;
+  private String userInitials = "???";
   private String score;
   private int position;
 
@@ -16,7 +18,9 @@ public class Score {
   }
 
   public void setUserInitials(String userInitials) {
-    this.userInitials = userInitials;
+    if(!StringUtils.isEmpty(userInitials)) {
+      this.userInitials = userInitials;
+    }
   }
 
   public int getPosition() {

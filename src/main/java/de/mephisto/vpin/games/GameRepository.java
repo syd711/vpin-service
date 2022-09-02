@@ -21,9 +21,9 @@ public class GameRepository {
   private final RomScanner romScanner;
   private final HighsoreResolver highscoreResolver;
 
-  private List<GameInfo> games = new ArrayList<>();
+  private final List<GameInfo> games = new ArrayList<>();
 
-  private PropertiesStore store;
+  private final PropertiesStore store;
 
   public static GameRepository create() {
     return new GameRepository();
@@ -43,19 +43,65 @@ public class GameRepository {
     return new ArrayList<>(games);
   }
 
+  public void invalidateAll() {
+    this.games.clear();
+    this.loadTableInfos(true);
+  }
+
+  public void invalidate(GameInfo gameInfo) {
+    String romName = romScanner.scanRomName(gameInfo.getVpxFile());
+    gameInfo.setRom(romName);
+    if(!StringUtils.isEmpty(romName)) {
+      updateGameInfo(gameInfo);
+    }
+  }
+
   public void reload() {
     this.games.clear();
-    this.loadTableInfos();
+    this.loadTableInfos(false);
+  }
+
+  public GameInfo getGameByVpxFilename(String filename) {
+    List<GameInfo> games = sqliteConnector.getGames();
+    for (GameInfo gameInfo : games) {
+      if(gameInfo.getVpxFile().getName().equals(filename)) {
+        highscoreResolver.loadHighscore(gameInfo);
+        return gameInfo;
+      }
+    }
+    return null;
+  }
+
+  public List<GameInfo> getGamesWithEmptyRoms() {
+    List<GameInfo> games = sqliteConnector.getGames();
+    List<GameInfo> result = new ArrayList<>();
+    for (GameInfo gameInfo : games) {
+      if(StringUtils.isEmpty(gameInfo.getRom())) {
+        result.add(gameInfo);
+      }
+    }
+    return result;
+  }
+
+  public GameInfo getGameByRom(String romName) {
+    List<GameInfo> games = sqliteConnector.getGames();
+    for (GameInfo gameInfo : games) {
+      if(gameInfo.getRom() != null && gameInfo.getRom().equals(romName)) {
+        highscoreResolver.loadHighscore(gameInfo);
+        return gameInfo;
+      }
+    }
+    return null;
   }
 
   public void reset() {
     this.sqliteConnector.resetAll();
   }
 
-  private void loadTableInfos() {
+  private void loadTableInfos(boolean forceRomScan) {
     List<GameInfo> games = sqliteConnector.getGames();
     for (GameInfo game : games) {
-      if (!wasScanned(game)) {
+      if (!wasScanned(game) || forceRomScan) {
         String romName = romScanner.scanRomName(game.getVpxFile());
         game.setRom(romName);
         updateGameInfo(game);
@@ -69,26 +115,22 @@ public class GameRepository {
     }
   }
 
-  private String updateGameInfo(GameInfo game) {
+  private void updateGameInfo(GameInfo game) {
     String romName = game.getRom();
     if (romName != null && romName.length() > 0) {
       game.setRom(romName);
+      sqliteConnector.updateRomName(game.getGameFileName(), romName);
+      LOG.info("Update of " + game.getVpxFile().getName() + " successful, written ROM name '" + romName + "'");
 
       File romFile = new File(SystemInfo.getInstance().getMameRomFolder(), romName + ".zip");
       if (romFile.exists()) {
         game.setRomFile(romFile);
-        sqliteConnector.updateRomName(game.getGameFileName(), romName);
-        LOG.info("Update of " + game.getVpxFile().getName() + " successful, written ROM name '" + romName + "'");
-      }
-      else {
-        LOG.info("Skipped Update of " + game.getVpxFile().getName() + ", rom file (" + romFile.getAbsolutePath() + ") found.");
       }
     }
     else {
       LOG.info("Skipped Update of " + game.getVpxFile().getName() + ", no rom name found.");
     }
-    this.store.set(formatGameKey(game), romName != null ? romName : "");
-    return romName;
+    this.store.set(formatGameKey(game) + ".rom", romName != null ? romName : "");
   }
 
 
@@ -96,7 +138,7 @@ public class GameRepository {
 
 
   private boolean wasScanned(GameInfo game) {
-    return store.containsKey(formatGameKey(game));
+    return store.containsKey(formatGameKey(game) + ".rom");
   }
 
   private String formatGameKey(GameInfo game) {

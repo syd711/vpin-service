@@ -1,10 +1,10 @@
 package de.mephisto.vpin.highscores;
 
 import de.mephisto.vpin.games.GameInfo;
-import de.mephisto.vpin.games.GameRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.text.DecimalFormat;
 
 /**
@@ -28,30 +28,48 @@ import java.text.DecimalFormat;
 public class HighscoreParser {
   private final static Logger LOG = LoggerFactory.getLogger(HighscoreParser.class);
 
-  public Highscore parseHighscore(GameInfo game, String cmdOutput) throws Exception {
-    Highscore highscore = new Highscore(cmdOutput);
-    String[] lines = cmdOutput.split("\\n");
-    if (lines.length < 3) {
-      LOG.debug("Skipped highscore parsing for " + game.getGameDisplayName() + ", output too short:\n" + cmdOutput);
-      return null;
-    }
-
-    for (String line : lines) {
-      if (line.startsWith("1)") || line.startsWith("#1")) {
-        String initials = line.substring(3, 6);
-        String score = line.substring(7).trim();
-        highscore.setUserInitials(initials);
-        highscore.setScore(score);
-        highscore.getScores().add(new Score(initials, score, 1));
-      } else if (line.indexOf(")") == 1) {
-        int pos = Integer.parseInt(line.substring(0, 1));
-        String shortName = line.substring(3, 6);
-        String score = line.substring(7).trim();
-        highscore.getScores().add(new Score(shortName, score, pos));
+  public Highscore parseHighscore(GameInfo game, File file, String cmdOutput) throws Exception {
+    Highscore highscore = null;
+    try {
+      highscore = new Highscore(cmdOutput);
+      String[] lines = cmdOutput.split("\\n");
+      if (lines.length < 3) {
+        LOG.debug("Skipped highscore parsing for " + game.getGameDisplayName() + ", output too short:\n" + cmdOutput);
+        return null;
       }
+
+      LOG.debug("Parsing Highscore text for " + game.getGameDisplayName() + "\n" + cmdOutput);
+
+      boolean listStarted = false;
+      for (String line : lines) {
+        if (line.startsWith("1)") || line.startsWith("#1")) {
+          listStarted = true;
+          String initials = line.substring(3, 6);
+          String score = line.substring(7).trim();
+          highscore.setUserInitials(initials);
+          highscore.setScore(score);
+          highscore.getScores().add(new Score(initials, score, 1));
+        }
+        else if (line.indexOf(")") == 1) {
+          listStarted = true;
+          int pos = Integer.parseInt(line.substring(0, 1));
+          String shortName = line.substring(3, 6);
+          String score = line.substring(7).trim();
+          highscore.getScores().add(new Score(shortName, score, pos));
+        }
+        else {
+          //list has been read, ignore following lines.
+          if(listStarted) {
+            break;
+          }
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to parse highscore file '" + file.getAbsolutePath() + "': " + e.getMessage() + "\nPinemhi Command Output:\n==================================\n" + cmdOutput, e);
+      throw e;
     }
 
-    if(highscore.getScores().isEmpty()) {
+    if (highscore.getScores().isEmpty()) {
       throw new Exception("Failed to read scores from output: " + cmdOutput);
     }
 

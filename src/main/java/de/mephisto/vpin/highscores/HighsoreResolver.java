@@ -101,11 +101,13 @@ public class HighsoreResolver {
           tableHighscoreNameFile = new File(tableHighscoreFolder, "HighScore" + i + "Name");
           if (tableHighscoreFile.exists() && tableHighscoreNameFile.exists()) {
             highScoreValue = readFileString(tableHighscoreFile);
-            highScoreValue = HighscoreParser.formatScore(highScoreValue);
-            initials = readFileString(tableHighscoreNameFile);
+            if(highScoreValue != null) {
+              highScoreValue = HighscoreParser.formatScore(highScoreValue);
+              initials = readFileString(tableHighscoreNameFile);
 
-            Score score = new Score(initials, highScoreValue, i - 1);
-            highscore.getScores().add(score);
+              Score score = new Score(initials, highScoreValue, i - 1);
+              highscore.getScores().add(score);
+            }
           }
         }
 
@@ -171,7 +173,7 @@ public class HighsoreResolver {
     String s = standardOutputFromCommand.toString();
     Highscore highscore = null;
     try {
-      highscore = parser.parseHighscore(gameInfo, s);
+      highscore = parser.parseHighscore(gameInfo, nvRam, s);
       if (highscore == null || highscore.getScores().isEmpty()) {
         return null;
       }
@@ -186,8 +188,20 @@ public class HighsoreResolver {
    */
   private String readFileString(File file) throws IOException {
     BufferedReader brTest = new BufferedReader(new FileReader(file));
-    String text = brTest.readLine();
-    brTest.close();
-    return text.replace("\0", "").trim();
+    try {
+      String text = brTest.readLine();
+      if(text != null) {
+        return text.replace("\0", "").trim();
+      }
+      else {
+        LOG.error("Error reading highscore file " + file.getAbsolutePath() + ", reader returned null.");
+      }
+      return null;
+    } catch (IOException e) {
+      throw e;
+    }
+    finally {
+      brTest.close();;
+    }
   }
 }
