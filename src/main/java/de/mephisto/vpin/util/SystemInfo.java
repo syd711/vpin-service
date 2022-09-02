@@ -13,7 +13,6 @@ public class SystemInfo {
 
   private final static String REG_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Applications\\VPinballX.exe\\shell\\open\\command";
   private final static String POPPER_REG_KEY = "HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Control\\Session Manager\\Environment";
-  private final static String SEVEN_ZIP_REG_KEY = "HKEY_CURRENT_USER\\SOFTWARE\\7-Zip";
 
   private File popperInstallationFolder;
 
@@ -49,20 +48,7 @@ public class SystemInfo {
   }
 
   public String get7ZipCommand() {
-    try {
-      String output = readRegistry(SEVEN_ZIP_REG_KEY, "Path64");
-      if (output != null && output.trim().length() > 0) {
-        String path = extractRegistryValue(output);
-        File folder = new File(path);
-        if (folder.exists()) {
-          return new File(folder, "7z.exe").getAbsolutePath();
-        }
-      }
-    } catch (Exception e) {
-      LOG.error("Failed to read 7zip installation folder: " + e.getMessage(), e);
-    }
-    System.exit(-1);
-    return null;
+    return new File("./resources", "7z.exe").getAbsolutePath();
   }
 
   public File getVPXTablesFolder() {

@@ -23,8 +23,8 @@ public class HighsoreResolver {
   private final HighscoreParser parser;
   private final File rootFolder;
 
-  public HighsoreResolver(File rootFolder) {
-    this.rootFolder = rootFolder;
+  public HighsoreResolver() {
+    this.rootFolder = new File("./");
     this.parser = new HighscoreParser();
     this.refresh();
   }
@@ -32,21 +32,29 @@ public class HighsoreResolver {
   /**
    * Return a highscore object for the given table or null if no highscore has been achieved or created yet.
    */
-  public Highscore getHighscore(GameInfo gameInfo) throws Exception {
+  public void loadHighscore(GameInfo gameInfo) {
     try {
+      if(StringUtils.isEmpty(gameInfo.getRom())) {
+        String msg = "Skipped highscore reading for '" + gameInfo.getGameDisplayName() + "' failed, no rom name found.";
+        LOG.info(msg);
+        return;
+      }
+
       Highscore highscore = parseNvHighscore(gameInfo);
       if (highscore == null) {
         highscore = parseVRegHighscore(gameInfo);
       }
 
       if (highscore == null) {
-        String msg = "Read highscore for '" + gameInfo.getGameDisplayName() + "' [No nvram highscore and no VPReg.stg entry found with rom " + gameInfo.getRom() + "]";
-        LOG.warn(msg);
+        String msg = "Reading highscore for '" + gameInfo.getGameDisplayName() + "' failed, no nvram file and no VPReg.stg entry found for rom name '" + gameInfo.getRom() + "'";
+        LOG.info(msg);
       }
-      return highscore;
+      else {
+        gameInfo.setHighscore(highscore);
+        LOG.debug("Successfully read highscore for " + gameInfo.getGameDisplayName());
+      }
     } catch (Exception e) {
       LOG.error("Failed to find highscore for table {}: {}", gameInfo.getGameFileName(), e.getMessage(), e);
-      throw e;
     }
   }
 
@@ -56,7 +64,10 @@ public class HighsoreResolver {
   public void refresh() {
     File targetFolder = new File(rootFolder, "VPReg");
     if (!targetFolder.exists()) {
-      targetFolder.mkdirs();
+      boolean mkdirs = targetFolder.mkdirs();
+      if(!mkdirs) {
+        LOG.error("Failed to create VPReg target directory");
+      }
     }
 
     //check if we have to unzip the score file using the modified date of the target folder
@@ -65,10 +76,6 @@ public class HighsoreResolver {
 
   /**
    * We use the manual set rom name to find the highscore in the "/User/VPReg.stg" file.
-   *
-   * @param gameInfo
-   * @return
-   * @throws IOException
    */
   private Highscore parseVRegHighscore(GameInfo gameInfo) throws IOException {
     File targetFolder = new File(rootFolder, "VPReg");
@@ -105,11 +112,11 @@ public class HighsoreResolver {
         return highscore;
       }
       else {
-        LOG.info("No VPReg highscore file found: " + tableHighscoreFile.getAbsolutePath());
+        LOG.debug("No VPReg highscore file found: " + tableHighscoreFile.getAbsolutePath());
       }
     }
     else {
-      LOG.info("VPReg highscore folder does not exist: " + tableHighscoreFolder.getAbsolutePath());
+      LOG.debug("VPReg highscore folder does not exist: " + tableHighscoreFolder.getAbsolutePath());
     }
     return null;
   }
@@ -117,20 +124,20 @@ public class HighsoreResolver {
   /**
    * Uses 7zip to unzip the stg file into the configured target folder
    *
-   * @param targetFolder
+   * @param vpRegFolderFile
    */
-  private void updateUserScores(File targetFolder) {
+  private void updateUserScores(File vpRegFolderFile) {
+    String unzipCommand = SystemInfo.getInstance().get7ZipCommand();
+    List<String> commands = Arrays.asList("\"" + unzipCommand + "\"", "-aoa", "x", "\"" + SystemInfo.getInstance().getVPRegFile().getAbsolutePath() + "\"", "-o\"" + vpRegFolderFile.getAbsolutePath() + "\"");
     try {
-      String unzipCommand = SystemInfo.getInstance().get7ZipCommand();
-      List<String> commands = Arrays.asList("\"" + unzipCommand + "\"", "-aoa", "x", "\"" + SystemInfo.getInstance().getVPRegFile().getAbsolutePath() + "\"", "-o\"" + targetFolder.getAbsolutePath() + "\"");
       SystemCommandExecutor executor = new SystemCommandExecutor(commands, false);
-      executor.setDir(targetFolder);
+      executor.setDir(vpRegFolderFile);
       executor.executeCommand();
 
       StringBuilder standardOutputFromCommand = executor.getStandardOutputFromCommand();
       StringBuilder standardErrorFromCommand = executor.getStandardErrorFromCommand();
       if (!StringUtils.isEmpty(standardErrorFromCommand.toString())) {
-        LOG.error("7zip command failed: {}", standardErrorFromCommand.toString());
+        LOG.error("7zip command '" + String.join(" ", commands) + "' failed: {}", standardErrorFromCommand);
       }
     } catch (Exception e) {
       LOG.info("Failed to init VPReg: " + e.getMessage(), e);
@@ -164,8 +171,8 @@ public class HighsoreResolver {
     String s = standardOutputFromCommand.toString();
     Highscore highscore = null;
     try {
-      highscore = parser.parseHighscore(s);
-      if (highscore.getScores().isEmpty()) {
+      highscore = parser.parseHighscore(gameInfo, s);
+      if (highscore == null || highscore.getScores().isEmpty()) {
         return null;
       }
     } catch (Exception e) {

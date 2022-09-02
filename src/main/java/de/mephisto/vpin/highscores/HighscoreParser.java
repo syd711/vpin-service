@@ -1,5 +1,7 @@
 package de.mephisto.vpin.highscores;
 
+import de.mephisto.vpin.games.GameInfo;
+import de.mephisto.vpin.games.GameRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,15 +28,12 @@ import java.text.DecimalFormat;
 public class HighscoreParser {
   private final static Logger LOG = LoggerFactory.getLogger(HighscoreParser.class);
 
-  public Highscore parseHighscore(String cmdOutput) throws Exception {
+  public Highscore parseHighscore(GameInfo game, String cmdOutput) throws Exception {
     Highscore highscore = new Highscore(cmdOutput);
     String[] lines = cmdOutput.split("\\n");
-    if (lines.length == 1) {
-      throw new Exception("Error parsing highscore command output: " + lines[0]);
-    }
-
-    if(lines.length == 2) {
-      throw new Exception("No score set. (" + cmdOutput + ")");
+    if (lines.length < 3) {
+      LOG.debug("Skipped highscore parsing for " + game.getGameDisplayName() + ", output too short:\n" + cmdOutput);
+      return null;
     }
 
     for (String line : lines) {

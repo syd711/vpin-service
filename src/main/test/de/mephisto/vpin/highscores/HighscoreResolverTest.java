@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -17,26 +19,29 @@ public class HighscoreResolverTest {
 
   @Test
   public void testHighscoreResolver() throws Exception {
-    HighsoreResolver highsoreResolver = new HighsoreResolver(new File("./"));
+    HighsoreResolver highsoreResolver = new HighsoreResolver();
     highsoreResolver.refresh();
 
     GameRepository repository = GameRepository.create();
     List<GameInfo> games = repository.getGameInfos();
-    List<GameInfo> ignoredOnes = new ArrayList<>();
+    List<GameInfo> valid = new ArrayList<>();
     for (GameInfo game : games) {
-      Highscore highscore = highsoreResolver.getHighscore(game);
-      if (highscore != null) {
-        assertFalse(highscore.getScores().isEmpty());
-      }
-      else {
-        ignoredOnes.add(game);
+      highsoreResolver.loadHighscore(game);
+      if (game.getHighscore() != null) {
+        assertFalse(game.getHighscore().getScores().isEmpty());
+        valid.add(game);
       }
     }
 
-    LOG.info("************************************************************************************");
-    LOG.info("Finished highscore reading, " + ignoredOnes.stream());
-    LOG.info("************************************************************************************");
+    valid.sort((o1, o2) -> (int) (o1.getLastModified() - o2.getLastModified()));
 
+
+    LOG.info("************************************************************************************");
+    LOG.info("Finished highscore reading, " + valid.stream());
+    LOG.info("************************************************************************************");
+    for (GameInfo gameInfo : valid) {
+      LOG.info(new Date(gameInfo.getLastModified()) + ": " + gameInfo.getGameDisplayName());
+    }
   }
 
 }

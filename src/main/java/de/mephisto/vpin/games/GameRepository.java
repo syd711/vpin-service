@@ -1,9 +1,11 @@
 package de.mephisto.vpin.games;
 
+import de.mephisto.vpin.highscores.HighsoreResolver;
 import de.mephisto.vpin.util.SqliteConnector;
 import de.mephisto.vpin.util.SystemInfo;
 import de.mephisto.vpin.util.PropertiesStore;
 import de.mephisto.vpin.util.RomScanner;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +19,7 @@ public class GameRepository {
   private final SqliteConnector sqliteConnector;
 
   private final RomScanner romScanner;
+  private final HighsoreResolver highscoreResolver;
 
   private List<GameInfo> games = new ArrayList<>();
 
@@ -29,6 +32,7 @@ public class GameRepository {
   private GameRepository() {
     this.sqliteConnector = new SqliteConnector();
     this.romScanner = new RomScanner();
+    this.highscoreResolver = new HighsoreResolver();
     this.store = PropertiesStore.create(new File("./resources"));
   }
 
@@ -56,6 +60,11 @@ public class GameRepository {
         game.setRom(romName);
         updateGameInfo(game);
       }
+
+      if(!StringUtils.isEmpty(game.getRom())) {
+        highscoreResolver.loadHighscore(game);
+      }
+
       this.games.add(game);
     }
   }

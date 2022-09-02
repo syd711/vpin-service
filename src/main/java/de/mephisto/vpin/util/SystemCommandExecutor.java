@@ -112,7 +112,6 @@ public class SystemCommandExecutor {
   private int execute() throws IOException, InterruptedException {
     int exitValue = -99;
 
-    LOG.info("Executing system command '" + Joiner.on(" ").join(commandInformation) + "'");
     try {
       ProcessBuilder pb = new ProcessBuilder(commandInformation);
 
@@ -153,12 +152,11 @@ public class SystemCommandExecutor {
       inputStreamHandler.join();
       errorStreamHandler.join();
 
-      LOG.debug("Executed system command '" + Joiner.on(" ").join(commandInformation) + "': exit code " + exitValue);
     } catch (Exception e) {
-      commandError = e.getMessage();
-    } finally {
-      return exitValue;
+      LOG.error("Failed to execute system command '" + Joiner.on(" ").join(commandInformation) + "': exit code " + exitValue + ", " + e.getMessage(), e);
+      throw e;
     }
+    return -1;
   }
 
   public void killProcess() {
