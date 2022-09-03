@@ -6,9 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -20,14 +18,14 @@ public class HighscoreResolverTest {
 
   @Test
   public void testHighscoreResolver() throws Exception {
-    HighsoreResolver highsoreResolver = new HighsoreResolver();
-    highsoreResolver.refresh();
+    highscoreResolver highscoreResolver = new highscoreResolver();
+    highscoreResolver.refresh();
 
     GameRepository repository = GameRepository.create();
     List<GameInfo> games = repository.getGameInfos();
     List<GameInfo> valid = new ArrayList<>();
     for (GameInfo game : games) {
-      highsoreResolver.loadHighscore(game);
+      highscoreResolver.loadHighscore(game);
       if (game.getHighscore() != null) {
         assertFalse(game.getHighscore().getScores().isEmpty());
         valid.add(game);
@@ -49,7 +47,7 @@ public class HighscoreResolverTest {
   @Test
   public void testHighscore() {
     GameRepository gameRepository = GameRepository.create();
-    GameInfo game = gameRepository.getGameByRom("mm_109c");
+    GameInfo game = gameRepository.getGameByRom("deadweap");
     assertNotNull(game.getHighscore());
     LOG.info(game.getHighscore().getRaw());
   }

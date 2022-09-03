@@ -1,8 +1,8 @@
 package de.mephisto.vpin.highscores;
 
-import de.mephisto.vpin.util.SystemInfo;
 import de.mephisto.vpin.games.GameInfo;
 import de.mephisto.vpin.util.SystemCommandExecutor;
+import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +14,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class HighsoreResolver {
-  private final static Logger LOG = LoggerFactory.getLogger(HighsoreResolver.class);
+public class highscoreResolver {
+  private final static Logger LOG = LoggerFactory.getLogger(highscoreResolver.class);
 
   private static final String PINEMHI_FOLDER = "pinemhi";
   private static final String PINEMHI_COMMAND = "PINemHi.exe";
@@ -23,10 +23,22 @@ public class HighsoreResolver {
   private final HighscoreParser parser;
   private final File rootFolder;
 
-  public HighsoreResolver() {
+  private List<String> supportedRoms;
+
+  public highscoreResolver() {
     this.rootFolder = new File("./");
     this.parser = new HighscoreParser();
+    this.loadSupportedScores();
     this.refresh();
+  }
+
+  private void loadSupportedScores() {
+    try {
+      String roms = executePINemHi("-lr");
+      this.supportedRoms = Arrays.asList(roms.split("\n"));
+    } catch (Exception e) {
+      LOG.error("Failed to load supported rom names from PINemHi: " + e.getMessage(), e);
+    }
   }
 
   /**
@@ -34,11 +46,13 @@ public class HighsoreResolver {
    */
   public void loadHighscore(GameInfo gameInfo) {
     try {
-      if(StringUtils.isEmpty(gameInfo.getRom())) {
+      String romName = gameInfo.getRom();
+      if (StringUtils.isEmpty(romName)) {
         String msg = "Skipped highscore reading for '" + gameInfo.getGameDisplayName() + "' failed, no rom name found.";
         LOG.info(msg);
         return;
       }
+
 
       Highscore highscore = parseNvHighscore(gameInfo);
       if (highscore == null) {
@@ -46,7 +60,7 @@ public class HighsoreResolver {
       }
 
       if (highscore == null) {
-        String msg = "Reading highscore for '" + gameInfo.getGameDisplayName() + "' failed, no nvram file and no VPReg.stg entry found for rom name '" + gameInfo.getRom() + "'";
+        String msg = "Reading highscore for '" + gameInfo.getGameDisplayName() + "' failed, no nvram file and no VPReg.stg entry found for rom name '" + romName + "'";
         LOG.info(msg);
       }
       else {
@@ -65,7 +79,7 @@ public class HighsoreResolver {
     File targetFolder = new File(rootFolder, "VPReg");
     if (!targetFolder.exists()) {
       boolean mkdirs = targetFolder.mkdirs();
-      if(!mkdirs) {
+      if (!mkdirs) {
         LOG.error("Failed to create VPReg target directory");
       }
     }
@@ -101,7 +115,7 @@ public class HighsoreResolver {
           tableHighscoreNameFile = new File(tableHighscoreFolder, "HighScore" + i + "Name");
           if (tableHighscoreFile.exists() && tableHighscoreNameFile.exists()) {
             highScoreValue = readFileString(tableHighscoreFile);
-            if(highScoreValue != null) {
+            if (highScoreValue != null) {
               highScoreValue = HighscoreParser.formatScore(highScoreValue);
               initials = readFileString(tableHighscoreNameFile);
 
@@ -124,9 +138,9 @@ public class HighsoreResolver {
   }
 
   /**
-   * Uses 7zip to unzip the stg file into the configured target folder
+   * Uses 7zip to unzip the stg file into the configured target folder.
    *
-   * @param vpRegFolderFile
+   * @param vpRegFolderFile the VPReg file to expand
    */
   private void updateUserScores(File vpRegFolderFile) {
     String unzipCommand = SystemInfo.getInstance().get7ZipCommand();
@@ -146,34 +160,31 @@ public class HighsoreResolver {
     }
   }
 
-  private Highscore parseNvHighscore(GameInfo gameInfo) throws Exception {
-    File nvRam = gameInfo.getNvRamFile();
-    File commandFile = new File(PINEMHI_FOLDER, PINEMHI_COMMAND);
-    if (!commandFile.exists()) {
-      commandFile = new File("../" + PINEMHI_FOLDER, PINEMHI_COMMAND);
-    }
-
-    if (!nvRam.exists()) {
-      return null;
-    }
-
-    gameInfo.setLastModified(nvRam.lastModified());
-
-    SystemCommandExecutor executor = new SystemCommandExecutor(Arrays.asList(commandFile.getName(), nvRam.getName()));
-    executor.setDir(commandFile.getParentFile());
-    executor.executeCommand();
-    StringBuilder standardOutputFromCommand = executor.getStandardOutputFromCommand();
-    StringBuilder standardErrorFromCommand = executor.getStandardErrorFromCommand();
-    if (!StringUtils.isEmpty(standardErrorFromCommand.toString())) {
-      String error = "Pinemhi command (" + commandFile.getAbsolutePath() + ") failed: " + standardErrorFromCommand;
-      LOG.error(error);
-      throw new Exception(error);
-    }
-
-    String s = standardOutputFromCommand.toString();
+  /**
+   * Executes a single PINemHi command for the given game.
+   *
+   * @param gameInfo the game to parse the highscore for
+   * @return the Highscore object or null if no highscore could be parsed.
+   */
+  private Highscore parseNvHighscore(GameInfo gameInfo) {
     Highscore highscore = null;
     try {
-      highscore = parser.parseHighscore(gameInfo, nvRam, s);
+      File nvRam = gameInfo.getNvRamFile();
+      if (!nvRam.exists()) {
+        return null;
+      }
+
+      String romName = gameInfo.getRom();
+      if(!this.supportedRoms.contains(romName)) {
+        LOG.warn("The resolved rom name '" + romName + "' of game '" + gameInfo.getGameDisplayName() + "' is not supported by PINemHi.");
+        return null;
+      }
+
+      gameInfo.setLastModified(nvRam.lastModified());
+      String output = executePINemHi(nvRam.getName());
+
+
+      highscore = parser.parseHighscore(gameInfo, nvRam, output);
       if (highscore == null || highscore.getScores().isEmpty()) {
         return null;
       }
@@ -183,6 +194,26 @@ public class HighsoreResolver {
     return highscore;
   }
 
+  private String executePINemHi(String param) throws Exception {
+    File commandFile = new File(PINEMHI_FOLDER, PINEMHI_COMMAND);
+    if (!commandFile.exists()) {
+      commandFile = new File("../" + PINEMHI_FOLDER, PINEMHI_COMMAND);
+    }
+
+    List<String> commands = Arrays.asList(commandFile.getName(), param);
+    SystemCommandExecutor executor = new SystemCommandExecutor(commands);
+    executor.setDir(commandFile.getParentFile());
+    executor.executeCommand();
+    StringBuilder standardOutputFromCommand = executor.getStandardOutputFromCommand();
+    StringBuilder standardErrorFromCommand = executor.getStandardErrorFromCommand();
+    if (!StringUtils.isEmpty(standardErrorFromCommand.toString())) {
+      String error = "Pinemhi command (" + commandFile.getAbsolutePath() + ") failed: " + standardErrorFromCommand;
+      LOG.error(error);
+      throw new Exception(error);
+    }
+    return standardOutputFromCommand.toString();
+  }
+
   /**
    * Reads the first line of the given file
    */
@@ -190,7 +221,7 @@ public class HighsoreResolver {
     BufferedReader brTest = new BufferedReader(new FileReader(file));
     try {
       String text = brTest.readLine();
-      if(text != null) {
+      if (text != null) {
         return text.replace("\0", "").trim();
       }
       else {
@@ -199,9 +230,9 @@ public class HighsoreResolver {
       return null;
     } catch (IOException e) {
       throw e;
-    }
-    finally {
-      brTest.close();;
+    } finally {
+      brTest.close();
+      ;
     }
   }
 }

@@ -18,7 +18,7 @@ public class Score {
   }
 
   public void setUserInitials(String userInitials) {
-    if(!StringUtils.isEmpty(userInitials)) {
+    if(!StringUtils.isEmpty(userInitials.trim())) {
       this.userInitials = userInitials;
     }
   }

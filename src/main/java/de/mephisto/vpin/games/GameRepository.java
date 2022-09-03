@@ -1,6 +1,6 @@
 package de.mephisto.vpin.games;
 
-import de.mephisto.vpin.highscores.HighsoreResolver;
+import de.mephisto.vpin.highscores.highscoreResolver;
 import de.mephisto.vpin.util.SqliteConnector;
 import de.mephisto.vpin.util.SystemInfo;
 import de.mephisto.vpin.util.PropertiesStore;
@@ -19,7 +19,7 @@ public class GameRepository {
   private final SqliteConnector sqliteConnector;
 
   private final RomScanner romScanner;
-  private final HighsoreResolver highscoreResolver;
+  private final de.mephisto.vpin.highscores.highscoreResolver highscoreResolver;
 
   private final List<GameInfo> games = new ArrayList<>();
 
@@ -32,7 +32,7 @@ public class GameRepository {
   private GameRepository() {
     this.sqliteConnector = new SqliteConnector();
     this.romScanner = new RomScanner();
-    this.highscoreResolver = new HighsoreResolver();
+    this.highscoreResolver = new highscoreResolver();
     this.store = PropertiesStore.create(new File("./resources"));
   }
 
@@ -131,6 +131,7 @@ public class GameRepository {
       LOG.info("Skipped Update of " + game.getVpxFile().getName() + ", no rom name found.");
     }
     this.store.set(formatGameKey(game) + ".rom", romName != null ? romName : "");
+    this.store.set(formatGameKey(game) + ".displayName", game.getGameDisplayName());
   }
 
 

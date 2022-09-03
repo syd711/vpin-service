@@ -46,16 +46,22 @@ public class HighscoreParser {
           listStarted = true;
           String initials = line.substring(3, 6);
           String score = line.substring(7).trim();
-          highscore.setUserInitials(initials);
+          if(initials.startsWith(" ")) {
+            initials = "";
+          }
+
           highscore.setScore(score);
           highscore.getScores().add(new Score(initials, score, 1));
         }
         else if (line.indexOf(")") == 1) {
           listStarted = true;
           int pos = Integer.parseInt(line.substring(0, 1));
-          String shortName = line.substring(3, 6);
+          String initials = line.substring(3, 6);
+          if(initials.startsWith(" ")) {
+            initials = "";
+          }
           String score = line.substring(7).trim();
-          highscore.getScores().add(new Score(shortName, score, pos));
+          highscore.getScores().add(new Score(initials, score, pos));
         }
         else {
           //list has been read, ignore following lines.
