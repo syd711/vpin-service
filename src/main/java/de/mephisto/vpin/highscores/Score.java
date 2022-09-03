@@ -8,9 +8,11 @@ public class Score {
   private int position;
 
   public Score(String userInitials, String score, int position) {
-    this.userInitials = userInitials;
     this.score = score;
     this.position = position;
+    if(userInitials != null) {
+      this.userInitials = userInitials;
+    }
   }
 
   public String getUserInitials() {

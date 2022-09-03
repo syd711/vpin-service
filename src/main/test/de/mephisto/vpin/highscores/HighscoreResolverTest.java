@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -18,37 +17,42 @@ public class HighscoreResolverTest {
 
   @Test
   public void testHighscoreResolver() throws Exception {
-    highscoreResolver highscoreResolver = new highscoreResolver();
+    HighscoreResolver highscoreResolver = new HighscoreResolver();
     highscoreResolver.refresh();
 
     GameRepository repository = GameRepository.create();
     List<GameInfo> games = repository.getGameInfos();
     List<GameInfo> valid = new ArrayList<>();
     for (GameInfo game : games) {
-      highscoreResolver.loadHighscore(game);
       if (game.getHighscore() != null) {
         assertFalse(game.getHighscore().getScores().isEmpty());
+        assertFalse(game.getHighscore().getUserInitials().isEmpty());
         valid.add(game);
       }
     }
 
-    valid.sort((o1, o2) -> (int) (o1.getLastModified() - o2.getLastModified()));
+    valid.sort((o1, o2) -> (int) (o1.getLastPlayed().getTime() - o2.getLastPlayed().getTime()));
 
 
     LOG.info("************************************************************************************");
     LOG.info("Finished highscore reading, " + valid.stream());
     LOG.info("************************************************************************************");
     for (GameInfo gameInfo : valid) {
-      LOG.info(new Date(gameInfo.getLastModified()) + ": " + gameInfo.getGameDisplayName());
+      LOG.info(gameInfo.getLastPlayed() + ": " + gameInfo.getGameDisplayName());
     }
   }
 
 
   @Test
   public void testHighscore() {
+    HighscoreResolver highscoreResolver = new HighscoreResolver();
+    highscoreResolver.refresh();
+
     GameRepository gameRepository = GameRepository.create();
-    GameInfo game = gameRepository.getGameByRom("deadweap");
+    GameInfo game = gameRepository.getGameByRom("hpgof");
     assertNotNull(game.getHighscore());
+    assertNotNull(game.getHighscore().getUserInitials());
+    assertFalse(game.getHighscore().getScores().isEmpty());
     LOG.info(game.getHighscore().getRaw());
   }
 

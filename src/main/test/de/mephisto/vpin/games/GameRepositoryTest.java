@@ -31,6 +31,7 @@ public class GameRepositoryTest {
     for (GameInfo table : tables) {
       assertTrue(table.getVpxFile().exists());
     }
+    LOG.info("Loaded " + tables.size() + " tables.");
   }
 
   @Test

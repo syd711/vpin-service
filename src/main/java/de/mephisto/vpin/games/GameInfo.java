@@ -1,6 +1,7 @@
 package de.mephisto.vpin.games;
 
 import de.mephisto.vpin.highscores.Highscore;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.Date;
@@ -18,11 +19,15 @@ public class GameInfo {
   private File nvRamFile;
   private File wheelIconFile;
 
-  private long lastModified;
+  private Date lastPlayed;
 
   private Highscore highscore;
+  private GameRepository repository;
 
-  public GameInfo() {
+  private int numberPlays;
+
+  public GameInfo(GameRepository repository) {
+    this.repository = repository;
   }
 
   public String getTags() {
@@ -34,19 +39,37 @@ public class GameInfo {
   }
 
   public Highscore getHighscore() {
+    if(this.highscore == null && !StringUtils.isEmpty(this.getRom())) {
+      this.highscore = this.repository.loadHighscore(this);
+    }
     return highscore;
   }
 
-  public void setHighscore(Highscore highscore) {
-    this.highscore = highscore;
+  public void reloadHighscore() {
+    this.highscore = null;
   }
 
-  public long getLastModified() {
-    return lastModified;
+  public int getNumberPlays() {
+    return numberPlays;
   }
 
-  public void setLastModified(long lastModified) {
-    this.lastModified = lastModified;
+  public void setNumberPlays(int numberPlays) {
+    this.numberPlays = numberPlays;
+  }
+
+  public void invalidate() {
+    repository.invalidate(this);
+  }
+
+  public Date getLastPlayed() {
+    if(this.lastPlayed == null) {
+      return new Date();
+    }
+    return lastPlayed;
+  }
+
+  public void setLastPlayed(Date lastPlayed) {
+    this.lastPlayed = lastPlayed;
   }
 
   public File getWheelIconFile() {

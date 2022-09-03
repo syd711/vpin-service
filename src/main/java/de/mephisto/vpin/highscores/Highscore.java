@@ -10,7 +10,6 @@ public class Highscore {
 
   private String userInitials = "???";
   private String score;
-  private int position;
 
   private String raw;
 
@@ -42,14 +41,6 @@ public class Highscore {
 
   public void setScore(String score) {
     this.score = score;
-  }
-
-  public int getPosition() {
-    return position;
-  }
-
-  public void setPosition(int position) {
-    this.position = position;
   }
 
   public String getRaw() {

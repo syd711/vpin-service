@@ -37,8 +37,16 @@ public class SystemInfo {
     return new File(getVPXInstallationFolder(), "VPinMAME/roms/");
   }
 
+  public File getNvramFolder() {
+    return new File(getMameRomFolder(), "nvram/");
+  }
+
   public File getMameFolder() {
     return new File(getVPXInstallationFolder(), "VPinMAME/");
+  }
+
+  public File getExtractedVPRegFolder() {
+    return new File("./", "VPReg");
   }
 
   public File[] getVPXTables() {

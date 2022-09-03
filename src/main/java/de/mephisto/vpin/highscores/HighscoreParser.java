@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.text.DecimalFormat;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * e.g.:
@@ -44,28 +47,20 @@ public class HighscoreParser {
       for (String line : lines) {
         if (line.startsWith("1)") || line.startsWith("#1")) {
           listStarted = true;
-          String initials = line.substring(3, 6);
-          String score = line.substring(7).trim();
-          if(initials.startsWith(" ")) {
-            initials = "";
-          }
 
-          highscore.setScore(score);
-          highscore.getScores().add(new Score(initials, score, 1));
+          Score score = createScore(line);
+          highscore.setScore(score.getScore());
+          highscore.setUserInitials(score.getUserInitials());
+          highscore.getScores().add(score);
         }
-        else if (line.indexOf(")") == 1) {
+        else if (line.indexOf(")") == 1 || line.indexOf("#") == 1) {
           listStarted = true;
-          int pos = Integer.parseInt(line.substring(0, 1));
-          String initials = line.substring(3, 6);
-          if(initials.startsWith(" ")) {
-            initials = "";
-          }
-          String score = line.substring(7).trim();
-          highscore.getScores().add(new Score(initials, score, pos));
+          Score score = createScore(line);
+          highscore.getScores().add(score);
         }
         else {
           //list has been read, ignore following lines.
-          if(listStarted) {
+          if (listStarted) {
             break;
           }
         }
@@ -80,6 +75,28 @@ public class HighscoreParser {
     }
 
     return highscore;
+  }
+
+  private static Score createScore(String line) {
+    List<String> collect = Arrays.stream(line.trim().split(" ")).filter(s -> s.trim().length() > 0).collect(Collectors.toList());
+    String indexString = collect.get(0).replaceAll("[^0-9]", "");
+    int index = Integer.parseInt(indexString);
+    if (collect.size() == 2) {
+      return new Score(null, collect.get(1), index);
+    }
+    else if (collect.size() == 3) {
+      return new Score(collect.get(1), collect.get(2), index);
+    }
+    else if (collect.size() > 3) {
+      StringBuilder initials = new StringBuilder();
+      for (int i = 1; i < collect.size() - 1; i++) {
+        initials.append(collect.get(i) + " ");
+      }
+      return new Score(initials.toString().trim(), collect.get(collect.size() - 1), index);
+    }
+    else {
+      throw new UnsupportedOperationException("Could parse score line '" + line + "'");
+    }
   }
 
   public static String formatScore(String score) {

@@ -1,6 +1,7 @@
 package de.mephisto.vpin.util;
 
 import de.mephisto.vpin.games.GameInfo;
+import de.mephisto.vpin.games.GameRepository;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,7 @@ public class SqliteConnector {
   private final String dbFilePath;
 
   private Connection conn;
-  private SystemInfo systemInfo;
+  private final SystemInfo systemInfo;
 
   public SqliteConnector() {
     this.systemInfo = SystemInfo.getInstance();
@@ -43,7 +44,7 @@ public class SqliteConnector {
   }
 
   private void disconnect() {
-    if(this.conn != null) {
+    if (this.conn != null) {
       try {
         this.conn.close();
       } catch (SQLException e) {
@@ -52,14 +53,14 @@ public class SqliteConnector {
     }
   }
 
-  public List<GameInfo> getGames() {
+  public List<GameInfo> getGames(GameRepository repository) {
     this.connect();
     List<GameInfo> results = new ArrayList<>();
     try {
       Statement statement = conn.createStatement();
       ResultSet rs = statement.executeQuery("SELECT * FROM Games;");
       while (rs.next()) {
-        GameInfo info = new GameInfo();
+        GameInfo info = new GameInfo(repository);
         int id = rs.getInt("GameID");
         String rom = rs.getString("ROM");
         String gameFileName = rs.getString("GameFileName");
@@ -90,13 +91,33 @@ public class SqliteConnector {
 
       rs.close();
       statement.close();
+
+      for (GameInfo game : results) {
+        loadStats(game);
+      }
     } catch (SQLException e) {
-      LOG.error("Failed to read game infos: " + e.getMessage(), e);
-    }
-    finally {
-     this.disconnect();
+      LOG.error("Failed to read game info: " + e.getMessage(), e);
+    } finally {
+      this.disconnect();
     }
     return results;
+  }
+
+  private void loadStats(GameInfo game) {
+    try {
+      Statement statement = conn.createStatement();
+      ResultSet rs = statement.executeQuery("SELECT * FROM GamesStats where GameID = " + game.getId() + ";");
+      while (rs.next()) {
+        int numberPlays = rs.getInt("NumberPlays");
+        Date lastPlayed = rs.getDate("LastPlayed");
+
+        game.setLastPlayed(lastPlayed);
+        game.setNumberPlays(numberPlays);
+      }
+    }
+    catch (SQLException e) {
+      LOG.error("Failed to read game info: " + e.getMessage(), e);
+    }
   }
 
   public String getEmulatorStartupScript(String emuName) {
@@ -115,9 +136,16 @@ public class SqliteConnector {
   }
 
   public void resetAll() {
-    List<GameInfo> games = this.getGames();
-    for (GameInfo game : games) {
-      resetGame(game);
+    this.connect();
+    try {
+      Statement stmt = conn.createStatement();
+      String sql = "UPDATE Games SET 'ROM'='';";
+      stmt.executeUpdate(sql);
+      stmt.close();
+    } catch (Exception e) {
+      LOG.error("Failed to reset all tables: " + e.getMessage(), e);
+    } finally {
+      this.disconnect();
     }
   }
 
@@ -131,8 +159,7 @@ public class SqliteConnector {
       stmt.close();
     } catch (Exception e) {
       LOG.error("Failed to reset table info for " + gameFileName + ": " + e.getMessage(), e);
-    }
-    finally {
+    } finally {
       this.disconnect();
     }
   }
@@ -165,8 +192,7 @@ public class SqliteConnector {
       statement.close();
     } catch (SQLException e) {
       LOG.error("Failed to read rom info for " + tableFileName + ": " + e.getMessage(), e);
-    }
-    finally {
+    } finally {
       this.disconnect();
     }
     return rom;
@@ -182,8 +208,7 @@ public class SqliteConnector {
       LOG.info("Update of " + scriptName + " successful.");
     } catch (Exception e) {
       LOG.error("Failed to update script script " + scriptName + ": " + e.getMessage(), e);
-    }
-    finally {
+    } finally {
       this.disconnect();
     }
   }
@@ -202,8 +227,7 @@ public class SqliteConnector {
       }
     } catch (Exception e) {
       LOG.error("Failed to update script script " + gameFileName + ": " + e.getMessage(), e);
-    }
-    finally {
+    } finally {
       this.disconnect();
     }
   }

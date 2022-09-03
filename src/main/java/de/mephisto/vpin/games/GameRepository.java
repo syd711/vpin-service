@@ -1,6 +1,7 @@
 package de.mephisto.vpin.games;
 
-import de.mephisto.vpin.highscores.highscoreResolver;
+import de.mephisto.vpin.highscores.Highscore;
+import de.mephisto.vpin.highscores.HighscoreResolver;
 import de.mephisto.vpin.util.SqliteConnector;
 import de.mephisto.vpin.util.SystemInfo;
 import de.mephisto.vpin.util.PropertiesStore;
@@ -19,7 +20,7 @@ public class GameRepository {
   private final SqliteConnector sqliteConnector;
 
   private final RomScanner romScanner;
-  private final de.mephisto.vpin.highscores.highscoreResolver highscoreResolver;
+  private final HighscoreResolver highscoreResolver;
 
   private final List<GameInfo> games = new ArrayList<>();
 
@@ -32,7 +33,7 @@ public class GameRepository {
   private GameRepository() {
     this.sqliteConnector = new SqliteConnector();
     this.romScanner = new RomScanner();
-    this.highscoreResolver = new highscoreResolver();
+    this.highscoreResolver = new HighscoreResolver();
     this.store = PropertiesStore.create(new File("./resources"));
   }
 
@@ -48,7 +49,19 @@ public class GameRepository {
     this.loadTableInfos(true);
   }
 
-  public void invalidate(GameInfo gameInfo) {
+  /**
+   * Reload without additional rom scan.
+   */
+  public void reload() {
+    this.games.clear();
+    this.loadTableInfos(false);
+  }
+
+  public void resetRoms() {
+    this.sqliteConnector.resetAll();
+  }
+
+  void invalidate(GameInfo gameInfo) {
     String romName = romScanner.scanRomName(gameInfo.getVpxFile());
     gameInfo.setRom(romName);
     if(!StringUtils.isEmpty(romName)) {
@@ -56,16 +69,10 @@ public class GameRepository {
     }
   }
 
-  public void reload() {
-    this.games.clear();
-    this.loadTableInfos(false);
-  }
-
   public GameInfo getGameByVpxFilename(String filename) {
-    List<GameInfo> games = sqliteConnector.getGames();
+    List<GameInfo> games = sqliteConnector.getGames(this);
     for (GameInfo gameInfo : games) {
       if(gameInfo.getVpxFile().getName().equals(filename)) {
-        highscoreResolver.loadHighscore(gameInfo);
         return gameInfo;
       }
     }
@@ -73,7 +80,7 @@ public class GameRepository {
   }
 
   public List<GameInfo> getGamesWithEmptyRoms() {
-    List<GameInfo> games = sqliteConnector.getGames();
+    List<GameInfo> games = sqliteConnector.getGames(this);
     List<GameInfo> result = new ArrayList<>();
     for (GameInfo gameInfo : games) {
       if(StringUtils.isEmpty(gameInfo.getRom())) {
@@ -84,31 +91,22 @@ public class GameRepository {
   }
 
   public GameInfo getGameByRom(String romName) {
-    List<GameInfo> games = sqliteConnector.getGames();
+    List<GameInfo> games = sqliteConnector.getGames(this);
     for (GameInfo gameInfo : games) {
       if(gameInfo.getRom() != null && gameInfo.getRom().equals(romName)) {
-        highscoreResolver.loadHighscore(gameInfo);
         return gameInfo;
       }
     }
     return null;
   }
 
-  public void reset() {
-    this.sqliteConnector.resetAll();
-  }
-
   private void loadTableInfos(boolean forceRomScan) {
-    List<GameInfo> games = sqliteConnector.getGames();
+    List<GameInfo> games = sqliteConnector.getGames(this);
     for (GameInfo game : games) {
       if (!wasScanned(game) || forceRomScan) {
         String romName = romScanner.scanRomName(game.getVpxFile());
         game.setRom(romName);
         updateGameInfo(game);
-      }
-
-      if(!StringUtils.isEmpty(game.getRom())) {
-        highscoreResolver.loadHighscore(game);
       }
 
       this.games.add(game);
@@ -134,9 +132,16 @@ public class GameRepository {
     this.store.set(formatGameKey(game) + ".displayName", game.getGameDisplayName());
   }
 
+  public void refreshHighscores() {
+    this.highscoreResolver.refresh();
+    for (GameInfo game : this.games) {
+      game.reloadHighscore();
+    }
+  }
 
-
-
+  Highscore loadHighscore(GameInfo gameInfo) {
+    return this.highscoreResolver.loadHighscore(gameInfo);
+  }
 
   private boolean wasScanned(GameInfo game) {
     return store.containsKey(formatGameKey(game) + ".rom");
@@ -145,5 +150,4 @@ public class GameRepository {
   private String formatGameKey(GameInfo game) {
     return "gameId." + game.getId();
   }
-
 }

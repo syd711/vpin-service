@@ -14,19 +14,16 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class highscoreResolver {
-  private final static Logger LOG = LoggerFactory.getLogger(highscoreResolver.class);
+public class HighscoreResolver {
+  private final static Logger LOG = LoggerFactory.getLogger(HighscoreResolver.class);
 
   private static final String PINEMHI_FOLDER = "pinemhi";
   private static final String PINEMHI_COMMAND = "PINemHi.exe";
 
   private final HighscoreParser parser;
-  private final File rootFolder;
-
   private List<String> supportedRoms;
 
-  public highscoreResolver() {
-    this.rootFolder = new File("./");
+  public HighscoreResolver() {
     this.parser = new HighscoreParser();
     this.loadSupportedScores();
     this.refresh();
@@ -44,13 +41,13 @@ public class highscoreResolver {
   /**
    * Return a highscore object for the given table or null if no highscore has been achieved or created yet.
    */
-  public void loadHighscore(GameInfo gameInfo) {
+  public Highscore loadHighscore(GameInfo gameInfo) {
     try {
       String romName = gameInfo.getRom();
       if (StringUtils.isEmpty(romName)) {
         String msg = "Skipped highscore reading for '" + gameInfo.getGameDisplayName() + "' failed, no rom name found.";
         LOG.info(msg);
-        return;
+        return null;
       }
 
 
@@ -64,19 +61,21 @@ public class highscoreResolver {
         LOG.info(msg);
       }
       else {
-        gameInfo.setHighscore(highscore);
         LOG.debug("Successfully read highscore for " + gameInfo.getGameDisplayName());
+        return highscore;
       }
+
     } catch (Exception e) {
       LOG.error("Failed to find highscore for table {}: {}", gameInfo.getGameFileName(), e.getMessage(), e);
     }
+    return null;
   }
 
   /**
    * Refreshes the extraction of the VPReg.stg file.
    */
   public void refresh() {
-    File targetFolder = new File(rootFolder, "VPReg");
+    File targetFolder = SystemInfo.getInstance().getExtractedVPRegFolder();
     if (!targetFolder.exists()) {
       boolean mkdirs = targetFolder.mkdirs();
       if (!mkdirs) {
@@ -92,12 +91,9 @@ public class highscoreResolver {
    * We use the manual set rom name to find the highscore in the "/User/VPReg.stg" file.
    */
   private Highscore parseVRegHighscore(GameInfo gameInfo) throws IOException {
-    File targetFolder = new File(rootFolder, "VPReg");
-    File tableHighscoreFolder = new File(targetFolder, gameInfo.getRom());
+    File tableHighscoreFolder = new File(SystemInfo.getInstance().getExtractedVPRegFolder(), gameInfo.getRom());
 
     if (tableHighscoreFolder.exists()) {
-      gameInfo.setLastModified(tableHighscoreFolder.lastModified());
-
       File tableHighscoreFile = new File(tableHighscoreFolder, "HighScore1");
       File tableHighscoreNameFile = new File(tableHighscoreFolder, "HighScore1Name");
       if (tableHighscoreFile.exists() && tableHighscoreNameFile.exists()) {
@@ -106,7 +102,6 @@ public class highscoreResolver {
         String initials = readFileString(tableHighscoreNameFile);
 
         Highscore highscore = new Highscore(highScoreValue);
-        highscore.setPosition(0);
         highscore.setUserInitials(initials);
         highscore.setScore(highScoreValue);
 
@@ -175,15 +170,12 @@ public class highscoreResolver {
       }
 
       String romName = gameInfo.getRom();
-      if(!this.supportedRoms.contains(romName)) {
+      if (!this.supportedRoms.contains(romName)) {
         LOG.warn("The resolved rom name '" + romName + "' of game '" + gameInfo.getGameDisplayName() + "' is not supported by PINemHi.");
         return null;
       }
 
-      gameInfo.setLastModified(nvRam.lastModified());
       String output = executePINemHi(nvRam.getName());
-
-
       highscore = parser.parseHighscore(gameInfo, nvRam, output);
       if (highscore == null || highscore.getScores().isEmpty()) {
         return null;
@@ -225,14 +217,13 @@ public class highscoreResolver {
         return text.replace("\0", "").trim();
       }
       else {
-        LOG.error("Error reading highscore file " + file.getAbsolutePath() + ", reader returned null.");
+        LOG.debug("Error reading highscore file " + file.getAbsolutePath() + ", reader returned null.");
       }
       return null;
     } catch (IOException e) {
       throw e;
     } finally {
       brTest.close();
-      ;
     }
   }
 }

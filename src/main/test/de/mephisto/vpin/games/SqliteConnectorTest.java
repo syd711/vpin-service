@@ -10,7 +10,8 @@ public class SqliteConnectorTest {
   @Test
   public void testSqliteConnector() {
     SqliteConnector sqliteConnector = new SqliteConnector();
-    assertFalse(sqliteConnector.getGames().isEmpty());
+    GameRepository gameRepository = GameRepository.create();
+    assertFalse(sqliteConnector.getGames(gameRepository).isEmpty());
   }
 
 }
