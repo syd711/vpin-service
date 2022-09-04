@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class GameRepository {
@@ -26,6 +27,8 @@ public class GameRepository {
 
   private final PropertiesStore store;
 
+  private final List<RepositoryListener> listeners = new ArrayList<>();
+
   public static GameRepository create() {
     return new GameRepository();
   }
@@ -34,7 +37,22 @@ public class GameRepository {
     this.sqliteConnector = new SqliteConnector();
     this.romScanner = new RomScanner();
     this.highscoreResolver = new HighscoreResolver();
+    this.highscoreResolver.refresh();
     this.store = PropertiesStore.create(new File("./resources"));
+  }
+
+  public void addListener(RepositoryListener listener) {
+    this.listeners.add(listener);
+  }
+
+  public void removeListener(RepositoryListener listener) {
+    this.listeners.remove(listener);
+  }
+
+  public void notifyGameScanned(GameInfo game) {
+    for (RepositoryListener listener : this.listeners) {
+      listener.gameScanned(game);
+    }
   }
 
   public List<GameInfo> getGameInfos() {
@@ -67,6 +85,7 @@ public class GameRepository {
     if(!StringUtils.isEmpty(romName)) {
       updateGameInfo(gameInfo);
     }
+    notifyGameScanned(gameInfo);
   }
 
   public GameInfo getGameByVpxFilename(String filename) {
@@ -107,10 +126,12 @@ public class GameRepository {
         String romName = romScanner.scanRomName(game.getVpxFile());
         game.setRom(romName);
         updateGameInfo(game);
+        notifyGameScanned(game);
       }
 
       this.games.add(game);
     }
+    this.games.sort(Comparator.comparing(GameInfo::getGameDisplayName));
   }
 
   private void updateGameInfo(GameInfo game) {
@@ -141,6 +162,10 @@ public class GameRepository {
 
   Highscore loadHighscore(GameInfo gameInfo) {
     return this.highscoreResolver.loadHighscore(gameInfo);
+  }
+
+  boolean isHighscoreSupported(String rom) {
+    return this.highscoreResolver.isRomSupported(rom);
   }
 
   private boolean wasScanned(GameInfo game) {

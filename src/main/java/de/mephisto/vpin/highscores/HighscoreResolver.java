@@ -38,6 +38,10 @@ public class HighscoreResolver {
     }
   }
 
+  public boolean isRomSupported(String rom) {
+    return this.supportedRoms.contains(rom);
+  }
+
   /**
    * Return a highscore object for the given table or null if no highscore has been achieved or created yet.
    */
@@ -91,9 +95,9 @@ public class HighscoreResolver {
    * We use the manual set rom name to find the highscore in the "/User/VPReg.stg" file.
    */
   private Highscore parseVRegHighscore(GameInfo gameInfo) throws IOException {
-    File tableHighscoreFolder = new File(SystemInfo.getInstance().getExtractedVPRegFolder(), gameInfo.getRom());
+    File tableHighscoreFolder = gameInfo.getVPRegFolder();
 
-    if (tableHighscoreFolder.exists()) {
+    if (gameInfo.getVPRegFolder().exists()) {
       File tableHighscoreFile = new File(tableHighscoreFolder, "HighScore1");
       File tableHighscoreNameFile = new File(tableHighscoreFolder, "HighScore1Name");
       if (tableHighscoreFile.exists() && tableHighscoreNameFile.exists()) {

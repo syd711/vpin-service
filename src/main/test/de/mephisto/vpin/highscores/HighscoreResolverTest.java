@@ -49,10 +49,19 @@ public class HighscoreResolverTest {
     highscoreResolver.refresh();
 
     GameRepository gameRepository = GameRepository.create();
-    GameInfo game = gameRepository.getGameByRom("hpgof");
+    GameInfo game = gameRepository.getGameByRom("robo_a34");
     assertNotNull(game.getHighscore());
     assertNotNull(game.getHighscore().getUserInitials());
     assertFalse(game.getHighscore().getScores().isEmpty());
+    LOG.info("---------------------------------");
+    LOG.info("Scores: " + game.getHighscore().getScores().size());
+    List<Score> scores = game.getHighscore().getScores();
+    for (Score score : scores) {
+      LOG.info(score.toString());
+    }
+
+    LOG.info("---------------------------------");
+    LOG.info(game.getHighscore().getRaw());
     LOG.info(game.getHighscore().getRaw());
   }
 

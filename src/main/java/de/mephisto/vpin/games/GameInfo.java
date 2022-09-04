@@ -1,6 +1,7 @@
 package de.mephisto.vpin.games;
 
 import de.mephisto.vpin.highscores.Highscore;
+import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -43,6 +44,32 @@ public class GameInfo {
       this.highscore = this.repository.loadHighscore(this);
     }
     return highscore;
+  }
+
+  public boolean isHighscoreSupported() {
+    if(StringUtils.isEmpty(getRom())) {
+      return false;
+    }
+
+    return repository.isHighscoreSupported(this.getRom());
+  }
+
+  public boolean hasHighscore() {
+    if(!this.isHighscoreSupported()) {
+      return false;
+    }
+
+    if(this.getNvRamFile().exists()) {
+      return true;
+    }
+    if(this.getVPRegFolder().exists()) {
+      return true;
+    }
+    return false;
+  }
+
+  public File getVPRegFolder() {
+    return new File(SystemInfo.getInstance().getExtractedVPRegFolder(), getRom());
   }
 
   public void reloadHighscore() {

@@ -32,38 +32,32 @@ public class HighscoreParser {
   private final static Logger LOG = LoggerFactory.getLogger(HighscoreParser.class);
 
   public Highscore parseHighscore(GameInfo game, File file, String cmdOutput) throws Exception {
-    Highscore highscore = null;
+    Highscore highscore = new Highscore(cmdOutput);
+
     try {
-      highscore = new Highscore(cmdOutput);
+      LOG.debug("Parsing Highscore text for " + game.getGameDisplayName() + "\n" + cmdOutput);
       String[] lines = cmdOutput.split("\\n");
-      if (lines.length < 3) {
-        LOG.debug("Skipped highscore parsing for " + game.getGameDisplayName() + ", output too short:\n" + cmdOutput);
-        return null;
+      if(lines.length == 2) {
+        return parseTwoLineOutput(highscore, lines[1]);
       }
 
-      LOG.debug("Parsing Highscore text for " + game.getGameDisplayName() + "\n" + cmdOutput);
-
-      boolean listStarted = false;
+      int index = 1;
       for (String line : lines) {
-        if (line.startsWith("1)") || line.startsWith("#1")) {
-          listStarted = true;
+        if (line.startsWith(index + ")") || line.startsWith("#" + index) || line.startsWith(index + "#")) {
+          Score score = createScore(line);
+          highscore.getScores().add(score);
+          index++;
+        }
 
-          Score score = createScore(line);
-          highscore.setScore(score.getScore());
-          highscore.setUserInitials(score.getUserInitials());
-          highscore.getScores().add(score);
+        if(highscore.getScores().size() == 3) {
+          break;
         }
-        else if (line.indexOf(")") == 1 || line.indexOf("#") == 1) {
-          listStarted = true;
-          Score score = createScore(line);
-          highscore.getScores().add(score);
-        }
-        else {
-          //list has been read, ignore following lines.
-          if (listStarted) {
-            break;
-          }
-        }
+      }
+
+      if(!highscore.getScores().isEmpty()) {
+        Score score = highscore.getScores().get(0);
+        highscore.setScore(score.getScore());
+        highscore.setUserInitials(score.getUserInitials());
       }
     } catch (Exception e) {
       LOG.error("Failed to parse highscore file '" + file.getAbsolutePath() + "': " + e.getMessage() + "\nPinemhi Command Output:\n==================================\n" + cmdOutput, e);
@@ -74,6 +68,13 @@ public class HighscoreParser {
       throw new Exception("Failed to read scores from output: " + cmdOutput);
     }
 
+    return highscore;
+  }
+
+  private Highscore parseTwoLineOutput(Highscore highscore, String line) {
+    Score score = new Score(null, line.trim(), 1);
+    highscore.setScore(score.getScore());
+    highscore.getScores().add(score);
     return highscore;
   }
 

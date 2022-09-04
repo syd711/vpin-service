@@ -40,4 +40,9 @@ public class Score {
   public void setScore(String score) {
     this.score = score;
   }
+
+  @Override
+  public String toString() {
+    return this.getPosition() + ". " + this.getUserInitials() + "   " + this.getScore();
+  }
 }
