@@ -10,17 +10,20 @@ public class Score {
   public Score(String userInitials, String score, int position) {
     this.score = score;
     this.position = position;
-    if(userInitials != null) {
+    if (userInitials != null) {
       this.userInitials = userInitials;
     }
   }
 
   public String getUserInitials() {
+    while (userInitials.length() < 3) {
+      userInitials += " ";
+    }
     return userInitials;
   }
 
   public void setUserInitials(String userInitials) {
-    if(!StringUtils.isEmpty(userInitials.trim())) {
+    if (!StringUtils.isEmpty(userInitials.trim())) {
       this.userInitials = userInitials;
     }
   }

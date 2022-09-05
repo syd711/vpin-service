@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class SqliteConnector {
@@ -53,54 +54,70 @@ public class SqliteConnector {
     }
   }
 
-  public List<GameInfo> getGames(GameRepository repository) {
+  public GameInfo getGame(GameRepository repository, int id) {
     this.connect();
-    List<GameInfo> results = new ArrayList<>();
+    GameInfo info = null;
     try {
       Statement statement = conn.createStatement();
-      ResultSet rs = statement.executeQuery("SELECT * FROM Games;");
+      ResultSet rs = statement.executeQuery("SELECT * FROM Games where GameID = " + id + ";");
       while (rs.next()) {
-        GameInfo info = new GameInfo(repository);
-        int id = rs.getInt("GameID");
-        String rom = rs.getString("ROM");
-        String gameFileName = rs.getString("GameFileName");
-        String gameDisplayName = rs.getString("GameDisplay");
-        String tags = rs.getString("TAGS");
-
-        File wheelIconFile = new File(systemInfo.getPinUPSystemFolder() + "/POPMedia/Visual Pinball X/Wheel/", FilenameUtils.getBaseName(gameFileName) + ".png");
-        File nvRamFolder = new File(systemInfo.getMameFolder(), "nvram");
-        File nvRamFile = new File(nvRamFolder, rom + ".nv");
-        File vpxFile = new File(systemInfo.getVPXTablesFolder(), gameFileName);
-        if (!vpxFile.exists()) {
-          LOG.warn("No vpx file " + vpxFile.getAbsolutePath() + " found, ignoring game.");
-          continue;
-        }
-
-        info.setId(id);
-        info.setRom(rom);
-        info.setTags(tags);
-        info.setGameFileName(gameFileName);
-        info.setGameDisplayName(gameDisplayName);
-        info.setWheelIconFile(wheelIconFile);
-        info.setVpxFile(vpxFile);
-        info.setNvRamFile(nvRamFile);
-        info.setRomFile(new File(systemInfo.getMameRomFolder(), rom + ".zip"));
-
-        results.add(info);
+        info = createGameInfo(repository, rs);
       }
 
       rs.close();
       statement.close();
-
-      for (GameInfo game : results) {
-        loadStats(game);
-      }
     } catch (SQLException e) {
       LOG.error("Failed to read game info: " + e.getMessage(), e);
     } finally {
       this.disconnect();
     }
+    return info;
+  }
+
+  public List<GameInfo> getGames(GameRepository repository) {
+    this.connect();
+    List<GameInfo> results = new ArrayList<>();
+    try {
+      Statement statement = conn.createStatement();
+      ResultSet rs = statement.executeQuery("SELECT * FROM Games WHERE EMUID = 1;");
+      while (rs.next()) {
+        GameInfo info = createGameInfo(repository, rs);
+        if(info != null) {
+          results.add(info);
+        }
+      }
+
+      rs.close();
+      statement.close();
+    } catch (SQLException e) {
+      LOG.error("Failed to read game info: " + e.getMessage(), e);
+    } finally {
+      this.disconnect();
+    }
+
+    results.sort(Comparator.comparing(GameInfo::getGameDisplayName));
     return results;
+  }
+
+  public List<Integer> getGameIdsFromPlaylists() {
+    List<Integer> result = new ArrayList<>();
+    connect();
+    try {
+      Statement statement = conn.createStatement();
+      ResultSet rs = statement.executeQuery("SELECT * FROM PlayListDetails;");
+
+      while (rs.next()) {
+        int gameId = rs.getInt("GameID");
+        result.add(gameId);
+      }
+    }
+    catch (SQLException e) {
+      LOG.error("Failed to read playlists: " + e.getMessage(), e);
+    }
+    finally {
+      disconnect();
+    }
+    return result;
   }
 
   private void loadStats(GameInfo game) {
@@ -133,35 +150,6 @@ public class SqliteConnector {
       LOG.error("Failed to read startup script or " + emuName + ": " + e.getMessage(), e);
     }
     return script;
-  }
-
-  public void resetAll() {
-    this.connect();
-    try {
-      Statement stmt = conn.createStatement();
-      String sql = "UPDATE Games SET 'ROM'='';";
-      stmt.executeUpdate(sql);
-      stmt.close();
-    } catch (Exception e) {
-      LOG.error("Failed to reset all tables: " + e.getMessage(), e);
-    } finally {
-      this.disconnect();
-    }
-  }
-
-  public void resetGame(GameInfo gameInfo) {
-    this.connect();
-    String gameFileName = gameInfo.getGameFileName();
-    try {
-      Statement stmt = conn.createStatement();
-      String sql = "UPDATE Games SET 'ROM'='' WHERE GameID = " + gameInfo.getId() + ";";
-      stmt.executeUpdate(sql);
-      stmt.close();
-    } catch (Exception e) {
-      LOG.error("Failed to reset table info for " + gameFileName + ": " + e.getMessage(), e);
-    } finally {
-      this.disconnect();
-    }
   }
 
   public String getEmulatorExitScript(String emuName) {
@@ -213,22 +201,34 @@ public class SqliteConnector {
     }
   }
 
-  public void updateRomName(String gameFileName, String romName) {
-    this.connect();
-    try {
-      Statement stmt = conn.createStatement();
-      String sql = "UPDATE Games SET 'ROM'='" + romName.trim() + "' WHERE GameFileName = '" + gameFileName.replaceAll("'", "''") + "';";
-      int result = stmt.executeUpdate(sql);
-      stmt.close();
-      if (result > 0) {
-      }
-      else {
-        LOG.info("Skipped writing rom name '" + romName + "' to database, the game '" + gameFileName + "' was not found there.");
-      }
-    } catch (Exception e) {
-      LOG.error("Failed to update script script " + gameFileName + ": " + e.getMessage(), e);
-    } finally {
-      this.disconnect();
+  private GameInfo createGameInfo(GameRepository repository, ResultSet rs) throws SQLException {
+    GameInfo info = new GameInfo(repository);
+    int id = rs.getInt("GameID");
+    String rom = rs.getString("ROM");
+    String gameFileName = rs.getString("GameFileName");
+    String gameDisplayName = rs.getString("GameDisplay");
+    String tags = rs.getString("TAGS");
+
+    File wheelIconFile = new File(systemInfo.getPinUPSystemFolder() + "/POPMedia/Visual Pinball X/Wheel/", FilenameUtils.getBaseName(gameFileName) + ".png");
+    File nvRamFolder = new File(systemInfo.getMameFolder(), "nvram");
+    File nvRamFile = new File(nvRamFolder, rom + ".nv");
+    File vpxFile = new File(systemInfo.getVPXTablesFolder(), gameFileName);
+    if (!vpxFile.exists()) {
+      LOG.warn("No vpx file " + vpxFile.getAbsolutePath() + " found, ignoring game.");
+      return null;
     }
+
+    info.setId(id);
+    info.setRom(rom);
+    info.setTags(tags);
+    info.setGameFileName(gameFileName);
+    info.setGameDisplayName(gameDisplayName);
+    info.setWheelIconFile(wheelIconFile);
+    info.setVpxFile(vpxFile);
+    info.setNvRamFile(nvRamFile);
+    info.setRomFile(new File(systemInfo.getMameRomFolder(), rom + ".zip"));
+
+    loadStats(info);
+    return info;
   }
 }

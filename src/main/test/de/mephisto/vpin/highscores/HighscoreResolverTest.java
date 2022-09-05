@@ -49,7 +49,7 @@ public class HighscoreResolverTest {
     highscoreResolver.refresh();
 
     GameRepository gameRepository = GameRepository.create();
-    GameInfo game = gameRepository.getGameByRom("robo_a34");
+    GameInfo game = gameRepository.getGameByRom("STLE");
     assertNotNull(game.getHighscore());
     assertNotNull(game.getHighscore().getUserInitials());
     assertFalse(game.getHighscore().getScores().isEmpty());

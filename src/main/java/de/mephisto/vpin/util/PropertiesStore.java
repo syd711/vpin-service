@@ -13,12 +13,13 @@ public class PropertiesStore {
 
   private File propertiesFile;
 
-  public static PropertiesStore create(File resources) {
+  public static PropertiesStore create(String name) {
     PropertiesStore store = new PropertiesStore();
     try {
-      store.propertiesFile = new File(resources,"repository.properties");
-      if(!resources.exists()) {
-        resources.mkdirs();
+      File folder = new File("./resources");
+      store.propertiesFile = new File("./resources",name);
+      if(!folder.exists()) {
+        folder.mkdirs();
       }
 
       if(!store.propertiesFile.exists()) {
@@ -37,7 +38,31 @@ public class PropertiesStore {
     return this.properties.containsKey(key);
   }
 
+  public int getInt(String key) {
+    if(properties.containsKey(key)) {
+      String value = properties.getProperty(key).trim();
+      if(value.length() > 0) {
+        return Integer.parseInt(value);
+      }
+    }
+    return -1;
+  }
+
+  public float getFloat(String key) {
+    if(properties.containsKey(key)) {
+      String value = properties.getProperty(key).trim();
+      if(value.length() > 0){
+        return Float.parseFloat(value);
+      }
+    }
+    return -1f;
+  }
+
   public String get(String key) {
+    return properties.getProperty(key);
+  }
+
+  public String getString(String key) {
     return properties.getProperty(key);
   }
 

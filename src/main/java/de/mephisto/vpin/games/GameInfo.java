@@ -40,25 +40,19 @@ public class GameInfo {
   }
 
   public Highscore getHighscore() {
-    if(this.highscore == null && !StringUtils.isEmpty(this.getRom())) {
-      this.highscore = this.repository.loadHighscore(this);
+    return this.getHighscore(false);
+  }
+
+  public Highscore getHighscore(boolean reload) {
+    if(!StringUtils.isEmpty(this.getRom())) {
+      if(highscore == null || reload) {
+        this.highscore = this.repository.loadHighscore(this);
+      }
     }
     return highscore;
   }
 
-  public boolean isHighscoreSupported() {
-    if(StringUtils.isEmpty(getRom())) {
-      return false;
-    }
-
-    return repository.isHighscoreSupported(this.getRom());
-  }
-
   public boolean hasHighscore() {
-    if(!this.isHighscoreSupported()) {
-      return false;
-    }
-
     if(this.getNvRamFile().exists()) {
       return true;
     }
@@ -166,5 +160,20 @@ public class GameInfo {
   @Override
   public String toString() {
     return this.getGameDisplayName();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    GameInfo gameInfo = (GameInfo) o;
+
+    return id == gameInfo.id;
+  }
+
+  @Override
+  public int hashCode() {
+    return id;
   }
 }

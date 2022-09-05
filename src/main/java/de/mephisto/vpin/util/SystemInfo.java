@@ -3,6 +3,7 @@ package de.mephisto.vpin.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +30,10 @@ public class SystemInfo {
     return instance;
   }
 
+  public Dimension getScreenSize() {
+    return Toolkit.getDefaultToolkit().getScreenSize();
+  }
+
   public File getVPRegFile() {
     return new File(this.getVPXInstallationFolder() + "/User/", "VPReg.stg");
   }
@@ -38,7 +43,7 @@ public class SystemInfo {
   }
 
   public File getNvramFolder() {
-    return new File(getMameRomFolder(), "nvram/");
+    return new File(getMameFolder(), "nvram/");
   }
 
   public File getMameFolder() {
