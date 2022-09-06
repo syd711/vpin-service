@@ -224,7 +224,7 @@ public class SqliteConnector {
     info.setGameFileName(gameFileName);
     info.setGameDisplayName(gameDisplayName);
     info.setWheelIconFile(wheelIconFile);
-    info.setVpxFile(vpxFile);
+    info.setGameFile(vpxFile);
     info.setNvRamFile(nvRamFile);
     info.setRomFile(new File(systemInfo.getMameRomFolder(), rom + ".zip"));
 

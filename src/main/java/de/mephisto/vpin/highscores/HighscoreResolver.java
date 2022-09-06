@@ -118,7 +118,7 @@ public class HighscoreResolver {
               highScoreValue = HighscoreParser.formatScore(highScoreValue);
               initials = readFileString(tableHighscoreNameFile);
 
-              Score score = new Score(initials, highScoreValue, i - 1);
+              Score score = new Score(initials, highScoreValue, i);
               highscore.getScores().add(score);
             }
           }

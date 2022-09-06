@@ -1,5 +1,6 @@
-package de.mephisto.vpin.util;
+package de.mephisto.vpin.roms;
 
+import de.mephisto.vpin.util.ReverseLineInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

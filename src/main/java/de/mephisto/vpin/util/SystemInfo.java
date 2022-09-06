@@ -76,6 +76,10 @@ public class SystemInfo {
     return new File(popperInstallationFolder, "PinUPSystem");
   }
 
+  public File getPinUPMediaFolder() {
+    return new File(getPinUPSystemFolder(), "POPMedia");
+  }
+
   File getPopperInstallationFolder() {
     try {
       String output = readRegistry(POPPER_REG_KEY, "PopperInstDir");

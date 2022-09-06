@@ -3,8 +3,8 @@ package de.mephisto.vpin.games;
 import de.mephisto.vpin.highscores.Highscore;
 import de.mephisto.vpin.highscores.HighscoreFilesWatcher;
 import de.mephisto.vpin.highscores.HighscoreResolver;
+import de.mephisto.vpin.roms.RomScanner;
 import de.mephisto.vpin.util.PropertiesStore;
-import de.mephisto.vpin.util.RomScanner;
 import de.mephisto.vpin.util.SqliteConnector;
 import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -79,6 +79,13 @@ public class GameRepository {
     }
   }
 
+  public void notifyRomChanged() {
+    this.highscoreResolver.refresh();
+    for (RepositoryListener listener : this.listeners) {
+      listener.notifyRomChanged();
+    }
+  }
+
   public GameInfo getGameInfo(int id) {
     return sqliteConnector.getGame(this, id);
   }
@@ -98,7 +105,7 @@ public class GameRepository {
   }
 
   void invalidate(GameInfo gameInfo) {
-    String romName = romScanner.scanRomName(gameInfo.getVpxFile());
+    String romName = romScanner.scanRomName(gameInfo.getGameFile());
     gameInfo.setRom(romName);
     if (!StringUtils.isEmpty(romName)) {
       writeGameInfo(gameInfo);
@@ -109,7 +116,7 @@ public class GameRepository {
   public GameInfo getGameByVpxFilename(String filename) {
     List<GameInfo> games = sqliteConnector.getGames(this);
     for (GameInfo gameInfo : games) {
-      if (gameInfo.getVpxFile().getName().equals(filename)) {
+      if (gameInfo.getGameFile().getName().equals(filename)) {
         return gameInfo;
       }
     }
@@ -141,7 +148,7 @@ public class GameRepository {
     List<GameInfo> games = sqliteConnector.getGames(this);
     for (GameInfo game : games) {
       if (!wasScanned(game) || forceRomScan) {
-        String romName = romScanner.scanRomName(game.getVpxFile());
+        String romName = romScanner.scanRomName(game.getGameFile());
         game.setRom(romName);
         writeGameInfo(game);
         notifyGameScanned(game);
@@ -154,7 +161,7 @@ public class GameRepository {
     String romName = game.getRom();
     if (romName != null && romName.length() > 0) {
       game.setRom(romName);
-      LOG.info("Update of " + game.getVpxFile().getName() + " successful, written ROM name '" + romName + "'");
+      LOG.info("Update of " + game.getGameFile().getName() + " successful, written ROM name '" + romName + "'");
 
       File romFile = new File(SystemInfo.getInstance().getMameRomFolder(), romName + ".zip");
       if (romFile.exists()) {
@@ -162,7 +169,7 @@ public class GameRepository {
       }
     }
     else {
-      LOG.info("Skipped Update of " + game.getVpxFile().getName() + ", no rom name found.");
+      LOG.info("Skipped Update of " + game.getGameFile().getName() + ", no rom name found.");
     }
     this.store.set(formatGameKey(game) + ".rom", romName != null ? romName : "");
     this.store.set(formatGameKey(game) + ".displayName", game.getGameDisplayName());

@@ -18,7 +18,7 @@ public class GameRepositoryTest {
     repository.invalidateAll();
     List<GameInfo> tables = repository.getGameInfos();
     for (GameInfo table : tables) {
-      assertTrue(table.getVpxFile().exists());
+      assertTrue(table.getGameFile().exists());
     }
   }
 
@@ -29,7 +29,7 @@ public class GameRepositoryTest {
 
     List<GameInfo> tables = repository.getGameInfos();
     for (GameInfo table : tables) {
-      assertTrue(table.getVpxFile().exists());
+      assertTrue(table.getGameFile().exists());
     }
     LOG.info("Loaded " + tables.size() + " tables.");
   }
@@ -39,7 +39,7 @@ public class GameRepositoryTest {
     GameRepository repository = GameRepository.create();
     List<GameInfo> tables = repository.getGamesWithEmptyRoms();
     for (GameInfo table : tables) {
-      LOG.info(table.getId() + ": " + table.getVpxFile().getAbsolutePath());
+      LOG.info(table.getId() + ": " + table.getGameFile().getAbsolutePath());
     }
   }
 
@@ -49,7 +49,7 @@ public class GameRepositoryTest {
     List<GameInfo> tables = repository.getGamesWithEmptyRoms();
     for (GameInfo table : tables) {
       if(table.getId() == 372) {
-        LOG.info(table.getId() + ": " + table.getVpxFile().getAbsolutePath());
+        LOG.info(table.getId() + ": " + table.getGameFile().getAbsolutePath());
         repository.invalidate(table);
       }
     }

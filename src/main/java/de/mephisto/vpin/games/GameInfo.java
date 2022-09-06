@@ -1,7 +1,9 @@
 package de.mephisto.vpin.games;
 
+import de.mephisto.vpin.PopperScreen;
 import de.mephisto.vpin.highscores.Highscore;
 import de.mephisto.vpin.util.SystemInfo;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -15,7 +17,7 @@ public class GameInfo {
   private String tags;
   private int id;
 
-  private File vpxFile;
+  private File gameFile;
   private File romFile;
   private File nvRamFile;
   private File wheelIconFile;
@@ -41,6 +43,23 @@ public class GameInfo {
 
   public Highscore getHighscore() {
     return this.getHighscore(false);
+  }
+
+  public File getPopperMediaFile(PopperScreen screen) {
+    File emuMedia = new File(SystemInfo.getInstance().getPinUPMediaFolder(), getEmulatorName());
+    File mediaFolder = new File(emuMedia, screen.name());
+    return new File(mediaFolder, FilenameUtils.getBaseName(this.getGameFile().getName()) + ".png");
+  }
+
+  public String getEmulatorName() {
+    File gameFile = getGameFile();
+    if(gameFile.getName().endsWith(".vpx")) {
+      return "Visual Pinball X";
+    }
+    else if(gameFile.getName().endsWith(".fp")) {
+      return "Future Pinball";
+    }
+    return null;
   }
 
   public Highscore getHighscore(boolean reload) {
@@ -109,12 +128,12 @@ public class GameInfo {
     this.nvRamFile = nvRamFile;
   }
 
-  public File getVpxFile() {
-    return vpxFile;
+  public File getGameFile() {
+    return gameFile;
   }
 
-  public void setVpxFile(File vpxFile) {
-    this.vpxFile = vpxFile;
+  public void setGameFile(File gameFile) {
+    this.gameFile = gameFile;
   }
 
   public String getRom() {
