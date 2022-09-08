@@ -24,7 +24,6 @@ public class GameInfo {
 
   private Date lastPlayed;
 
-  private Highscore highscore;
   private GameRepository repository;
 
   private int numberPlays;
@@ -63,12 +62,7 @@ public class GameInfo {
   }
 
   public Highscore getHighscore(boolean reload) {
-    if(!StringUtils.isEmpty(this.getRom())) {
-      if(highscore == null || reload) {
-        this.highscore = this.repository.loadHighscore(this);
-      }
-    }
-    return highscore;
+    return this.repository.loadHighscore(this, reload);
   }
 
   public boolean hasHighscore() {
@@ -83,10 +77,6 @@ public class GameInfo {
 
   public File getVPRegFolder() {
     return new File(SystemInfo.getInstance().getExtractedVPRegFolder(), getRom());
-  }
-
-  public void reloadHighscore() {
-    this.highscore = null;
   }
 
   public int getNumberPlays() {

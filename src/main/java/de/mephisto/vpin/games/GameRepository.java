@@ -1,8 +1,7 @@
 package de.mephisto.vpin.games;
 
 import de.mephisto.vpin.highscores.Highscore;
-import de.mephisto.vpin.highscores.HighscoreFilesWatcher;
-import de.mephisto.vpin.highscores.HighscoreResolver;
+import de.mephisto.vpin.highscores.HighscoreManager;
 import de.mephisto.vpin.roms.RomScanner;
 import de.mephisto.vpin.util.PropertiesStore;
 import de.mephisto.vpin.util.SqliteConnector;
@@ -13,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,11 +24,10 @@ public class GameRepository {
   private final SqliteConnector sqliteConnector;
 
   private final RomScanner romScanner;
-  private final HighscoreResolver highscoreResolver;
 
   private final PropertiesStore store;
 
-  private final HighscoreFilesWatcher highscoreWatcher;
+  private final HighscoreManager highscoreManager;
 
   private final List<RepositoryListener> listeners = new ArrayList<>();
 
@@ -43,19 +40,13 @@ public class GameRepository {
   private GameRepository() {
     this.sqliteConnector = new SqliteConnector();
     this.romScanner = new RomScanner();
-    this.highscoreResolver = new HighscoreResolver();
-    this.highscoreResolver.refresh();
+    this.highscoreManager = new HighscoreManager(this);
     this.store = PropertiesStore.create("repository.properties");
-
-    SystemInfo info = SystemInfo.getInstance();
-    List<File> watching = Arrays.asList(info.getNvramFolder(), info.getVPRegFile().getParentFile());
-    this.highscoreWatcher = new HighscoreFilesWatcher(this, watching);
-    this.highscoreWatcher.start();
   }
 
   public void shutdown() {
     this.executor.shutdown();
-    this.highscoreWatcher.setRunning(false);
+    this.highscoreManager.destroy();
   }
 
   public void addListener(RepositoryListener listener) {
@@ -167,23 +158,15 @@ public class GameRepository {
     this.store.set(formatGameKey(game) + ".displayName", game.getGameDisplayName());
   }
 
-  public void refreshHighscores() {
-    this.highscoreResolver.refresh();
-  }
-
-  Highscore loadHighscore(GameInfo gameInfo) {
-    return this.highscoreResolver.loadHighscore(gameInfo);
-  }
-
-  boolean isHighscoreSupported(String rom) {
-    return this.highscoreResolver.isRomSupported(rom);
-  }
-
   private boolean wasScanned(GameInfo game) {
     return store.containsKey(formatGameKey(game) + ".rom");
   }
 
   private String formatGameKey(GameInfo game) {
     return "gameId." + game.getId();
+  }
+
+  Highscore loadHighscore(GameInfo gameInfo, boolean reload) {
+    return highscoreManager.getHighscore(gameInfo, reload);
   }
 }

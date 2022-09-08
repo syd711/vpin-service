@@ -22,13 +22,15 @@ public class HighscoreFilesWatcher extends Thread {
   private final static Logger LOG = LoggerFactory.getLogger(HighscoreFilesWatcher.class);
 
   private final GameRepository gameRepository;
+  private final HighscoreManager highscoreManager;
   private final List<File> files;
 
   private boolean running = true;
   private WatchService watchService;
 
-  public HighscoreFilesWatcher(GameRepository gameRepository, List<File> files) {
+  public HighscoreFilesWatcher(GameRepository gameRepository, HighscoreManager highscoreManager, List<File> files) {
     this.gameRepository = gameRepository;
+    this.highscoreManager = highscoreManager;
     this.files = files;
   }
 
@@ -84,7 +86,7 @@ public class HighscoreFilesWatcher extends Thread {
       rom = FilenameUtils.getBaseName(file.getName());
     }
     else if(file.getName().equals(SystemInfo.VPREG_STG)) {
-      gameRepository.refreshHighscores();
+      highscoreManager.refreshHighscores();
       File target = new File(SystemInfo.RESOURCES, SystemInfo.VPREG);
       File[] subFolders = target.listFiles((dir, name) -> new File(dir, name).isDirectory());
       if(subFolders != null) {
@@ -102,6 +104,4 @@ public class HighscoreFilesWatcher extends Thread {
     }
     return null;
   }
-
-
 }

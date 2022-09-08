@@ -13,16 +13,24 @@ public class RomScanner {
   private final static Logger LOG = LoggerFactory.getLogger(RomScanner.class);
   public static final int MAX_ROM_FILENAME_LENGTH = 16;
 
-  public String scanRomName(File vpxFile) {
-    String rom = scanRomName(vpxFile, "cGameName");
+  /**
+   * Checks the different lines that are in the vpx file.
+   * Usually the variable not does not differ that much.
+   * We read the file from the end to save time.
+   *
+   * @param gameFile the table file which contains the rom that isued.
+   * @return the ROM name or null
+   */
+  public String scanRomName(File gameFile) {
+    String rom = scanRomName(gameFile, "cGameName");
     if (rom == null) {
-      rom = scanRomName(vpxFile, "cgamename");
+      rom = scanRomName(gameFile, "cgamename");
     }
     if (rom == null) {
-      rom = scanRomName(vpxFile, "RomSet1");
+      rom = scanRomName(gameFile, "RomSet1");
     }
     if (rom == null) {
-      rom = scanRomName(vpxFile, "GameName");
+      rom = scanRomName(gameFile, "GameName");
     }
     return rom;
   }
