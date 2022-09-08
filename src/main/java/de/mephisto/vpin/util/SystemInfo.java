@@ -14,6 +14,10 @@ public class SystemInfo {
 
   private final static String REG_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Applications\\VPinballX.exe\\shell\\open\\command";
   private final static String POPPER_REG_KEY = "HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Control\\Session Manager\\Environment";
+  public static final String VPREG_STG = "VPReg.stg";
+  public static final String VPREG = "VPReg";
+
+  public static final String RESOURCES = "./resources/";
 
   private File popperInstallationFolder;
 
@@ -35,7 +39,7 @@ public class SystemInfo {
   }
 
   public File getVPRegFile() {
-    return new File(this.getVPXInstallationFolder() + "/User/", "VPReg.stg");
+    return new File(this.getVPXInstallationFolder() + "/User/", VPREG_STG);
   }
 
   public File getMameRomFolder() {
@@ -61,7 +65,7 @@ public class SystemInfo {
   }
 
   public String get7ZipCommand() {
-    return new File("./resources", "7z.exe").getAbsolutePath();
+    return new File(SystemInfo.RESOURCES, "7z.exe").getAbsolutePath();
   }
 
   public File getVPXTablesFolder() {

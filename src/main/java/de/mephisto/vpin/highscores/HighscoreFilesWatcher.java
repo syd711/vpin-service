@@ -1,12 +1,19 @@
 package de.mephisto.vpin.highscores;
 
+import de.mephisto.vpin.games.GameInfo;
 import de.mephisto.vpin.games.GameRepository;
+import de.mephisto.vpin.games.HighscoreChangedEvent;
+import de.mephisto.vpin.games.HighscoreChangedEventImpl;
+import de.mephisto.vpin.util.SystemInfo;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.nio.file.StandardWatchEventKinds.*;
@@ -51,16 +58,50 @@ public class HighscoreFilesWatcher extends Thread {
       while (running && poll) {
         WatchKey key = watchService.take();
         for (WatchEvent<?> event : key.pollEvents()) {
-          LOG.info("Event kind : " + event.kind() + " - File : " + event.context());
+          Path info = (Path) event.context();
+          File file = info.toFile();
+          LOG.info("Event kind : " + event.kind() + " - File : " + file.getAbsolutePath());
           //filter multiple events this way
           Thread.sleep(5000);
-          gameRepository.notifyHighscoreChange();
+          HighscoreChangedEvent highscoreChangedEvent = generateEvent(file);
+          if(highscoreChangedEvent != null) {
+            gameRepository.notifyHighscoreChange(highscoreChangedEvent);
+          }
         }
         poll = key.reset();
       }
       LOG.info("Highscore Watcher shutdown");
     } catch (Exception e) {
-//      LOG.error("Failed to watch files: " + e.getMessage(), e);
+      if(this.running) {
+        LOG.error("Failed to watch files: " + e.getMessage(), e);
+      }
     }
   }
+
+  private HighscoreChangedEvent generateEvent(File file) {
+    String rom = null;
+    if(file.getName().endsWith(".nv")) {
+      rom = FilenameUtils.getBaseName(file.getName());
+    }
+    else if(file.getName().equals(SystemInfo.VPREG_STG)) {
+      gameRepository.refreshHighscores();
+      File target = new File(SystemInfo.RESOURCES, SystemInfo.VPREG);
+      File[] subFolders = target.listFiles((dir, name) -> new File(dir, name).isDirectory());
+      if(subFolders != null) {
+        List<File> folders = Arrays.asList(subFolders);
+        folders.sort((o1, o2) -> (int) (o1.lastModified() - o2.lastModified()));
+        rom = folders.get(0).getName();
+      }
+    }
+
+    if(rom != null) {
+      GameInfo gameByRom = gameRepository.getGameByRom(rom);
+      if(gameByRom != null) {
+        return new HighscoreChangedEventImpl(gameByRom);
+      }
+    }
+    return null;
+  }
+
+
 }

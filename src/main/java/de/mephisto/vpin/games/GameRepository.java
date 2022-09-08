@@ -72,17 +72,9 @@ public class GameRepository {
     }
   }
 
-  public void notifyHighscoreChange() {
-    this.highscoreResolver.refresh();
+  public void notifyHighscoreChange(HighscoreChangedEvent event) {
     for (RepositoryListener listener : this.listeners) {
-      listener.highscoreChanged();
-    }
-  }
-
-  public void notifyRomChanged() {
-    this.highscoreResolver.refresh();
-    for (RepositoryListener listener : this.listeners) {
-      listener.notifyRomChanged();
+      listener.highscoreChanged(event);
     }
   }
 
@@ -175,7 +167,7 @@ public class GameRepository {
     this.store.set(formatGameKey(game) + ".displayName", game.getGameDisplayName());
   }
 
-  public void reloadHighscores() {
+  public void refreshHighscores() {
     this.highscoreResolver.refresh();
   }
 

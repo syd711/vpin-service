@@ -16,8 +16,8 @@ public class PropertiesStore {
   public static PropertiesStore create(String name) {
     PropertiesStore store = new PropertiesStore();
     try {
-      File folder = new File("./resources");
-      store.propertiesFile = new File("./resources",name);
+      File folder = new File(SystemInfo.RESOURCES);
+      store.propertiesFile = new File(SystemInfo.RESOURCES,name);
       if(!folder.exists()) {
         folder.mkdirs();
       }

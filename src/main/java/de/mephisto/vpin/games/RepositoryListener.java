@@ -4,7 +4,5 @@ public interface RepositoryListener {
 
   void gameScanned(GameInfo info);
 
-  void highscoreChanged();
-
-  void notifyRomChanged();
+  void highscoreChanged(HighscoreChangedEvent event);
 }
