@@ -5,18 +5,15 @@ import de.mephisto.vpin.games.GameRepository;
 import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.cache.Cache;
-import javax.cache.CacheManager;
-import javax.cache.Caching;
-import javax.cache.configuration.MutableConfiguration;
-import javax.cache.spi.CachingProvider;
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HighscoreManager {
 
-  private final Cache<Integer, Highscore> cache;
+  private final Map<Integer, Highscore> cache = new HashMap<>();
   private HighscoreResolver highscoreResolver;
 
   private final HighscoreFilesWatcher highscoreWatcher;
@@ -32,11 +29,6 @@ public class HighscoreManager {
     List<File> watching = Arrays.asList(info.getNvramFolder(), info.getVPRegFile().getParentFile());
     this.highscoreWatcher = new HighscoreFilesWatcher(gameRepository, this, watching);
     this.highscoreWatcher.start();
-
-    CachingProvider cachingProvider = Caching.getCachingProvider();
-    CacheManager cacheManager = cachingProvider.getCacheManager();
-    MutableConfiguration<Integer, Highscore> config = new MutableConfiguration<>();
-    cache = cacheManager.createCache("highscoreCache", config);
   }
 
   public void destroy() {
@@ -44,8 +36,8 @@ public class HighscoreManager {
   }
 
   public Highscore getHighscore(GameInfo game, boolean reload) {
-    if(reload) {
-      cache.getAndRemove(game.getId());
+    if(reload && cache.containsKey(game.getId())) {
+      cache.remove(game.getId());
     }
 
     if(StringUtils.isEmpty(game.getRom())) {
@@ -64,7 +56,7 @@ public class HighscoreManager {
   }
 
   public void invalidateHighscore(GameInfo game) {
-    cache.getAndRemove(game.getId());
+    cache.remove(game.getId());
   }
 
   public void refreshHighscores() {

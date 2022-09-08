@@ -38,6 +38,16 @@ public class PropertiesStore {
     return this.properties.containsKey(key);
   }
 
+  public int getInt(String key, int defaultValue) {
+    if(properties.containsKey(key)) {
+      String value = properties.getProperty(key).trim();
+      if(value.length() > 0) {
+        return Integer.parseInt(value);
+      }
+    }
+    return defaultValue;
+  }
+
   public int getInt(String key) {
     if(properties.containsKey(key)) {
       String value = properties.getProperty(key).trim();
@@ -64,6 +74,17 @@ public class PropertiesStore {
 
   public String getString(String key) {
     return properties.getProperty(key);
+  }
+
+  public String getString(String key, String defaultValue) {
+    if(properties.containsKey(key)) {
+      return properties.getProperty(key);
+    }
+    return defaultValue;
+  }
+
+  public void set(String key, int value) {
+    this.set(key, String.valueOf(value));
   }
 
   public void set(String key, String value) {
