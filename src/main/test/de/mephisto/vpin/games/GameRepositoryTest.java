@@ -50,7 +50,7 @@ public class GameRepositoryTest {
     for (GameInfo table : tables) {
       if(table.getId() == 372) {
         LOG.info(table.getId() + ": " + table.getGameFile().getAbsolutePath());
-        repository.invalidate(table);
+        repository.rescanRom(table);
       }
     }
   }

@@ -4,7 +4,6 @@ import de.mephisto.vpin.PopperScreen;
 import de.mephisto.vpin.highscores.Highscore;
 import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.Date;
@@ -24,7 +23,7 @@ public class GameInfo {
 
   private Date lastPlayed;
 
-  private GameRepository repository;
+  private final GameRepository repository;
 
   private int numberPlays;
 
@@ -41,10 +40,10 @@ public class GameInfo {
   }
 
   public Highscore getHighscore() {
-    return this.getHighscore(false);
+    return this.repository.getHighscore(this);
   }
 
-  public File getPopperMediaFile(PopperScreen screen) {
+  public File getPopperScreenMedia(PopperScreen screen) {
     File emuMedia = new File(SystemInfo.getInstance().getPinUPMediaFolder(), getEmulatorName());
     File mediaFolder = new File(emuMedia, screen.name());
     return new File(mediaFolder, FilenameUtils.getBaseName(this.getGameFile().getName()) + ".png");
@@ -61,20 +60,6 @@ public class GameInfo {
     return null;
   }
 
-  public Highscore getHighscore(boolean reload) {
-    return this.repository.loadHighscore(this, reload);
-  }
-
-  public boolean hasHighscore() {
-    if(this.getNvRamFile().exists()) {
-      return true;
-    }
-    if(this.getVPRegFolder().exists()) {
-      return true;
-    }
-    return false;
-  }
-
   public File getVPRegFolder() {
     return new File(SystemInfo.getInstance().getExtractedVPRegFolder(), getRom());
   }
@@ -87,8 +72,8 @@ public class GameInfo {
     this.numberPlays = numberPlays;
   }
 
-  public void invalidate() {
-    repository.invalidate(this);
+  public void rescanRom() {
+    repository.rescanRom(this);
   }
 
   public Date getLastPlayed() {

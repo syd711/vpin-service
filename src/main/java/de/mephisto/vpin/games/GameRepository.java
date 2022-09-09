@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-public class GameRepository {
+public class GameRepository implements RepositoryListener{
   private final static Logger LOG = LoggerFactory.getLogger(GameRepository.class);
 
   private final SqliteConnector sqliteConnector;
@@ -42,6 +42,17 @@ public class GameRepository {
     this.romScanner = new RomScanner();
     this.highscoreManager = new HighscoreManager(this);
     this.store = PropertiesStore.create("repository.properties");
+  }
+
+  @Override
+  public void gameScanned(GameInfo info) {
+    //no required
+  }
+
+  @Override
+  public void highscoreChanged(HighscoreChangedEvent event) {
+    GameInfo gameInfo = event.getGameInfo();
+    this.highscoreManager.invalidateHighscore(gameInfo);
   }
 
   public void shutdown() {
@@ -87,7 +98,7 @@ public class GameRepository {
     return this.executor.submit(() -> loadTableInfos(true));
   }
 
-  void invalidate(GameInfo gameInfo) {
+  void rescanRom(GameInfo gameInfo) {
     String romName = romScanner.scanRomName(gameInfo.getGameFile());
     gameInfo.setRom(romName);
     if (!StringUtils.isEmpty(romName)) {
@@ -166,7 +177,7 @@ public class GameRepository {
     return "gameId." + game.getId();
   }
 
-  Highscore loadHighscore(GameInfo gameInfo, boolean reload) {
-    return highscoreManager.getHighscore(gameInfo, reload);
+  Highscore getHighscore(GameInfo gameInfo) {
+    return highscoreManager.getHighscore(gameInfo);
   }
 }

@@ -4,6 +4,8 @@ import de.mephisto.vpin.games.GameInfo;
 import de.mephisto.vpin.games.GameRepository;
 import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Arrays;
@@ -12,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 public class HighscoreManager {
+  private final static Logger LOG = LoggerFactory.getLogger(HighscoreManager.class);
 
   private final Map<Integer, Highscore> cache = new HashMap<>();
   private HighscoreResolver highscoreResolver;
@@ -35,21 +38,14 @@ public class HighscoreManager {
     this.highscoreWatcher.setRunning(false);
   }
 
-  public Highscore getHighscore(GameInfo game, boolean reload) {
-    if(reload && cache.containsKey(game.getId())) {
-      cache.remove(game.getId());
-    }
-
-    if(StringUtils.isEmpty(game.getRom())) {
+  public Highscore getHighscore(GameInfo game) {
+    if (StringUtils.isEmpty(game.getRom())) {
       return null;
     }
 
-    Highscore highscore = cache.get(game.getId());
-    if(highscore == null) {
-      highscore = highscoreResolver.loadHighscore(game);
-      if(highscore != null) {
-        cache.put(game.getId(), highscore);
-      }
+    if (!cache.containsKey(game.getId())) {
+      Highscore highscore = highscoreResolver.loadHighscore(game);
+      cache.put(game.getId(), highscore);
     }
 
     return cache.get(game.getId());
@@ -57,6 +53,7 @@ public class HighscoreManager {
 
   public void invalidateHighscore(GameInfo game) {
     cache.remove(game.getId());
+    LOG.info("Invalidated cached highscore of " + game);
   }
 
   public void refreshHighscores() {
