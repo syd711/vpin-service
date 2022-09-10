@@ -39,8 +39,19 @@ public class GameInfo {
     this.tags = tags;
   }
 
-  public Highscore getHighscore() {
+  public Highscore resolveHighscore() {
     return this.service.getHighscore(this);
+  }
+
+  public boolean hasHighscore() {
+    if(this.getNvRamFile().exists()) {
+      return true;
+    }
+
+    if(this.getVPRegFolder().exists()) {
+      return true;
+    }
+    return false;
   }
 
   public File getPopperScreenMedia(PopperScreen screen) {

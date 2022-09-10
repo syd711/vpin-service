@@ -24,9 +24,9 @@ public class HighscoreResolverTest {
     List<GameInfo> games = service.getGameInfos();
     List<GameInfo> valid = new ArrayList<>();
     for (GameInfo game : games) {
-      if (game.getHighscore() != null) {
-        assertFalse(game.getHighscore().getScores().isEmpty());
-        assertFalse(game.getHighscore().getUserInitials().isEmpty());
+      if (game.resolveHighscore() != null) {
+        assertFalse(game.resolveHighscore().getScores().isEmpty());
+        assertFalse(game.resolveHighscore().getUserInitials().isEmpty());
         valid.add(game);
       }
     }
@@ -50,19 +50,19 @@ public class HighscoreResolverTest {
 
     VPinService service = VPinService.create();
     GameInfo game = service.getGameByRom("STLE");
-    assertNotNull(game.getHighscore());
-    assertNotNull(game.getHighscore().getUserInitials());
-    assertFalse(game.getHighscore().getScores().isEmpty());
+    assertNotNull(game.resolveHighscore());
+    assertNotNull(game.resolveHighscore().getUserInitials());
+    assertFalse(game.resolveHighscore().getScores().isEmpty());
     LOG.info("---------------------------------");
-    LOG.info("Scores: " + game.getHighscore().getScores().size());
-    List<Score> scores = game.getHighscore().getScores();
+    LOG.info("Scores: " + game.resolveHighscore().getScores().size());
+    List<Score> scores = game.resolveHighscore().getScores();
     for (Score score : scores) {
       LOG.info(score.toString());
     }
 
     LOG.info("---------------------------------");
-    LOG.info(game.getHighscore().getRaw());
-    LOG.info(game.getHighscore().getRaw());
+    LOG.info(game.resolveHighscore().getRaw());
+    LOG.info(game.resolveHighscore().getRaw());
   }
 
 }

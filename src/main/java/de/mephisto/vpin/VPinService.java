@@ -3,6 +3,9 @@ package de.mephisto.vpin;
 import de.mephisto.vpin.highscores.HighscoreChangedEvent;
 import de.mephisto.vpin.highscores.Highscore;
 import de.mephisto.vpin.highscores.HighscoreManager;
+import de.mephisto.vpin.http.GrizzlyHttpServer;
+import de.mephisto.vpin.popper.PinUPFunction;
+import de.mephisto.vpin.popper.PopperScreen;
 import de.mephisto.vpin.roms.RomScanner;
 import de.mephisto.vpin.util.PropertiesStore;
 import de.mephisto.vpin.util.SqliteConnector;
@@ -34,8 +37,14 @@ public class VPinService implements ServiceListener {
 
   private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
+  private static VPinService instance;
+  private final GrizzlyHttpServer httpServer;
+
   public static VPinService create() {
-    return new VPinService();
+    if(instance == null) {
+      instance = new VPinService();
+    }
+    return instance;
   }
 
   private VPinService() {
@@ -43,6 +52,42 @@ public class VPinService implements ServiceListener {
     this.romScanner = new RomScanner();
     this.highscoreManager = new HighscoreManager(this);
     this.store = PropertiesStore.create("repository.properties");
+
+    httpServer = new GrizzlyHttpServer("localhost", 8099);
+    httpServer.start();
+  }
+
+  public String validateScreenConfiguration(PopperScreen screen) {
+    PinUPFunction fn = null;
+    switch (screen) {
+      case Other2: {
+        fn = sqliteConnector.getFunction(PinUPFunction.FUNCTION_SHOW_OTHER);
+        break;
+      }
+      case GameHelp: {
+        fn = sqliteConnector.getFunction(PinUPFunction.FUNCTION_SHOW_HELP);
+        break;
+      }
+      case GameInfo: {
+        fn = sqliteConnector.getFunction(PinUPFunction.FUNCTION_SHOW_FLYER);
+        break;
+      }
+      default: {
+
+      }
+    }
+
+    if(fn != null) {
+      if(!fn.isActive()) {
+        return "The screen has not been activated.";
+      }
+
+      if(fn.getCtrlKey() == 0) {
+        return "The screen is not bound to any key.";
+      }
+    }
+
+    return null;
   }
 
   @Override
@@ -104,6 +149,10 @@ public class VPinService implements ServiceListener {
     gameInfo.setRom(romName);
     if (!StringUtils.isEmpty(romName)) {
       writeGameInfo(gameInfo);
+      LOG.info("Finished re-scan of table " + gameInfo + ", found ROM '" + romName + "'.");
+    }
+    else {
+      LOG.info("Finished re-scan of table " + gameInfo + ", no ROM found.");
     }
     notifyGameScanned(gameInfo);
   }
