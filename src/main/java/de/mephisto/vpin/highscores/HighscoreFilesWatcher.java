@@ -64,7 +64,7 @@ public class HighscoreFilesWatcher extends Thread {
           Thread.sleep(5000);
           HighscoreChangedEvent highscoreChangedEvent = generateEvent(file);
           if(highscoreChangedEvent != null) {
-            service.notifyHighscoreChange(highscoreChangedEvent);
+            highscoreManager.notifyHighscoreChange(highscoreChangedEvent);
           }
         }
         poll = key.reset();

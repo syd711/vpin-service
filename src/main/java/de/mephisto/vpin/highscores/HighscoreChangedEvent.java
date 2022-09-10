@@ -1,8 +1,7 @@
 package de.mephisto.vpin.highscores;
 
-import de.mephisto.vpin.GameInfo;
+import de.mephisto.vpin.VPinServiceEvent;
 
-public interface HighscoreChangedEvent {
+public interface HighscoreChangedEvent extends VPinServiceEvent {
 
-  GameInfo getGameInfo();
 }
