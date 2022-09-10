@@ -2,6 +2,7 @@ package de.mephisto.vpin.util;
 
 import de.mephisto.vpin.games.GameInfo;
 import de.mephisto.vpin.games.GameRepository;
+import de.mephisto.vpin.popper.PinUPFunction;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +75,57 @@ public class SqliteConnector {
     return info;
   }
 
+  public PinUPFunction getFunction(String description) {
+    PinUPFunction f = null;
+    this.connect();
+    try {
+      Statement statement = conn.createStatement();
+      ResultSet rs = statement.executeQuery("SELECT * FROM PinUPFunctions WHERE Descript = '" + description + "';");
+      while (rs.next()) {
+        f = new PinUPFunction();
+        f.setActive(rs.getInt("Active") == 1);
+        f.setDescription(rs.getString("Descript"));
+        f.setCtrlKey(rs.getInt("CntrlCodes"));
+        f.setId(rs.getInt("uniqueID"));
+        break;
+      }
+
+      rs.close();
+      statement.close();
+    } catch (SQLException e) {
+      LOG.error("Failed to get function: " + e.getMessage(), e);
+    } finally {
+      this.disconnect();
+    }
+    return f;
+  }
+
+  public List<PinUPFunction> getFunctions() {
+    this.connect();
+    List<PinUPFunction> results = new ArrayList<>();
+    try {
+      Statement statement = conn.createStatement();
+      ResultSet rs = statement.executeQuery("SELECT * FROM PinUPFunctions;");
+      while (rs.next()) {
+        PinUPFunction f = new PinUPFunction();
+        f.setActive(rs.getInt("Active") == 1);
+        f.setDescription(rs.getString("Descript"));
+        f.setCtrlKey(rs.getInt("CntrlCodes"));
+        f.setId(rs.getInt("uniqueID"));
+        results.add(f);
+      }
+
+      rs.close();
+      statement.close();
+    } catch (SQLException e) {
+      LOG.error("Failed to functions: " + e.getMessage(), e);
+    } finally {
+      this.disconnect();
+    }
+    return results;
+  }
+
+
   public List<GameInfo> getGames(GameRepository repository) {
     this.connect();
     List<GameInfo> results = new ArrayList<>();
@@ -82,7 +134,7 @@ public class SqliteConnector {
       ResultSet rs = statement.executeQuery("SELECT * FROM Games WHERE EMUID = 1;");
       while (rs.next()) {
         GameInfo info = createGameInfo(repository, rs);
-        if(info != null) {
+        if (info != null) {
           results.add(info);
         }
       }
@@ -110,11 +162,9 @@ public class SqliteConnector {
         int gameId = rs.getInt("GameID");
         result.add(gameId);
       }
-    }
-    catch (SQLException e) {
+    } catch (SQLException e) {
       LOG.error("Failed to read playlists: " + e.getMessage(), e);
-    }
-    finally {
+    } finally {
       disconnect();
     }
     return result;
@@ -131,8 +181,7 @@ public class SqliteConnector {
         game.setLastPlayed(lastPlayed);
         game.setNumberPlays(numberPlays);
       }
-    }
-    catch (SQLException e) {
+    } catch (SQLException e) {
       LOG.error("Failed to read game info: " + e.getMessage(), e);
     }
   }
