@@ -22,15 +22,15 @@ public class HighscoreManager {
   private final HighscoreFilesWatcher highscoreWatcher;
   private VPinService VPinService;
 
-  public HighscoreManager(VPinService VPinService) {
-    this.VPinService = VPinService;
+  public HighscoreManager(VPinService service) {
+    this.VPinService = service;
 
     this.highscoreResolver = new HighscoreResolver();
     this.highscoreResolver.refresh();
 
     SystemInfo info = SystemInfo.getInstance();
     List<File> watching = Arrays.asList(info.getNvramFolder(), info.getVPRegFile().getParentFile());
-    this.highscoreWatcher = new HighscoreFilesWatcher(VPinService, this, watching);
+    this.highscoreWatcher = new HighscoreFilesWatcher(service, this, watching);
     this.highscoreWatcher.start();
   }
 

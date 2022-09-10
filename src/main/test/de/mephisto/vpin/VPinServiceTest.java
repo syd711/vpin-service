@@ -31,7 +31,13 @@ public class VPinServiceTest {
     for (GameInfo table : tables) {
       assertTrue(table.getGameFile().exists());
     }
+    try {
+      Thread.sleep(100000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
     LOG.info("Loaded " + tables.size() + " tables.");
+
   }
 
   @Test

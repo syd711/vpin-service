@@ -1,11 +1,13 @@
 package de.mephisto.vpin.http;
 
 import com.google.common.base.Joiner;
-import com.sun.jersey.api.container.grizzly2.GrizzlyWebContainerFactory;
+import com.sun.jersey.api.container.grizzly2.GrizzlyServerFactory;
+import com.sun.jersey.api.core.PackagesResourceConfig;
+import com.sun.jersey.api.core.ResourceConfig;
+import de.mephisto.vpin.VPinService;
+import de.mephisto.vpin.http.resources.ServiceRestResource;
 import de.mephisto.vpin.util.SystemInfo;
-import org.glassfish.grizzly.http.server.HttpServer;
-import org.glassfish.grizzly.http.server.NetworkListener;
-import org.glassfish.grizzly.http.server.StaticHttpHandler;
+import org.glassfish.grizzly.http.server.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,17 +23,15 @@ import java.util.*;
 public class GrizzlyHttpServer {
   private final static Logger LOG = LoggerFactory.getLogger(GrizzlyHttpServer.class);
   public static final String RESOURCES = "/resources"; //don't forget the leading slash
+  public static final int PORT = 8088;
 
-  private int port;
-  private String host;
   private File resourceDirectory;
 
   private org.glassfish.grizzly.http.server.HttpServer httpServer;
 
-  public GrizzlyHttpServer(String host, int port) {
-    this.host = host;
-    this.port = port;
+  public GrizzlyHttpServer() {
     this.resourceDirectory = new File(SystemInfo.RESOURCES);
+    this.start();
   }
 
   /**
@@ -39,17 +39,16 @@ public class GrizzlyHttpServer {
    */
   public HttpServer start() {
     try {
-      final Map<String, String> initParams = new HashMap<>();
-
-      List<String> packageNames = new ArrayList<>(Arrays.asList("de.mephisto.vpin.http.resources"));
-      packageNames.add("com.sun.jersey");
-      initParams.put("com.sun.jersey.config.property.packages", Joiner.on(",").join(packageNames));
-      initParams.put("com.sun.jersey.api.json.POJOMappingFeature", "true");
-
-      URI url = UriBuilder.fromUri("http://" + host + "/").port(port).build();
+      URI url = UriBuilder.fromUri("http://" + "localhost" + "/").port(PORT).build();
       LOG.info("Starting server on: " + url.toString() + ", using resource directory " + resourceDirectory.getAbsolutePath());
 
-      httpServer = GrizzlyWebContainerFactory.create(url, initParams);
+      //TODO maybe someday you and I can play together
+      httpServer = GrizzlyServerFactory.createHttpServer(url, new HttpHandler() {
+        @Override
+        public void service(Request request, Response response) throws Exception {
+          ServiceRestResource.serve(request);
+        }
+      });
       httpServer.getServerConfiguration().addHttpHandler(new StaticHttpHandler(resourceDirectory.getAbsolutePath()), RESOURCES);
       LOG.info("Http server resources available under " + url.toString() + "resources");
 
@@ -72,6 +71,6 @@ public class GrizzlyHttpServer {
 
   @Override
   public String toString() {
-    return "HttpServer running on port " + port;
+    return "HttpServer running on port " + PORT;
   }
 }

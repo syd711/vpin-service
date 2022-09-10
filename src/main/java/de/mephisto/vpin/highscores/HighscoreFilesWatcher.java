@@ -18,15 +18,15 @@ import static java.nio.file.StandardWatchEventKinds.*;
 public class HighscoreFilesWatcher extends Thread {
   private final static Logger LOG = LoggerFactory.getLogger(HighscoreFilesWatcher.class);
 
-  private final VPinService VPinService;
+  private final VPinService service;
   private final HighscoreManager highscoreManager;
   private final List<File> files;
 
   private boolean running = true;
   private WatchService watchService;
 
-  public HighscoreFilesWatcher(VPinService VPinService, HighscoreManager highscoreManager, List<File> files) {
-    this.VPinService = VPinService;
+  public HighscoreFilesWatcher(VPinService service, HighscoreManager highscoreManager, List<File> files) {
+    this.service = service;
     this.highscoreManager = highscoreManager;
     this.files = files;
   }
@@ -64,7 +64,7 @@ public class HighscoreFilesWatcher extends Thread {
           Thread.sleep(5000);
           HighscoreChangedEvent highscoreChangedEvent = generateEvent(file);
           if(highscoreChangedEvent != null) {
-            VPinService.notifyHighscoreChange(highscoreChangedEvent);
+            service.notifyHighscoreChange(highscoreChangedEvent);
           }
         }
         poll = key.reset();
@@ -94,7 +94,7 @@ public class HighscoreFilesWatcher extends Thread {
     }
 
     if(rom != null) {
-      GameInfo gameByRom = VPinService.getGameByRom(rom);
+      GameInfo gameByRom = service.getGameByRom(rom);
       if(gameByRom != null) {
         return new HighscoreChangedEventImpl(gameByRom);
       }

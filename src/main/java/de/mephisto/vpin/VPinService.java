@@ -52,9 +52,7 @@ public class VPinService implements ServiceListener {
     this.romScanner = new RomScanner();
     this.highscoreManager = new HighscoreManager(this);
     this.store = PropertiesStore.create("repository.properties");
-
-    httpServer = new GrizzlyHttpServer("localhost", 8099);
-    httpServer.start();
+    this.httpServer = new GrizzlyHttpServer();
   }
 
   public String validateScreenConfiguration(PopperScreen screen) {
