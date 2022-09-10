@@ -1,4 +1,4 @@
-package de.mephisto.vpin.games;
+package de.mephisto.vpin;
 
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -9,14 +9,14 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class GameRepositoryTest {
-  private final static Logger LOG = LoggerFactory.getLogger(GameRepositoryTest.class);
+public class VPinServiceTest {
+  private final static Logger LOG = LoggerFactory.getLogger(VPinServiceTest.class);
 
   @Test
   public void testTableRepository() {
-    GameRepository repository = GameRepository.create();
-    repository.invalidateAll();
-    List<GameInfo> tables = repository.getGameInfos();
+    VPinService service = VPinService.create();
+    service.rescanAllTables();
+    List<GameInfo> tables = service.getGameInfos();
     for (GameInfo table : tables) {
       assertTrue(table.getGameFile().exists());
     }
@@ -24,10 +24,10 @@ public class GameRepositoryTest {
 
   @Test
   public void testTableRepositoryWithoutReset() {
-    GameRepository repository = GameRepository.create();
-    assertFalse(repository.getGameInfos().isEmpty());
+    VPinService service = VPinService.create();
+    assertFalse(service.getGameInfos().isEmpty());
 
-    List<GameInfo> tables = repository.getGameInfos();
+    List<GameInfo> tables = service.getGameInfos();
     for (GameInfo table : tables) {
       assertTrue(table.getGameFile().exists());
     }
@@ -36,8 +36,8 @@ public class GameRepositoryTest {
 
   @Test
   public void testTableRepositoryGetGamesWithoutRoms() {
-    GameRepository repository = GameRepository.create();
-    List<GameInfo> tables = repository.getGamesWithEmptyRoms();
+    VPinService service = VPinService.create();
+    List<GameInfo> tables = service.getGamesWithEmptyRoms();
     for (GameInfo table : tables) {
       LOG.info(table.getId() + ": " + table.getGameFile().getAbsolutePath());
     }
@@ -45,12 +45,12 @@ public class GameRepositoryTest {
 
   @Test
   public void testTableInvalidate() {
-    GameRepository repository = GameRepository.create();
-    List<GameInfo> tables = repository.getGamesWithEmptyRoms();
+    VPinService service = VPinService.create();
+    List<GameInfo> tables = service.getGamesWithEmptyRoms();
     for (GameInfo table : tables) {
       if(table.getId() == 372) {
         LOG.info(table.getId() + ": " + table.getGameFile().getAbsolutePath());
-        repository.rescanRom(table);
+        service.rescanRom(table);
       }
     }
   }

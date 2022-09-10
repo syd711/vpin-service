@@ -1,9 +1,7 @@
 package de.mephisto.vpin.highscores;
 
-import de.mephisto.vpin.games.GameInfo;
-import de.mephisto.vpin.games.GameRepository;
-import de.mephisto.vpin.games.HighscoreChangedEvent;
-import de.mephisto.vpin.games.HighscoreChangedEventImpl;
+import de.mephisto.vpin.GameInfo;
+import de.mephisto.vpin.VPinService;
 import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -12,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,15 +18,15 @@ import static java.nio.file.StandardWatchEventKinds.*;
 public class HighscoreFilesWatcher extends Thread {
   private final static Logger LOG = LoggerFactory.getLogger(HighscoreFilesWatcher.class);
 
-  private final GameRepository gameRepository;
+  private final VPinService VPinService;
   private final HighscoreManager highscoreManager;
   private final List<File> files;
 
   private boolean running = true;
   private WatchService watchService;
 
-  public HighscoreFilesWatcher(GameRepository gameRepository, HighscoreManager highscoreManager, List<File> files) {
-    this.gameRepository = gameRepository;
+  public HighscoreFilesWatcher(VPinService VPinService, HighscoreManager highscoreManager, List<File> files) {
+    this.VPinService = VPinService;
     this.highscoreManager = highscoreManager;
     this.files = files;
   }
@@ -67,7 +64,7 @@ public class HighscoreFilesWatcher extends Thread {
           Thread.sleep(5000);
           HighscoreChangedEvent highscoreChangedEvent = generateEvent(file);
           if(highscoreChangedEvent != null) {
-            gameRepository.notifyHighscoreChange(highscoreChangedEvent);
+            VPinService.notifyHighscoreChange(highscoreChangedEvent);
           }
         }
         poll = key.reset();
@@ -97,7 +94,7 @@ public class HighscoreFilesWatcher extends Thread {
     }
 
     if(rom != null) {
-      GameInfo gameByRom = gameRepository.getGameByRom(rom);
+      GameInfo gameByRom = VPinService.getGameByRom(rom);
       if(gameByRom != null) {
         return new HighscoreChangedEventImpl(gameByRom);
       }

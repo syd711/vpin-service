@@ -1,6 +1,6 @@
-package de.mephisto.vpin.games;
+package de.mephisto.vpin;
 
-import de.mephisto.vpin.PopperScreen;
+import de.mephisto.vpin.popper.PopperScreen;
 import de.mephisto.vpin.highscores.Highscore;
 import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.io.FilenameUtils;
@@ -23,12 +23,12 @@ public class GameInfo {
 
   private Date lastPlayed;
 
-  private final GameRepository repository;
+  private final VPinService service;
 
   private int numberPlays;
 
-  public GameInfo(GameRepository repository) {
-    this.repository = repository;
+  public GameInfo(VPinService service) {
+    this.service = service;
   }
 
   public String getTags() {
@@ -40,7 +40,7 @@ public class GameInfo {
   }
 
   public Highscore getHighscore() {
-    return this.repository.getHighscore(this);
+    return this.service.getHighscore(this);
   }
 
   public File getPopperScreenMedia(PopperScreen screen) {
@@ -73,7 +73,7 @@ public class GameInfo {
   }
 
   public void rescanRom() {
-    repository.rescanRom(this);
+    service.rescanRom(this);
   }
 
   public Date getLastPlayed() {

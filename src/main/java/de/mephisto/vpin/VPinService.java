@@ -1,5 +1,6 @@
-package de.mephisto.vpin.games;
+package de.mephisto.vpin;
 
+import de.mephisto.vpin.highscores.HighscoreChangedEvent;
 import de.mephisto.vpin.highscores.Highscore;
 import de.mephisto.vpin.highscores.HighscoreManager;
 import de.mephisto.vpin.roms.RomScanner;
@@ -18,8 +19,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-public class GameRepository implements RepositoryListener{
-  private final static Logger LOG = LoggerFactory.getLogger(GameRepository.class);
+public class VPinService implements ServiceListener {
+  private final static Logger LOG = LoggerFactory.getLogger(VPinService.class);
 
   private final SqliteConnector sqliteConnector;
 
@@ -29,15 +30,15 @@ public class GameRepository implements RepositoryListener{
 
   private final HighscoreManager highscoreManager;
 
-  private final List<RepositoryListener> listeners = new ArrayList<>();
+  private final List<ServiceListener> listeners = new ArrayList<>();
 
   private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-  public static GameRepository create() {
-    return new GameRepository();
+  public static VPinService create() {
+    return new VPinService();
   }
 
-  private GameRepository() {
+  private VPinService() {
     this.sqliteConnector = new SqliteConnector();
     this.romScanner = new RomScanner();
     this.highscoreManager = new HighscoreManager(this);
@@ -60,22 +61,22 @@ public class GameRepository implements RepositoryListener{
     this.highscoreManager.destroy();
   }
 
-  public void addListener(RepositoryListener listener) {
+  public void addListener(ServiceListener listener) {
     this.listeners.add(listener);
   }
 
-  public void removeListener(RepositoryListener listener) {
+  public void removeListener(ServiceListener listener) {
     this.listeners.remove(listener);
   }
 
   public void notifyGameScanned(GameInfo game) {
-    for (RepositoryListener listener : this.listeners) {
+    for (ServiceListener listener : this.listeners) {
       listener.gameScanned(game);
     }
   }
 
   public void notifyHighscoreChange(HighscoreChangedEvent event) {
-    for (RepositoryListener listener : this.listeners) {
+    for (ServiceListener listener : this.listeners) {
       listener.highscoreChanged(event);
     }
   }
@@ -94,11 +95,11 @@ public class GameRepository implements RepositoryListener{
     return sqliteConnector.getGames(this);
   }
 
-  public Future<List<GameInfo>> invalidateAll() {
+  public Future<List<GameInfo>> rescanAllTables() {
     return this.executor.submit(() -> loadTableInfos(true));
   }
 
-  void rescanRom(GameInfo gameInfo) {
+  public void rescanRom(GameInfo gameInfo) {
     String romName = romScanner.scanRomName(gameInfo.getGameFile());
     gameInfo.setRom(romName);
     if (!StringUtils.isEmpty(romName)) {
@@ -138,6 +139,10 @@ public class GameRepository implements RepositoryListener{
     return null;
   }
 
+  public Highscore getHighscore(GameInfo gameInfo) {
+    return highscoreManager.getHighscore(gameInfo);
+  }
+
   private List<GameInfo> loadTableInfos(boolean forceRomScan) {
     List<GameInfo> games = sqliteConnector.getGames(this);
     for (GameInfo game : games) {
@@ -175,9 +180,5 @@ public class GameRepository implements RepositoryListener{
 
   private String formatGameKey(GameInfo game) {
     return "gameId." + game.getId();
-  }
-
-  Highscore getHighscore(GameInfo gameInfo) {
-    return highscoreManager.getHighscore(gameInfo);
   }
 }

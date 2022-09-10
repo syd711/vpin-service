@@ -1,7 +1,7 @@
 package de.mephisto.vpin.highscores;
 
-import de.mephisto.vpin.games.GameInfo;
-import de.mephisto.vpin.games.GameRepository;
+import de.mephisto.vpin.GameInfo;
+import de.mephisto.vpin.VPinService;
 import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,17 +20,17 @@ public class HighscoreManager {
   private HighscoreResolver highscoreResolver;
 
   private final HighscoreFilesWatcher highscoreWatcher;
-  private GameRepository gameRepository;
+  private VPinService VPinService;
 
-  public HighscoreManager(GameRepository gameRepository) {
-    this.gameRepository = gameRepository;
+  public HighscoreManager(VPinService VPinService) {
+    this.VPinService = VPinService;
 
     this.highscoreResolver = new HighscoreResolver();
     this.highscoreResolver.refresh();
 
     SystemInfo info = SystemInfo.getInstance();
     List<File> watching = Arrays.asList(info.getNvramFolder(), info.getVPRegFile().getParentFile());
-    this.highscoreWatcher = new HighscoreFilesWatcher(gameRepository, this, watching);
+    this.highscoreWatcher = new HighscoreFilesWatcher(VPinService, this, watching);
     this.highscoreWatcher.start();
   }
 

@@ -1,4 +1,4 @@
-package de.mephisto.vpin;
+package de.mephisto.vpin.popper;
 
 public enum PopperScreen {
   Other2,

@@ -1,6 +1,6 @@
 package de.mephisto.vpin.highscores;
 
-import de.mephisto.vpin.games.GameInfo;
+import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.util.SystemCommandExecutor;
 import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.lang3.StringUtils;

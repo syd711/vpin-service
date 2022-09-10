@@ -1,7 +1,7 @@
 package de.mephisto.vpin.highscores;
 
-import de.mephisto.vpin.games.GameInfo;
-import de.mephisto.vpin.games.GameRepository;
+import de.mephisto.vpin.GameInfo;
+import de.mephisto.vpin.VPinService;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +20,8 @@ public class HighscoreResolverTest {
     HighscoreResolver highscoreResolver = new HighscoreResolver();
     highscoreResolver.refresh();
 
-    GameRepository repository = GameRepository.create();
-    List<GameInfo> games = repository.getGameInfos();
+    VPinService service = VPinService.create();
+    List<GameInfo> games = service.getGameInfos();
     List<GameInfo> valid = new ArrayList<>();
     for (GameInfo game : games) {
       if (game.getHighscore() != null) {
@@ -48,8 +48,8 @@ public class HighscoreResolverTest {
     HighscoreResolver highscoreResolver = new HighscoreResolver();
     highscoreResolver.refresh();
 
-    GameRepository gameRepository = GameRepository.create();
-    GameInfo game = gameRepository.getGameByRom("STLE");
+    VPinService service = VPinService.create();
+    GameInfo game = service.getGameByRom("STLE");
     assertNotNull(game.getHighscore());
     assertNotNull(game.getHighscore().getUserInitials());
     assertFalse(game.getHighscore().getScores().isEmpty());

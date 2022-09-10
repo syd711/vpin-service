@@ -1,7 +1,7 @@
 package de.mephisto.vpin.util;
 
-import de.mephisto.vpin.games.GameInfo;
-import de.mephisto.vpin.games.GameRepository;
+import de.mephisto.vpin.GameInfo;
+import de.mephisto.vpin.VPinService;
 import de.mephisto.vpin.popper.PinUPFunction;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -55,14 +55,14 @@ public class SqliteConnector {
     }
   }
 
-  public GameInfo getGame(GameRepository repository, int id) {
+  public GameInfo getGame(VPinService service, int id) {
     this.connect();
     GameInfo info = null;
     try {
       Statement statement = conn.createStatement();
       ResultSet rs = statement.executeQuery("SELECT * FROM Games where GameID = " + id + ";");
       while (rs.next()) {
-        info = createGameInfo(repository, rs);
+        info = createGameInfo(service, rs);
       }
 
       rs.close();
@@ -126,14 +126,14 @@ public class SqliteConnector {
   }
 
 
-  public List<GameInfo> getGames(GameRepository repository) {
+  public List<GameInfo> getGames(VPinService service) {
     this.connect();
     List<GameInfo> results = new ArrayList<>();
     try {
       Statement statement = conn.createStatement();
       ResultSet rs = statement.executeQuery("SELECT * FROM Games WHERE EMUID = 1;");
       while (rs.next()) {
-        GameInfo info = createGameInfo(repository, rs);
+        GameInfo info = createGameInfo(service, rs);
         if (info != null) {
           results.add(info);
         }
@@ -250,8 +250,8 @@ public class SqliteConnector {
     }
   }
 
-  private GameInfo createGameInfo(GameRepository repository, ResultSet rs) throws SQLException {
-    GameInfo info = new GameInfo(repository);
+  private GameInfo createGameInfo(VPinService service, ResultSet rs) throws SQLException {
+    GameInfo info = new GameInfo(service);
     int id = rs.getInt("GameID");
     String rom = rs.getString("ROM");
     String gameFileName = rs.getString("GameFileName");

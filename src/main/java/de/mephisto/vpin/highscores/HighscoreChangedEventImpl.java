@@ -1,4 +1,6 @@
-package de.mephisto.vpin.games;
+package de.mephisto.vpin.highscores;
+
+import de.mephisto.vpin.GameInfo;
 
 public class HighscoreChangedEventImpl implements HighscoreChangedEvent {
 

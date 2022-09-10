@@ -1,6 +1,6 @@
 package de.mephisto.vpin.highscores;
 
-import de.mephisto.vpin.games.GameInfo;
+import de.mephisto.vpin.GameInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

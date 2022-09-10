@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.mephisto.vpin</groupId>
-    <artifactId>vpin-utils</artifactId>
+    <artifactId>vpin-service</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
