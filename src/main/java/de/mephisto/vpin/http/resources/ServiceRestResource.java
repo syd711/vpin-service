@@ -41,6 +41,9 @@ public class ServiceRestResource {
   @Path("/gameLaunch")
   public boolean gameLaunched(@FormParam("table") String table) {
     LOG.info("Notified game launch '" + table + "'");
+    VPinService service = VPinService.create();
+    GameInfo game = service.getGameByName(table);
+    notifyTableStatusChange(game, true);
     return true;
   }
 
@@ -48,6 +51,18 @@ public class ServiceRestResource {
   @Path("/gameExit")
   public boolean gamedExited(@FormParam("table") String table) {
     LOG.info("Notified game exit '" + table + "'");
+    VPinService service = VPinService.create();
+    GameInfo game = service.getGameByName(table);
+    notifyTableStatusChange(game, false);
     return true;
+  }
+
+  private void notifyTableStatusChange(GameInfo game, boolean b) {
+    new Thread() {
+      public void run() {
+        VPinService service =VPinService.create();
+        service.notifyTableStatusChange(game, b);
+      }
+    }.start();
   }
 }

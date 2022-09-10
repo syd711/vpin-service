@@ -12,7 +12,7 @@ public class DOFCommandTest {
 
   @Test
   public void testCmd() {
-    DOFCommandResult execute = new DOFCommand(8, 3, true).execute();
+    DOFCommandResult execute = new DOFCommand(8, 3, 255).execute();
     assertFalse(execute.isSuccessful());
     LOG.info(execute.getOutput());
   }

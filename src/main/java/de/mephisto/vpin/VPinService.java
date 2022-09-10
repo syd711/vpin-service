@@ -1,10 +1,12 @@
 package de.mephisto.vpin;
 
+import de.mephisto.vpin.dof.DOFManager;
 import de.mephisto.vpin.highscores.Highscore;
 import de.mephisto.vpin.highscores.HighscoreChangeListener;
 import de.mephisto.vpin.highscores.HighscoreManager;
 import de.mephisto.vpin.http.GrizzlyHttpServer;
 import de.mephisto.vpin.popper.PinUPFunction;
+import de.mephisto.vpin.popper.PopperManager;
 import de.mephisto.vpin.popper.PopperScreen;
 import de.mephisto.vpin.roms.RomScanner;
 import de.mephisto.vpin.util.SqliteConnector;
@@ -34,6 +36,10 @@ public class VPinService {
 
   private final GrizzlyHttpServer httpServer;
 
+  private final DOFManager dofManager;
+
+  private final PopperManager popperManager;
+
   public static VPinService create() {
     if(instance == null) {
       instance = new VPinService();
@@ -46,6 +52,9 @@ public class VPinService {
     this.romScanner = new RomScanner(this, sqliteConnector);
     this.highscoreManager = new HighscoreManager(this);
     this.httpServer = new GrizzlyHttpServer();
+    this.dofManager = DOFManager.create();
+    this.popperManager = new PopperManager(sqliteConnector);
+
     LOG.info("VPinService created.");
   }
 
@@ -56,37 +65,9 @@ public class VPinService {
     this.httpServer.stop();
   }
 
+  @SuppressWarnings("unused")
   public String validateScreenConfiguration(PopperScreen screen) {
-    PinUPFunction fn = null;
-    switch (screen) {
-      case Other2: {
-        fn = sqliteConnector.getFunction(PinUPFunction.FUNCTION_SHOW_OTHER);
-        break;
-      }
-      case GameHelp: {
-        fn = sqliteConnector.getFunction(PinUPFunction.FUNCTION_SHOW_HELP);
-        break;
-      }
-      case GameInfo: {
-        fn = sqliteConnector.getFunction(PinUPFunction.FUNCTION_SHOW_FLYER);
-        break;
-      }
-      default: {
-
-      }
-    }
-
-    if(fn != null) {
-      if(!fn.isActive()) {
-        return "The screen has not been activated.";
-      }
-
-      if(fn.getCtrlKey() == 0) {
-        return "The screen is not bound to any key.";
-      }
-    }
-
-    return null;
+    return popperManager.validateScreenConfiguration(screen);
   }
 
   @SuppressWarnings("unused")
@@ -156,5 +137,14 @@ public class VPinService {
 
   public Highscore getHighscore(GameInfo gameInfo) {
     return highscoreManager.getHighscore(gameInfo);
+  }
+
+  public GameInfo getGameByName(String table) {
+    return this.sqliteConnector.getGameByName(this, table);
+  }
+
+  //TODO mpf
+  public void notifyTableStatusChange(GameInfo game, boolean b) {
+    this.popperManager.notifyTableStatusChange(game, b);
   }
 }

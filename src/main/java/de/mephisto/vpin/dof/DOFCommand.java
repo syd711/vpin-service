@@ -17,10 +17,10 @@ public class DOFCommand {
   private final int output;
   private final int value;
 
-  public DOFCommand(int unit, int output, boolean high) {
+  public DOFCommand(int unit, int output, int value) {
     this.unit = unit;
     this.output = output;
-    this.value = high ? 0 : 255;
+    this.value = value;
   }
 
   public DOFCommandResult execute() {

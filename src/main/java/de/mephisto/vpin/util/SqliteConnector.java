@@ -75,6 +75,26 @@ public class SqliteConnector {
     return info;
   }
 
+  public GameInfo getGameByName(VPinService service, String table) {
+    this.connect();
+    GameInfo info = null;
+    try {
+      Statement statement = conn.createStatement();
+      ResultSet rs = statement.executeQuery("SELECT * FROM Games where GameDisplay = " + table + ";");
+      while (rs.next()) {
+        info = createGameInfo(service, rs);
+      }
+
+      rs.close();
+      statement.close();
+    } catch (SQLException e) {
+      LOG.error("Failed to read game info: " + e.getMessage(), e);
+    } finally {
+      this.disconnect();
+    }
+    return info;
+  }
+
   public PinUPFunction getFunction(String description) {
     PinUPFunction f = null;
     this.connect();
