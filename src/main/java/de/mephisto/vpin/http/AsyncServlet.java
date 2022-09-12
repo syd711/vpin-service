@@ -26,7 +26,7 @@ public class AsyncServlet extends HttpServlet {
   private final static String STATUS_TABLE_NOT_FOUND = "Table not found";
 
   private final static String PATH_LAUNCH = "/gameLaunch";
-  private final static String PATH_EXIT = "/gameExited";
+  private final static String PATH_EXIT = "/gameExit";
 
   private final PopperManager popperManager;
 

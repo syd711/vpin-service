@@ -1,6 +1,7 @@
 package de.mephisto.vpin.popper;
 
 import de.mephisto.vpin.GameInfo;
+import de.mephisto.vpin.highscores.HighscoreChangedEventImpl;
 import de.mephisto.vpin.highscores.HighscoreManager;
 import de.mephisto.vpin.http.HttpServer;
 import de.mephisto.vpin.util.SqliteConnector;
@@ -29,14 +30,19 @@ public class PopperManager {
 
   public void notifyTableStatusChange(final GameInfo game, final boolean started) {
     new Thread(() -> {
+      if (started) {
+        this.executeTableLaunchCommands(game);
+      }
+      else {
+        this.executeTableExitCommands(game);
+      }
+
       TableStatusChangedEvent event = () -> game;
       for (TableStatusChangeListener listener : this.listeners) {
-        if(started) {
-          this.executeTableLaunchCommands(game);
+        if (started) {
           listener.tableLaunched(event);
         }
         else {
-          this.executeTableExitCommands(game);
           listener.tableExited(event);
         }
       }
@@ -61,6 +67,7 @@ public class PopperManager {
   public void executeTableExitCommands(GameInfo game) {
     LOG.info("Executing table exit commands for '" + game + "'");
     highscoreManager.invalidateHighscore(game);
+    highscoreManager.notifyHighscoreChange(new HighscoreChangedEventImpl(game));
   }
 
   private void runConfigCheck() {
@@ -68,12 +75,12 @@ public class PopperManager {
     for (Emulators value : values) {
       String emulatorName = Emulators.getEmulatorName(value);
       String startupScript = this.connector.getEmulatorStartupScript(emulatorName);
-      if(!startupScript.contains(CURL_COMMAND_TABLE_START)) {
+      if (!startupScript.contains(CURL_COMMAND_TABLE_START)) {
         startupScript = startupScript + "\n\n" + CURL_COMMAND_TABLE_START;
         this.connector.updateScript(emulatorName, "LaunchScript", startupScript);
       }
       String emulatorExitScript = this.connector.getEmulatorExitScript(Emulators.getEmulatorName(value));
-      if(emulatorExitScript.contains(CURL_COMMAND_TABLE_EXIT)) {
+      if (!emulatorExitScript.contains(CURL_COMMAND_TABLE_EXIT)) {
         emulatorExitScript = emulatorExitScript + "\n\n" + CURL_COMMAND_TABLE_EXIT;
         this.connector.updateScript(emulatorName, "PostScript", emulatorExitScript);
       }
@@ -101,12 +108,12 @@ public class PopperManager {
       }
     }
 
-    if(fn != null) {
-      if(!fn.isActive()) {
+    if (fn != null) {
+      if (!fn.isActive()) {
         return "The screen has not been activated.";
       }
 
-      if(fn.getCtrlKey() == 0) {
+      if (fn.getCtrlKey() == 0) {
         return "The screen is not bound to any key.";
       }
     }

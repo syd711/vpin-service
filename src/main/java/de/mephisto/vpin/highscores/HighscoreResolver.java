@@ -154,6 +154,7 @@ class HighscoreResolver {
       if (!StringUtils.isEmpty(standardErrorFromCommand.toString())) {
         LOG.error("7zip command '" + String.join(" ", commands) + "' failed: {}", standardErrorFromCommand);
       }
+      LOG.info("Finished VPReg folder refresh of " + vpRegFolderFile.getAbsolutePath());
     } catch (Exception e) {
       LOG.info("Failed to init VPReg: " + e.getMessage(), e);
     }

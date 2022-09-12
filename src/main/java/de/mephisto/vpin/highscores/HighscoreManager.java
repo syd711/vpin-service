@@ -65,7 +65,6 @@ public class HighscoreManager {
   public void notifyHighscoreChange(HighscoreChangedEvent event) {
     new Thread(() -> {
       try {
-        Thread.sleep(2000);
         String name = Thread.currentThread().getName();
         Thread.currentThread().setName("Highscore Update [" + name + "]");
         invalidateHighscore(event.getGameInfo());
