@@ -1,9 +1,6 @@
 package de.mephisto.vpin.dof;
 
-import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.VPinService;
-import de.mephisto.vpin.popper.TableStatusChangeListener;
-import de.mephisto.vpin.popper.TableStatusChangedEvent;
 import de.mephisto.vpin.util.SystemCommandExecutor;
 import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +23,10 @@ public class DOFManager {
   public DOFManager(VPinService service) {
     this.service = service;
     this.initialize();
+  }
+
+  public List<Unit> getUnits() {
+    return Arrays.asList(new Unit(1, UnitType.Pinscape));
   }
 
   private void initialize() {

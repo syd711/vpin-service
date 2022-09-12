@@ -1,13 +1,14 @@
 package de.mephisto.vpin;
 
 import de.mephisto.vpin.dof.DOFManager;
+import de.mephisto.vpin.dof.Unit;
+import de.mephisto.vpin.dof.UnitType;
 import de.mephisto.vpin.highscores.Highscore;
 import de.mephisto.vpin.highscores.HighscoreChangeListener;
 import de.mephisto.vpin.highscores.HighscoreManager;
 import de.mephisto.vpin.http.HttpServer;
 import de.mephisto.vpin.popper.PopperManager;
 import de.mephisto.vpin.popper.PopperScreen;
-import de.mephisto.vpin.popper.TableStatusChangeListener;
 import de.mephisto.vpin.roms.RomScanListener;
 import de.mephisto.vpin.roms.RomScanner;
 import de.mephisto.vpin.util.SqliteConnector;
@@ -83,16 +84,6 @@ public class VPinService {
   }
 
   @SuppressWarnings("unused")
-  public void addTableStatusChangeListener(TableStatusChangeListener listener) {
-    this.popperManager.addTableStatusChangeListener(listener);
-  }
-
-  @SuppressWarnings("unused")
-  public void removeTableStatusChangeListener(TableStatusChangeListener listener) {
-    this.popperManager.removeTableStatusChangeListener(listener);
-  }
-
-  @SuppressWarnings("unused")
   public void addRomScannedListener(RomScanListener listener) {
     this.romScanner.addRomScannedListener(listener);
   }
@@ -105,6 +96,10 @@ public class VPinService {
   @SuppressWarnings("unused")
   public GameInfo getGameInfo(int id) {
     return sqliteConnector.getGame(this, id);
+  }
+
+  public List<Unit> getUnits() {
+    return dofManager.getUnits();
   }
 
   @SuppressWarnings("unused")
