@@ -11,12 +11,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 
 public class HighscoreFilesWatcher extends Thread {
   private final static Logger LOG = LoggerFactory.getLogger(HighscoreFilesWatcher.class);
+  private final static int INPUT_OFFSET = 5000;
 
   private final VPinService service;
   private final HighscoreManager highscoreManager;
@@ -25,15 +27,19 @@ public class HighscoreFilesWatcher extends Thread {
   private boolean running = true;
   private WatchService watchService;
 
-  public HighscoreFilesWatcher(VPinService service, HighscoreManager highscoreManager, List<File> files) {
+  private long lastPoll = new Date().getTime();
+
+  public HighscoreFilesWatcher(VPinService service, HighscoreManager highscoreManager) {
     this.service = service;
     this.highscoreManager = highscoreManager;
-    this.files = files;
+
+    SystemInfo info = SystemInfo.getInstance();
+    files = Arrays.asList(info.getNvramFolder());
   }
 
   public void setRunning(boolean running) {
     this.running = running;
-    if(!this.running) {
+    if (!this.running) {
       try {
         watchService.close();
       } catch (IOException e) {
@@ -59,19 +65,27 @@ public class HighscoreFilesWatcher extends Thread {
         for (WatchEvent<?> event : key.pollEvents()) {
           Path info = (Path) event.context();
           File file = info.toFile();
-          LOG.info("Event kind : " + event.kind() + " - File : " + file.getAbsolutePath());
+
           //filter multiple events this way
-          Thread.sleep(5000);
+          if (System.currentTimeMillis() - lastPoll < INPUT_OFFSET) {
+            continue;
+          }
+
+          LOG.info("Event kind : " + event.kind() + " - File : " + file.getAbsolutePath());
+          lastPoll = System.currentTimeMillis();
           HighscoreChangedEvent highscoreChangedEvent = generateEvent(file);
-          if(highscoreChangedEvent != null) {
+          if (highscoreChangedEvent != null) {
             highscoreManager.notifyHighscoreChange(highscoreChangedEvent);
+          }
+          else {
+            LOG.warn("Failed to generate highscore change event for file " + file.getAbsolutePath());
           }
         }
         poll = key.reset();
       }
       LOG.info("Highscore Watcher shutdown");
     } catch (Exception e) {
-      if(this.running) {
+      if (this.running) {
         LOG.error("Failed to watch files: " + e.getMessage(), e);
       }
     }
@@ -79,24 +93,17 @@ public class HighscoreFilesWatcher extends Thread {
 
   private HighscoreChangedEvent generateEvent(File file) {
     String rom = null;
-    if(file.getName().endsWith(".nv")) {
+    if (file.getName().endsWith(".nv")) {
       rom = FilenameUtils.getBaseName(file.getName());
     }
-    else if(file.getName().equals(SystemInfo.VPREG_STG)) {
-      highscoreManager.refreshHighscores();
-      File target = new File(SystemInfo.RESOURCES, SystemInfo.VPREG);
-      File[] subFolders = target.listFiles((dir, name) -> new File(dir, name).isDirectory());
-      if(subFolders != null) {
-        List<File> folders = Arrays.asList(subFolders);
-        folders.sort((o1, o2) -> (int) (o1.lastModified() - o2.lastModified()));
-        rom = folders.get(0).getName();
-      }
-    }
 
-    if(rom != null) {
+    if (rom != null) {
       GameInfo gameByRom = service.getGameByRom(rom);
-      if(gameByRom != null) {
+      if (gameByRom != null) {
         return new HighscoreChangedEventImpl(gameByRom);
+      }
+      else {
+        LOG.warn("Highscore watcher could not resolve game for ROM name '" + rom + "'");
       }
     }
     return null;

@@ -1,7 +1,6 @@
 package de.mephisto.vpin.highscores;
 
 import de.mephisto.vpin.GameInfo;
-import de.mephisto.vpin.ServiceListener;
 import de.mephisto.vpin.VPinService;
 import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -26,11 +25,9 @@ public class HighscoreManager {
     this.VPinService = service;
 
     this.highscoreResolver = new HighscoreResolver();
-    this.highscoreResolver.refresh();
 
-    SystemInfo info = SystemInfo.getInstance();
-    List<File> watching = Arrays.asList(info.getNvramFolder(), info.getVPRegFile().getParentFile());
-    this.highscoreWatcher = new HighscoreFilesWatcher(service, this, watching);
+
+    this.highscoreWatcher = new HighscoreFilesWatcher(service, this);
     this.highscoreWatcher.start();
   }
 
@@ -60,18 +57,24 @@ public class HighscoreManager {
   }
 
   public void invalidateHighscore(GameInfo game) {
+    highscoreResolver.refresh();
     cache.remove(game.getId());
     LOG.info("Invalidated cached highscore of " + game);
   }
 
   public void notifyHighscoreChange(HighscoreChangedEvent event) {
-    invalidateHighscore(event.getGameInfo());
-    for (HighscoreChangeListener listener : this.listeners) {
-      listener.highscoreChanged(event);
-    }
-  }
-
-  void refreshHighscores() {
-    this.highscoreResolver.refresh();
+    new Thread(() -> {
+      try {
+        Thread.sleep(2000);
+        String name = Thread.currentThread().getName();
+        Thread.currentThread().setName("Highscore Update [" + name + "]");
+        invalidateHighscore(event.getGameInfo());
+        for (HighscoreChangeListener listener : listeners) {
+          listener.highscoreChanged(event);
+        }
+      } catch (Exception e) {
+        LOG.error("Failed to trigger highscore updates: " + e.getMessage(), e);
+      }
+    }).start();
   }
 }

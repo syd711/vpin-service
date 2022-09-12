@@ -1,6 +1,5 @@
 package de.mephisto.vpin.util;
 
-import de.mephisto.vpin.util.SystemInfo;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;

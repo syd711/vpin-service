@@ -75,12 +75,32 @@ public class SqliteConnector {
     return info;
   }
 
+  public GameInfo getGameByFilename(VPinService service, String table) {
+    this.connect();
+    GameInfo info = null;
+    try {
+      Statement statement = conn.createStatement();
+      ResultSet rs = statement.executeQuery("SELECT * FROM Games where GameFileName = '" + table + "';");
+      while (rs.next()) {
+        info = createGameInfo(service, rs);
+      }
+
+      rs.close();
+      statement.close();
+    } catch (SQLException e) {
+      LOG.error("Failed to read game info: " + e.getMessage(), e);
+    } finally {
+      this.disconnect();
+    }
+    return info;
+  }
+
   public GameInfo getGameByName(VPinService service, String table) {
     this.connect();
     GameInfo info = null;
     try {
       Statement statement = conn.createStatement();
-      ResultSet rs = statement.executeQuery("SELECT * FROM Games where GameDisplay = " + table + ";");
+      ResultSet rs = statement.executeQuery("SELECT * FROM Games where GameDisplay = '" + table + "';");
       while (rs.next()) {
         info = createGameInfo(service, rs);
       }
@@ -208,6 +228,7 @@ public class SqliteConnector {
 
   public String getEmulatorStartupScript(String emuName) {
     String script = null;
+    this.connect();
     try {
       Statement statement = conn.createStatement();
       ResultSet rs = statement.executeQuery("SELECT * FROM Emulators where EmuName = '" + emuName + "';");
@@ -218,11 +239,15 @@ public class SqliteConnector {
     } catch (SQLException e) {
       LOG.error("Failed to read startup script or " + emuName + ": " + e.getMessage(), e);
     }
+    finally {
+      this.disconnect();
+    }
     return script;
   }
 
   public String getEmulatorExitScript(String emuName) {
     String script = null;
+    this.connect();
     try {
       Statement statement = conn.createStatement();
       ResultSet rs = statement.executeQuery("SELECT * FROM Emulators where EmuName = '" + emuName + "';");
@@ -232,6 +257,9 @@ public class SqliteConnector {
       statement.close();
     } catch (SQLException e) {
       LOG.error("Failed to read exit script or " + emuName + ": " + e.getMessage(), e);
+    }
+    finally {
+      this.disconnect();
     }
     return script;
   }

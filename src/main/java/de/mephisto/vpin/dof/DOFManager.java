@@ -1,6 +1,9 @@
 package de.mephisto.vpin.dof;
 
 import de.mephisto.vpin.GameInfo;
+import de.mephisto.vpin.VPinService;
+import de.mephisto.vpin.popper.TableStatusChangeListener;
+import de.mephisto.vpin.popper.TableStatusChangedEvent;
 import de.mephisto.vpin.util.SystemCommandExecutor;
 import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -18,26 +21,11 @@ public class DOFManager {
   private final static String NO_PINSCAPE = "Pinscape units detected: none";
 
   private boolean boardsFound = false;
+  private final VPinService service;
 
-  private static DOFManager instance;
-
-  private DOFManager() {
-    initialize();
-  }
-
-  public static DOFManager create() {
-    if(instance == null) {
-      instance = new DOFManager();
-    }
-    return instance;
-  }
-
-  public void executeTableLaunchCommands(GameInfo game) {
-
-  }
-
-  public void executeTableExitCommands(GameInfo game) {
-
+  public DOFManager(VPinService service) {
+    this.service = service;
+    this.initialize();
   }
 
   private void initialize() {
@@ -59,7 +47,7 @@ public class DOFManager {
       LOG.info("Failed execute DOF command: " + e.getMessage(), e);
     }
 
-    if(!boardsFound) {
+    if (!boardsFound) {
       LOG.info("DOFManager initialized, no boards found");
     }
     else {

@@ -32,6 +32,14 @@ public class RomScanner {
     this.store = PropertiesStore.create("repository.properties");
   }
 
+  public void addRomScannedListener(RomScanListener listener) {
+    this.listeners.add(listener);
+  }
+
+  public void removeRomScannedListener(RomScanListener listener) {
+    this.listeners.remove(listener);
+  }
+
   public List<GameInfo> loadTableInfos(boolean forceRomScan) {
     List<GameInfo> games = connector.getGames(service);
     for (GameInfo game : games) {

@@ -1,7 +1,7 @@
 package de.mephisto.vpin;
 
-import de.mephisto.vpin.popper.PopperScreen;
 import de.mephisto.vpin.highscores.Highscore;
+import de.mephisto.vpin.popper.PopperScreen;
 import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.io.FilenameUtils;
 

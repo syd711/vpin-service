@@ -4,16 +4,18 @@ import de.mephisto.vpin.dof.DOFManager;
 import de.mephisto.vpin.highscores.Highscore;
 import de.mephisto.vpin.highscores.HighscoreChangeListener;
 import de.mephisto.vpin.highscores.HighscoreManager;
-import de.mephisto.vpin.http.GrizzlyHttpServer;
-import de.mephisto.vpin.popper.PinUPFunction;
+import de.mephisto.vpin.http.HttpServer;
 import de.mephisto.vpin.popper.PopperManager;
 import de.mephisto.vpin.popper.PopperScreen;
+import de.mephisto.vpin.popper.TableStatusChangeListener;
+import de.mephisto.vpin.roms.RomScanListener;
 import de.mephisto.vpin.roms.RomScanner;
 import de.mephisto.vpin.util.SqliteConnector;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -34,14 +36,14 @@ public class VPinService {
 
   private static VPinService instance;
 
-  private final GrizzlyHttpServer httpServer;
+  private final HttpServer httpServer;
 
   private final DOFManager dofManager;
 
   private final PopperManager popperManager;
 
   public static VPinService create() {
-    if(instance == null) {
+    if (instance == null) {
       instance = new VPinService();
     }
     return instance;
@@ -51,9 +53,9 @@ public class VPinService {
     this.sqliteConnector = new SqliteConnector();
     this.romScanner = new RomScanner(this, sqliteConnector);
     this.highscoreManager = new HighscoreManager(this);
-    this.httpServer = new GrizzlyHttpServer();
-    this.dofManager = DOFManager.create();
-    this.popperManager = new PopperManager(sqliteConnector);
+    this.popperManager = new PopperManager(sqliteConnector, highscoreManager);
+    this.dofManager = new DOFManager(this);
+    this.httpServer = new HttpServer(popperManager);
 
     LOG.info("VPinService created.");
   }
@@ -78,6 +80,26 @@ public class VPinService {
   @SuppressWarnings("unused")
   public void removeHighscoreChangeListener(HighscoreChangeListener listener) {
     this.highscoreManager.removeHighscoreChangeListener(listener);
+  }
+
+  @SuppressWarnings("unused")
+  public void addTableStatusChangeListener(TableStatusChangeListener listener) {
+    this.popperManager.addTableStatusChangeListener(listener);
+  }
+
+  @SuppressWarnings("unused")
+  public void removeTableStatusChangeListener(TableStatusChangeListener listener) {
+    this.popperManager.removeTableStatusChangeListener(listener);
+  }
+
+  @SuppressWarnings("unused")
+  public void addRomScannedListener(RomScanListener listener) {
+    this.romScanner.addRomScannedListener(listener);
+  }
+
+  @SuppressWarnings("unused")
+  public void removeRomScannedListener(RomScanListener listener) {
+    this.romScanner.removeRomScannedListener(listener);
   }
 
   @SuppressWarnings("unused")
@@ -143,8 +165,7 @@ public class VPinService {
     return this.sqliteConnector.getGameByName(this, table);
   }
 
-  //TODO mpf
-  public void notifyTableStatusChange(GameInfo game, boolean b) {
-    this.popperManager.notifyTableStatusChange(game, b);
+  public GameInfo getGameByFile(File file) {
+    return this.sqliteConnector.getGameByFilename(this, file.getName());
   }
 }
