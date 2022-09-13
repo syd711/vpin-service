@@ -1,5 +1,6 @@
 package de.mephisto.vpin;
 
+import de.mephisto.vpin.dof.DOFCommand;
 import de.mephisto.vpin.dof.DOFManager;
 import de.mephisto.vpin.dof.Unit;
 import de.mephisto.vpin.dof.UnitType;
@@ -96,6 +97,10 @@ public class VPinService {
   @SuppressWarnings("unused")
   public GameInfo getGameInfo(int id) {
     return sqliteConnector.getGame(this, id);
+  }
+
+  public List<DOFCommand> getDOFCommands() {
+    return dofManager.getDOFCommands();
   }
 
   public List<Unit> getUnits() {

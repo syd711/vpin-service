@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class DOFManager {
 
   private boolean boardsFound = false;
   private final VPinService service;
+  private final List<DOFCommand> commandList = new ArrayList<>();
 
   public DOFManager(VPinService service) {
     this.service = service;
@@ -27,6 +29,10 @@ public class DOFManager {
 
   public List<Unit> getUnits() {
     return Arrays.asList(new Unit(1, UnitType.Pinscape));
+  }
+
+  public List<DOFCommand> getDOFCommands() {
+    return this.commandList;
   }
 
   private void initialize() {

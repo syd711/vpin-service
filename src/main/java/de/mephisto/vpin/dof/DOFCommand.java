@@ -13,19 +13,103 @@ import java.util.List;
 public class DOFCommand {
   private final static Logger LOG = LoggerFactory.getLogger(DOFCommand.class);
 
-  private final int unit;
-  private final int output;
-  private final int value;
+  private int id;
+  private int unit;
+  private int portNumber;
+  private int value;
+  private int durationMs;
+  private Trigger trigger;
+  private String keyBinding;
+  private boolean toggle;
+  private String description;
 
-  public DOFCommand(int unit, int output, int value) {
+  public DOFCommand(int id, int unit, int portNumber, int value, int durationMs, Trigger trigger, String keyBinding, boolean toggle, String description) {
+    this.id = id;
     this.unit = unit;
-    this.output = output;
+    this.portNumber = portNumber;
     this.value = value;
+    this.durationMs = durationMs;
+    this.trigger = trigger;
+    this.keyBinding = keyBinding;
+    this.toggle = toggle;
+    this.description = description;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setId(int id) {
+    this.id = id;
+  }
+
+  public void setUnit(int unit) {
+    this.unit = unit;
+  }
+
+  public void setPortNumber(int portNumber) {
+    this.portNumber = portNumber;
+  }
+
+  public void setValue(int value) {
+    this.value = value;
+  }
+
+  public void setDurationMs(int durationMs) {
+    this.durationMs = durationMs;
+  }
+
+  public void setTrigger(Trigger trigger) {
+    this.trigger = trigger;
+  }
+
+  public void setKeyBinding(String keyBinding) {
+    this.keyBinding = keyBinding;
+  }
+
+  public void setToggle(boolean toggle) {
+    this.toggle = toggle;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public int getId() {
+    return id;
+  }
+
+  public int getUnit() {
+    return unit;
+  }
+
+  public int getPortNumber() {
+    return portNumber;
+  }
+
+  public int getValue() {
+    return value;
+  }
+
+  public int getDurationMs() {
+    return durationMs;
+  }
+
+  public Trigger getTrigger() {
+    return trigger;
+  }
+
+  public String getKeyBinding() {
+    return keyBinding;
+  }
+
+  public boolean isToggle() {
+    return toggle;
   }
 
   public DOFCommandResult execute() {
     File testerFile = new File(SystemInfo.RESOURCES + "DOFTest/", "DirectOutputTest.exe");
-    List<String> commands = Arrays.asList(testerFile.getAbsolutePath(), String.valueOf(unit), String.valueOf(output), String.valueOf(value));
+    List<String> commands = Arrays.asList(testerFile.getAbsolutePath(), String.valueOf(unit), String.valueOf(portNumber), String.valueOf(value));
     try {
       SystemCommandExecutor executor = new SystemCommandExecutor(commands, false);
       executor.setDir(testerFile.getParentFile());

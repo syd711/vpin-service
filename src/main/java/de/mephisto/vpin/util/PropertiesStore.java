@@ -11,7 +11,7 @@ import java.util.Properties;
 public class PropertiesStore {
   private final static Logger LOG = LoggerFactory.getLogger(PropertiesStore.class);
 
-  private final Properties properties = new Properties();
+  protected final Properties properties = new Properties();
 
   private File propertiesFile;
 
@@ -49,6 +49,17 @@ public class PropertiesStore {
     }
     return defaultValue;
   }
+
+  public boolean getBoolean(String key) {
+    if(properties.containsKey(key)) {
+      String value = properties.getProperty(key).trim();
+      if(value.length() > 0) {
+        return Boolean.parseBoolean(value);
+      }
+    }
+    return false;
+  }
+
 
   public int getInt(String key) {
     if(properties.containsKey(key)) {
