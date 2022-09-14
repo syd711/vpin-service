@@ -126,4 +126,12 @@ public class DOFCommand {
     }
     return null;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if(obj instanceof DOFCommand) {
+      return this.id == ((DOFCommand)obj).getId();
+    }
+    return false;
+  }
 }

@@ -1,6 +1,7 @@
 package de.mephisto.vpin.dof;
 
 import de.mephisto.vpin.VPinService;
+import de.mephisto.vpin.util.JSON;
 import de.mephisto.vpin.util.SystemCommandExecutor;
 import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -20,19 +21,17 @@ public class DOFManager {
 
   private boolean boardsFound = false;
   private final VPinService service;
-  private final List<DOFCommand> commandList = new ArrayList<>();
+  private final DOFCommandData dofCommandData;
 
-  public DOFManager(VPinService service) {
+
+  public DOFManager(VPinService service, DOFCommandData dofCommandData) {
     this.service = service;
+    this.dofCommandData = dofCommandData;
     this.initialize();
   }
 
   public List<Unit> getUnits() {
     return Arrays.asList(new Unit(1, UnitType.Pinscape));
-  }
-
-  public List<DOFCommand> getDOFCommands() {
-    return this.commandList;
   }
 
   private void initialize() {

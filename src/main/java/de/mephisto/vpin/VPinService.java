@@ -1,9 +1,6 @@
 package de.mephisto.vpin;
 
-import de.mephisto.vpin.dof.DOFCommand;
-import de.mephisto.vpin.dof.DOFManager;
-import de.mephisto.vpin.dof.Unit;
-import de.mephisto.vpin.dof.UnitType;
+import de.mephisto.vpin.dof.*;
 import de.mephisto.vpin.highscores.Highscore;
 import de.mephisto.vpin.highscores.HighscoreChangeListener;
 import de.mephisto.vpin.highscores.HighscoreManager;
@@ -12,6 +9,7 @@ import de.mephisto.vpin.popper.PopperManager;
 import de.mephisto.vpin.popper.PopperScreen;
 import de.mephisto.vpin.roms.RomScanListener;
 import de.mephisto.vpin.roms.RomScanner;
+import de.mephisto.vpin.util.JSON;
 import de.mephisto.vpin.util.SqliteConnector;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -44,6 +42,8 @@ public class VPinService {
 
   private final PopperManager popperManager;
 
+  private final DOFCommandData dofCommandData;
+
   public static VPinService create() {
     if (instance == null) {
       instance = new VPinService();
@@ -56,7 +56,9 @@ public class VPinService {
     this.romScanner = new RomScanner(this, sqliteConnector);
     this.highscoreManager = new HighscoreManager(this);
     this.popperManager = new PopperManager(sqliteConnector, highscoreManager);
-    this.dofManager = new DOFManager(this);
+
+    dofCommandData = DOFCommandData.create();
+    this.dofManager = new DOFManager(this, dofCommandData);
     this.httpServer = new HttpServer(popperManager);
 
     LOG.info("VPinService created.");
@@ -99,8 +101,20 @@ public class VPinService {
     return sqliteConnector.getGame(this, id);
   }
 
+  public void updateDOFCommand(DOFCommand command) {
+    this.dofCommandData.updateDOFCommand(command);
+  }
+
+  public void addDOFCommand(DOFCommand command) {
+    this.dofCommandData.addDOFCommand(command);
+  }
+
+  public void removeDOFCommand(DOFCommand command) {
+    this.dofCommandData.removeDOFCommand(command);
+  }
+
   public List<DOFCommand> getDOFCommands() {
-    return dofManager.getDOFCommands();
+    return dofCommandData.getCommands();
   }
 
   public List<Unit> getUnits() {
