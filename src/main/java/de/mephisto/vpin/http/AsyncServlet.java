@@ -2,7 +2,6 @@ package de.mephisto.vpin.http;
 
 import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.VPinService;
-import de.mephisto.vpin.dof.DOFManager;
 import de.mephisto.vpin.popper.PopperManager;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -39,7 +38,7 @@ public class AsyncServlet extends HttpServlet {
     String table = request.getParameter("table");
     File tableFile = new File(table);
     if (!StringUtils.isEmpty(table)) {
-      VPinService service = VPinService.create();
+      VPinService service = VPinService.create(true);
       GameInfo game = service.getGameByFile(tableFile);
       if(game == null) {
         LOG.warn("No game found for name '" + tableFile.getName() + "' [" + request.getRequestURI() + "]");

@@ -1,17 +1,6 @@
 package de.mephisto.vpin.dof;
 
-import de.mephisto.vpin.util.SystemCommandExecutor;
-import de.mephisto.vpin.util.SystemInfo;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-
 public class DOFCommand {
-  private final static Logger LOG = LoggerFactory.getLogger(DOFCommand.class);
 
   private int id;
   private int unit;
@@ -23,6 +12,8 @@ public class DOFCommand {
   private boolean toggle;
   private String description;
 
+  private transient boolean toggled;
+
   public DOFCommand(int id, int unit, int portNumber, int value, int durationMs, Trigger trigger, String keyBinding, boolean toggle, String description) {
     this.id = id;
     this.unit = unit;
@@ -33,6 +24,14 @@ public class DOFCommand {
     this.keyBinding = keyBinding;
     this.toggle = toggle;
     this.description = description;
+  }
+
+  public boolean isToggled() {
+    return toggled;
+  }
+
+  public void setToggled(boolean toggled) {
+    this.toggled = toggled;
   }
 
   public String getDescription() {
@@ -107,24 +106,13 @@ public class DOFCommand {
     return toggle;
   }
 
-  public DOFCommandResult execute() {
-    File testerFile = new File(SystemInfo.RESOURCES + "DOFTest/", "DirectOutputTest.exe");
-    List<String> commands = Arrays.asList(testerFile.getAbsolutePath(), String.valueOf(unit), String.valueOf(portNumber), String.valueOf(value));
-    try {
-      SystemCommandExecutor executor = new SystemCommandExecutor(commands, false);
-      executor.setDir(testerFile.getParentFile());
-      executor.executeCommand();
+  public void execute() {
+    DOFCommandExecutor.execute(this);
+  }
 
-      StringBuilder standardOutputFromCommand = executor.getStandardOutputFromCommand();
-      StringBuilder standardErrorFromCommand = executor.getStandardErrorFromCommand();
-      if (!StringUtils.isEmpty(standardErrorFromCommand.toString())) {
-        LOG.error("DOF command '" + String.join(" ", commands) + "' failed: {}", standardErrorFromCommand);
-      }
-      return new DOFCommandResult(standardOutputFromCommand.toString());
-    } catch (Exception e) {
-      LOG.info("Failed execute DOF command: " + e.getMessage(), e);
-    }
-    return null;
+  @Override
+  public String toString() {
+    return "DOFCommand " + this.getId() + " [" + this.getUnit() + "|" + this.getPortNumber() + "|" + this.getValue() + "|" + this.getTrigger() + "|" + this.getKeyBinding() + "]";
   }
 
   @Override

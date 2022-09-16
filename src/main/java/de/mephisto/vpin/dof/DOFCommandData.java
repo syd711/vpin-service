@@ -4,6 +4,7 @@ import de.mephisto.vpin.util.JSON;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DOFCommandData {
 
@@ -20,6 +21,10 @@ public class DOFCommandData {
 
   public List<DOFCommand> getCommands() {
     return new ArrayList<>(commandList);
+  }
+
+  public List<DOFCommand> getCommandsFor(Trigger trigger) {
+    return getCommands().stream().filter(c -> c.getTrigger().equals(trigger)).collect(Collectors.toList());
   }
 
   public void updateDOFCommand(DOFCommand command) {

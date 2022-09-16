@@ -14,7 +14,7 @@ public class VPinServiceTest {
 
   @Test
   public void testTableRepository() {
-    VPinService service = VPinService.create();
+    VPinService service = VPinService.create(true);
     List<GameInfo> tables = service.getGameInfos();
     for (GameInfo table : tables) {
       assertTrue(table.getGameFile().exists());
@@ -23,7 +23,7 @@ public class VPinServiceTest {
 
   @Test
   public void testTableRepositoryWithoutReset() {
-    VPinService service = VPinService.create();
+    VPinService service = VPinService.create(true);
     assertFalse(service.getGameInfos().isEmpty());
 
     List<GameInfo> tables = service.getGameInfos();
@@ -41,7 +41,7 @@ public class VPinServiceTest {
 
   @Test
   public void testTableRepositoryGetGamesWithoutRoms() {
-    VPinService service = VPinService.create();
+    VPinService service = VPinService.create(true);
     List<GameInfo> tables = service.getGamesWithEmptyRoms();
     for (GameInfo table : tables) {
       LOG.info(table.getId() + ": " + table.getGameFile().getAbsolutePath());
@@ -50,7 +50,7 @@ public class VPinServiceTest {
 
   @Test
   public void testTableInvalidate() {
-    VPinService service = VPinService.create();
+    VPinService service = VPinService.create(true);
     List<GameInfo> tables = service.getGamesWithEmptyRoms();
     for (GameInfo table : tables) {
       if(table.getId() == 372) {

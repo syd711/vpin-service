@@ -36,9 +36,9 @@ public class VPinService {
 
   private static VPinService instance;
 
-  private final HttpServer httpServer;
+  private HttpServer httpServer;
 
-  private final DOFManager dofManager;
+  private DOFManager dofManager;
 
   private final PopperManager popperManager;
 
@@ -46,22 +46,26 @@ public class VPinService {
 
   private List<GameInfo> gameInfos = new ArrayList<>();
 
-  public static VPinService create() {
+  public static VPinService create(boolean headless) {
     if (instance == null) {
-      instance = new VPinService();
+      instance = new VPinService(headless);
     }
     return instance;
   }
 
-  private VPinService() {
+  private VPinService(boolean headless) {
     this.romManager = new RomManager();
     this.sqliteConnector = new SqliteConnector(romManager);
     this.highscoreManager = new HighscoreManager(this);
     this.popperManager = new PopperManager(sqliteConnector, highscoreManager);
 
     dofCommandData = DOFCommandData.create();
-    this.dofManager = new DOFManager(this, dofCommandData);
-    this.httpServer = new HttpServer(popperManager);
+    this.dofManager = new DOFManager(dofCommandData);
+
+    if(headless) {
+      this.httpServer = new HttpServer(popperManager);
+      this.dofManager.startRuleEngine();
+    }
 
     LOG.info("VPinService created.");
   }

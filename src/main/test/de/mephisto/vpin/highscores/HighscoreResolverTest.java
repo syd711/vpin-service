@@ -20,7 +20,7 @@ public class HighscoreResolverTest {
     HighscoreResolver highscoreResolver = new HighscoreResolver();
     highscoreResolver.refresh();
 
-    VPinService service = VPinService.create();
+    VPinService service = VPinService.create(true);
     List<GameInfo> games = service.getGameInfos();
     List<GameInfo> valid = new ArrayList<>();
     for (GameInfo game : games) {
@@ -48,7 +48,7 @@ public class HighscoreResolverTest {
     HighscoreResolver highscoreResolver = new HighscoreResolver();
     highscoreResolver.refresh();
 
-    VPinService service = VPinService.create();
+    VPinService service = VPinService.create(true);
     GameInfo game = service.getGameByRom("STLE");
     assertNotNull(game.resolveHighscore());
     assertNotNull(game.resolveHighscore().getUserInitials());

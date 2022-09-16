@@ -18,7 +18,7 @@ public class PopperManager {
   private final static String CURL_COMMAND_TABLE_EXIT = "curl -X POST --data-urlencode \"table=[GAMEFULLNAME]\" http://localhost:" + HttpServer.PORT + "/service/gameExit";
 
   private final SqliteConnector connector;
-  private HighscoreManager highscoreManager;
+  private final HighscoreManager highscoreManager;
 
   private final List<TableStatusChangeListener> listeners = new ArrayList<>();
 

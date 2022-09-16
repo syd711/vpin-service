@@ -11,7 +11,7 @@ public class SqliteConnectorTest {
   @Test
   public void testSqliteConnector() {
     SqliteConnector sqliteConnector = new SqliteConnector(new RomManager());
-    VPinService service = VPinService.create();
+    VPinService service = VPinService.create(true);
     assertFalse(sqliteConnector.getGames(service).isEmpty());
   }
 
