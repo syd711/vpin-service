@@ -97,7 +97,7 @@ class HighscoreResolver {
   private Highscore parseVRegHighscore(GameInfo gameInfo) throws IOException {
     File tableHighscoreFolder = gameInfo.getVPRegFolder();
 
-    if (gameInfo.getVPRegFolder().exists()) {
+    if (tableHighscoreFolder != null && gameInfo.getVPRegFolder().exists()) {
       File tableHighscoreFile = new File(tableHighscoreFolder, "HighScore1");
       File tableHighscoreNameFile = new File(tableHighscoreFolder, "HighScore1Name");
       if (tableHighscoreFile.exists() && tableHighscoreNameFile.exists()) {

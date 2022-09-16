@@ -3,7 +3,9 @@ package de.mephisto.vpin.util;
 import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.VPinService;
 import de.mephisto.vpin.popper.PinUPFunction;
+import de.mephisto.vpin.roms.RomManager;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,8 +25,10 @@ public class SqliteConnector {
 
   private Connection conn;
   private final SystemInfo systemInfo;
+  private final RomManager romManager;
 
-  public SqliteConnector() {
+  public SqliteConnector(RomManager romManager) {
+    this.romManager = romManager;
     this.systemInfo = SystemInfo.getInstance();
     File dbFile = new File(systemInfo.getPinUPSystemFolder(), "PUPDatabase.db");
     if (!dbFile.exists()) {
@@ -298,17 +302,38 @@ public class SqliteConnector {
     }
   }
 
+  public void resetRomNames() {
+    this.connect();
+    try {
+      Statement stmt = conn.createStatement();
+      String sql = "UPDATE Games SET 'ROM'='';";
+      stmt.executeUpdate(sql);
+      stmt.close();
+    } catch (Exception e) {
+      LOG.error("Failed to update reset ROM names: " + e.getMessage(), e);
+    } finally {
+      this.disconnect();
+    }
+  }
+
   private GameInfo createGameInfo(VPinService service, ResultSet rs) throws SQLException {
     GameInfo info = new GameInfo(service);
     int id = rs.getInt("GameID");
-    String rom = rs.getString("ROM");
+    String rom = romManager.getRomName(id);
+
     String gameFileName = rs.getString("GameFileName");
     String gameDisplayName = rs.getString("GameDisplay");
-    String tags = rs.getString("TAGS");
 
     File wheelIconFile = new File(systemInfo.getPinUPSystemFolder() + "/POPMedia/Visual Pinball X/Wheel/", FilenameUtils.getBaseName(gameFileName) + ".png");
     File nvRamFolder = new File(systemInfo.getMameFolder(), "nvram");
-    File nvRamFile = new File(nvRamFolder, rom + ".nv");
+
+    File romFile = null;
+    File nvRamFile = null;
+    if(!StringUtils.isEmpty(rom)) {
+      romFile = new File(systemInfo.getMameRomFolder(), rom + ".zip");
+      nvRamFile = new File(nvRamFolder, rom + ".nv");
+    }
+
     File vpxFile = new File(systemInfo.getVPXTablesFolder(), gameFileName);
     if (!vpxFile.exists()) {
       LOG.warn("No vpx file " + vpxFile.getAbsolutePath() + " found, ignoring game.");
@@ -317,13 +342,12 @@ public class SqliteConnector {
 
     info.setId(id);
     info.setRom(rom);
-    info.setTags(tags);
     info.setGameFileName(gameFileName);
     info.setGameDisplayName(gameDisplayName);
     info.setWheelIconFile(wheelIconFile);
     info.setGameFile(vpxFile);
     info.setNvRamFile(nvRamFile);
-    info.setRomFile(new File(systemInfo.getMameRomFolder(), rom + ".zip"));
+    info.setRomFile(romFile);
 
     loadStats(info);
     return info;

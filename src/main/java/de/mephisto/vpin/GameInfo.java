@@ -4,6 +4,7 @@ import de.mephisto.vpin.highscores.Highscore;
 import de.mephisto.vpin.popper.PopperScreen;
 import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.Date;
@@ -13,7 +14,6 @@ public class GameInfo {
   private String rom;
   private String gameDisplayName;
   private String gameFileName;
-  private String tags;
   private int id;
 
   private File gameFile;
@@ -31,24 +31,16 @@ public class GameInfo {
     this.service = service;
   }
 
-  public String getTags() {
-    return tags;
-  }
-
-  public void setTags(String tags) {
-    this.tags = tags;
-  }
-
   public Highscore resolveHighscore() {
     return this.service.getHighscore(this);
   }
 
   public boolean hasHighscore() {
-    if(this.getNvRamFile().exists()) {
+    if(this.getNvRamFile() != null && this.getNvRamFile().exists()) {
       return true;
     }
 
-    if(this.getVPRegFolder().exists()) {
+    if(this.getVPRegFolder() != null && this.getVPRegFolder().exists()) {
       return true;
     }
     return false;
@@ -72,7 +64,10 @@ public class GameInfo {
   }
 
   public File getVPRegFolder() {
-    return new File(SystemInfo.getInstance().getExtractedVPRegFolder(), getRom());
+    if(!StringUtils.isEmpty(this.getRom())) {
+      return new File(SystemInfo.getInstance().getExtractedVPRegFolder(), getRom());
+    }
+    return null;
   }
 
   public int getNumberPlays() {

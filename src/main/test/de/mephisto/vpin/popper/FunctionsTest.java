@@ -1,5 +1,6 @@
 package de.mephisto.vpin.popper;
 
+import de.mephisto.vpin.roms.RomManager;
 import de.mephisto.vpin.util.SqliteConnector;
 import org.junit.jupiter.api.Test;
 
@@ -12,14 +13,14 @@ public class FunctionsTest {
 
   @Test
   public void testFunctions() {
-    SqliteConnector connector = new SqliteConnector();
+    SqliteConnector connector = new SqliteConnector(new RomManager());
     List<PinUPFunction> functions = connector.getFunctions();
     assertFalse(functions.isEmpty());
   }
 
   @Test
   public void testFunction() {
-    SqliteConnector connector = new SqliteConnector();
+    SqliteConnector connector = new SqliteConnector(new RomManager());
     PinUPFunction function = connector.getFunction(PinUPFunction.FUNCTION_SHOW_FLYER);
     assertNotNull(function);
   }

@@ -1,15 +1,16 @@
 package de.mephisto.vpin;
 
-import de.mephisto.vpin.dof.*;
+import de.mephisto.vpin.dof.DOFCommand;
+import de.mephisto.vpin.dof.DOFCommandData;
+import de.mephisto.vpin.dof.DOFManager;
+import de.mephisto.vpin.dof.Unit;
 import de.mephisto.vpin.highscores.Highscore;
 import de.mephisto.vpin.highscores.HighscoreChangeListener;
 import de.mephisto.vpin.highscores.HighscoreManager;
 import de.mephisto.vpin.http.HttpServer;
 import de.mephisto.vpin.popper.PopperManager;
 import de.mephisto.vpin.popper.PopperScreen;
-import de.mephisto.vpin.roms.RomScanListener;
-import de.mephisto.vpin.roms.RomScanner;
-import de.mephisto.vpin.util.JSON;
+import de.mephisto.vpin.roms.RomManager;
 import de.mephisto.vpin.util.SqliteConnector;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 public class VPinService {
@@ -28,7 +28,7 @@ public class VPinService {
 
   private final SqliteConnector sqliteConnector;
 
-  private final RomScanner romScanner;
+  private final RomManager romManager;
 
   private final HighscoreManager highscoreManager;
 
@@ -44,6 +44,8 @@ public class VPinService {
 
   private final DOFCommandData dofCommandData;
 
+  private List<GameInfo> gameInfos = new ArrayList<>();
+
   public static VPinService create() {
     if (instance == null) {
       instance = new VPinService();
@@ -52,8 +54,8 @@ public class VPinService {
   }
 
   private VPinService() {
-    this.sqliteConnector = new SqliteConnector();
-    this.romScanner = new RomScanner(this, sqliteConnector);
+    this.romManager = new RomManager();
+    this.sqliteConnector = new SqliteConnector(romManager);
     this.highscoreManager = new HighscoreManager(this);
     this.popperManager = new PopperManager(sqliteConnector, highscoreManager);
 
@@ -87,40 +89,36 @@ public class VPinService {
   }
 
   @SuppressWarnings("unused")
-  public void addRomScannedListener(RomScanListener listener) {
-    this.romScanner.addRomScannedListener(listener);
-  }
-
-  @SuppressWarnings("unused")
-  public void removeRomScannedListener(RomScanListener listener) {
-    this.romScanner.removeRomScannedListener(listener);
-  }
-
-  @SuppressWarnings("unused")
   public GameInfo getGameInfo(int id) {
     return sqliteConnector.getGame(this, id);
   }
 
+  @SuppressWarnings("unused")
   public void updateDOFCommand(DOFCommand command) {
     this.dofCommandData.updateDOFCommand(command);
   }
 
+  @SuppressWarnings("unused")
   public void addDOFCommand(DOFCommand command) {
     this.dofCommandData.addDOFCommand(command);
   }
 
+  @SuppressWarnings("unused")
   public void removeDOFCommand(DOFCommand command) {
     this.dofCommandData.removeDOFCommand(command);
   }
 
+  @SuppressWarnings("unused")
   public List<DOFCommand> getDOFCommands() {
     return dofCommandData.getCommands();
   }
 
+  @SuppressWarnings("unused")
   public List<Unit> getUnits() {
     return dofManager.getUnits();
   }
 
+  @SuppressWarnings("unused")
   public Unit getUnit(int id) {
     return dofManager.getUnit(id);
   }
@@ -133,17 +131,24 @@ public class VPinService {
   }
 
   public List<GameInfo> getGameInfos() {
-    return sqliteConnector.getGames(this);
+    if(this.gameInfos.isEmpty()) {
+      this.gameInfos.addAll(sqliteConnector.getGames(this));
+      LOG.info("Loading of all GameInfo finished, loaded " + this.gameInfos.size() + " games.");
+    }
+    return this.gameInfos;
   }
 
-  public Future<List<GameInfo>> rescanAllTables() {
-    return this.executor.submit(() -> this.romScanner.loadTableInfos(true));
+  @SuppressWarnings("unused")
+  public void refreshGameInfos() {
+    this.gameInfos.clear();
+    LOG.info("Resetted game info list.");
   }
 
-  public void rescanRom(GameInfo gameInfo) {
-    this.romScanner.scanRom(gameInfo);
+  public String rescanRom(GameInfo gameInfo) {
+    return this.romManager.scanRom(gameInfo);
   }
 
+  @SuppressWarnings("unused")
   public GameInfo getGameByVpxFilename(String filename) {
     List<GameInfo> games = sqliteConnector.getGames(this);
     for (GameInfo gameInfo : games) {

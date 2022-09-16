@@ -25,11 +25,15 @@ public class PropertiesStore {
       }
 
       if(!store.propertiesFile.exists()) {
-        store.properties.store(new FileOutputStream(store.propertiesFile), null);
+        FileOutputStream fileOutputStream = new FileOutputStream(store.propertiesFile);
+        store.properties.store(fileOutputStream, null);
         LOG.info("Created " + store.propertiesFile.getAbsolutePath());
+        fileOutputStream.close();
       }
 
-      store.properties.load(new FileInputStream(store.propertiesFile));
+      FileInputStream fileInputStream = new FileInputStream(store.propertiesFile);
+      store.properties.load(fileInputStream);
+      fileInputStream.close();
     } catch (Exception e) {
      LOG.error("Failed to load data store: " + e.getMessage(), e);
     }
@@ -103,7 +107,9 @@ public class PropertiesStore {
   public void set(String key, String value) {
     properties.setProperty(key ,value);
     try {
-      properties.store(new FileOutputStream(propertiesFile), null);
+      FileOutputStream fileOutputStream = new FileOutputStream(propertiesFile);
+      properties.store(fileOutputStream, null);
+      fileOutputStream.close();
     } catch (Exception e) {
       LOG.error("Failed to store data store: " + e.getMessage(), e);
     }

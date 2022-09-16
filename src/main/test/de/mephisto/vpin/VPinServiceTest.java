@@ -15,7 +15,6 @@ public class VPinServiceTest {
   @Test
   public void testTableRepository() {
     VPinService service = VPinService.create();
-    service.rescanAllTables();
     List<GameInfo> tables = service.getGameInfos();
     for (GameInfo table : tables) {
       assertTrue(table.getGameFile().exists());
