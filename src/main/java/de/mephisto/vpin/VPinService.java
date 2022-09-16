@@ -121,6 +121,10 @@ public class VPinService {
     return dofManager.getUnits();
   }
 
+  public Unit getUnit(int id) {
+    return dofManager.getUnit(id);
+  }
+
   @SuppressWarnings("unused")
   public List<GameInfo> getActiveGameInfos() {
     List<Integer> gameIdsFromPlaylists = this.sqliteConnector.getGameIdsFromPlaylists();

@@ -34,6 +34,17 @@ public class DOFManager {
     return Arrays.asList(new Unit(1, UnitType.Pinscape));
   }
 
+  public Unit getUnit(int id) {
+    List<Unit> units = this.getUnits();
+    for (Unit unit : units) {
+      if(unit.getId() == id) {
+        return unit;
+      }
+    }
+
+    return null;
+  }
+
   private void initialize() {
     File testerFile = new File(SystemInfo.RESOURCES + "DOFTest/", "DirectOutputTest.exe");
     List<String> commands = Arrays.asList(testerFile.getAbsolutePath());

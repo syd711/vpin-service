@@ -1,0 +1,15 @@
+{
+  "commandList": [
+    {
+      "id": 1,
+      "unit": 1,
+      "portNumber": 1,
+      "value": 1,
+      "durationMs": 1,
+      "trigger": "TableStart",
+      "keyBinding": "1",
+      "toggle": false,
+      "description": ""
+    }
+  ]
+}
