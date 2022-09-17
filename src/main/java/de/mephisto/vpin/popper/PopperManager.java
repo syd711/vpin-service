@@ -1,7 +1,6 @@
 package de.mephisto.vpin.popper;
 
 import de.mephisto.vpin.GameInfo;
-import de.mephisto.vpin.highscores.HighscoreChangedEventImpl;
 import de.mephisto.vpin.highscores.HighscoreManager;
 import de.mephisto.vpin.http.HttpServer;
 import de.mephisto.vpin.util.SqliteConnector;
@@ -67,7 +66,6 @@ public class PopperManager {
   public void executeTableExitCommands(GameInfo game) {
     LOG.info("Executing table exit commands for '" + game + "'");
     highscoreManager.invalidateHighscore(game);
-    highscoreManager.notifyHighscoreChange(new HighscoreChangedEventImpl(game));
   }
 
   private void runConfigCheck() {

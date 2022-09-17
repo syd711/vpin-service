@@ -5,11 +5,11 @@ import de.mephisto.vpin.dof.DOFCommandData;
 import de.mephisto.vpin.dof.DOFManager;
 import de.mephisto.vpin.dof.Unit;
 import de.mephisto.vpin.highscores.Highscore;
-import de.mephisto.vpin.highscores.HighscoreChangeListener;
 import de.mephisto.vpin.highscores.HighscoreManager;
 import de.mephisto.vpin.http.HttpServer;
 import de.mephisto.vpin.popper.PopperManager;
 import de.mephisto.vpin.popper.PopperScreen;
+import de.mephisto.vpin.popper.TableStatusChangeListener;
 import de.mephisto.vpin.roms.RomManager;
 import de.mephisto.vpin.util.SqliteConnector;
 import org.apache.commons.lang3.StringUtils;
@@ -38,13 +38,13 @@ public class VPinService {
 
   private HttpServer httpServer;
 
-  private DOFManager dofManager;
+  private final DOFManager dofManager;
 
   private final PopperManager popperManager;
 
   private final DOFCommandData dofCommandData;
 
-  private List<GameInfo> gameInfos = new ArrayList<>();
+  private final List<GameInfo> gameInfos = new ArrayList<>();
 
   public static VPinService create(boolean headless) {
     if (instance == null) {
@@ -73,7 +73,6 @@ public class VPinService {
   @SuppressWarnings("unused")
   public void shutdown() {
     this.executor.shutdown();
-    this.highscoreManager.destroy();
     this.httpServer.stop();
   }
 
@@ -83,13 +82,13 @@ public class VPinService {
   }
 
   @SuppressWarnings("unused")
-  public void addHighscoreChangeListener(HighscoreChangeListener listener) {
-    this.highscoreManager.addHighscoreChangeListener(listener);
+  public void addTableStatusChangeListener(TableStatusChangeListener listener) {
+    this.popperManager.addTableStatusChangeListener(listener);
   }
 
   @SuppressWarnings("unused")
-  public void removeHighscoreChangeListener(HighscoreChangeListener listener) {
-    this.highscoreManager.removeHighscoreChangeListener(listener);
+  public void removeTableStatusChangeListener(TableStatusChangeListener listener) {
+    this.popperManager.removeTableStatusChangeListener(listener);
   }
 
   @SuppressWarnings("unused")
@@ -148,6 +147,7 @@ public class VPinService {
     LOG.info("Resetted game info list.");
   }
 
+  @SuppressWarnings("unused")
   public String rescanRom(GameInfo gameInfo) {
     return this.romManager.scanRom(gameInfo);
   }
@@ -188,6 +188,7 @@ public class VPinService {
     return highscoreManager.getHighscore(gameInfo);
   }
 
+  @SuppressWarnings("unused")
   public GameInfo getGameByName(String table) {
     return this.sqliteConnector.getGameByName(this, table);
   }

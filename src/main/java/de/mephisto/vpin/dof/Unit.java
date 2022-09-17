@@ -3,10 +3,12 @@ package de.mephisto.vpin.dof;
 public class Unit {
   private int id;
   private UnitType unitType;
+  private String name;
 
-  public Unit(int id, UnitType unitType) {
+  public Unit(int id, UnitType unitType, String name) {
     this.id = id;
     this.unitType = unitType;
+    this.name = name;
   }
 
   public int getId() {
@@ -37,6 +39,6 @@ public class Unit {
 
   @Override
   public String toString() {
-    return unitType + " (ID " + id + ")";
+    return unitType + " (ID " + id + "/" + name + ")";
   }
 }
