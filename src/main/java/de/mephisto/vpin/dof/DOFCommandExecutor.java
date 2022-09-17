@@ -46,6 +46,9 @@ public class DOFCommandExecutor {
             if (command.isToggle()) {
               command.setToggled(!command.isToggled());
             }
+            else {
+              executeCmd(command, true);
+            }
             break;
           }
         }
