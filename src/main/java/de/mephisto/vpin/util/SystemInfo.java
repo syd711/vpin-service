@@ -1,5 +1,6 @@
 package de.mephisto.vpin.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +87,11 @@ public class SystemInfo {
 
   File getPopperInstallationFolder() {
     try {
+      String popperInstDir = System.getenv("PopperInstDir");
+      if(!StringUtils.isEmpty(popperInstDir)) {
+        return new File(popperInstDir);
+      }
+
       String output = readRegistry(POPPER_REG_KEY, "PopperInstDir");
       if (output != null && output.trim().length() > 0) {
         String path = extractRegistryValue(output);
