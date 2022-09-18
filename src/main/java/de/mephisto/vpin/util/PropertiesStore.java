@@ -51,6 +51,9 @@ public class PropertiesStore {
         return Integer.parseInt(value);
       }
     }
+    else {
+      set(key, defaultValue);
+    }
     return defaultValue;
   }
 
@@ -96,6 +99,9 @@ public class PropertiesStore {
   public String getString(String key, String defaultValue) {
     if(properties.containsKey(key)) {
       return properties.getProperty(key);
+    }
+    else {
+      set(key, defaultValue);
     }
     return defaultValue;
   }

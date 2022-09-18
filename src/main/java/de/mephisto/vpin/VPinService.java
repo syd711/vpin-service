@@ -67,7 +67,12 @@ public class VPinService {
       this.dofManager.startRuleEngine();
     }
 
-    LOG.info("VPinService created.");
+    if(headless) {
+      LOG.info("VPinService created [headless-mode]");
+    }
+    else {
+      LOG.info("VPinService created [config-mode]");
+    }
   }
 
   @SuppressWarnings("unused")
