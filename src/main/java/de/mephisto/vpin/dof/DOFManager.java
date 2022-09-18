@@ -3,6 +3,7 @@ package de.mephisto.vpin.dof;
 import de.mephisto.vpin.popper.TableStatusChangeListener;
 import de.mephisto.vpin.popper.TableStatusChangedEvent;
 import de.mephisto.vpin.util.KeyChecker;
+import org.apache.commons.lang3.StringUtils;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
@@ -72,9 +73,12 @@ public class DOFManager implements TableStatusChangeListener, NativeKeyListener 
   public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {
     List<DOFCommand> rules = this.dofCommandData.getCommandsFor(Trigger.KeyEvent);
     for (DOFCommand rule : rules) {
-      KeyChecker checker = new KeyChecker(rule.getKeyBinding());
-      if (checker.matches(nativeKeyEvent)) {
-        rule.execute();
+      String keyBinding = rule.getKeyBinding();
+      if(!StringUtils.isEmpty(keyBinding)) {
+        KeyChecker checker = new KeyChecker(keyBinding);
+        if (checker.matches(nativeKeyEvent)) {
+          rule.execute();
+        }
       }
     }
   }

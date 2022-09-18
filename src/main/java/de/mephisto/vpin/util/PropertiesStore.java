@@ -11,7 +11,7 @@ import java.util.Properties;
 public class PropertiesStore {
   private final static Logger LOG = LoggerFactory.getLogger(PropertiesStore.class);
 
-  protected final Properties properties = new Properties();
+  protected final Properties properties = new SortedProperties();
 
   private File propertiesFile;
 

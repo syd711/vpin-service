@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  */
 public class HttpServer {
   private final static Logger LOG = LoggerFactory.getLogger(HttpServer.class);
-  public static final int PORT = 8088;
+  public static final int PORT = 8089;
 
   private Server server;
   private final PopperManager popperManager;

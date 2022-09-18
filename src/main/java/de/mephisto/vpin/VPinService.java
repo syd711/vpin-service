@@ -12,6 +12,7 @@ import de.mephisto.vpin.popper.PopperScreen;
 import de.mephisto.vpin.popper.TableStatusChangeListener;
 import de.mephisto.vpin.roms.RomManager;
 import de.mephisto.vpin.util.SqliteConnector;
+import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +64,11 @@ public class VPinService {
     this.dofManager = new DOFManager(dofCommandData);
 
     if(headless) {
+      if(!SystemInfo.isAvailable(HttpServer.PORT)) {
+        LOG.warn("VPinService already running, exiting.");
+        System.exit(0);
+      }
+
       this.httpServer = new HttpServer(popperManager);
       this.dofManager.startRuleEngine();
     }
