@@ -2,9 +2,15 @@ package de.mephisto.vpin.dof;
 
 public class DOFCommandResult {
   private String out;
+  private String error;
 
-  public DOFCommandResult(String out) {
+  public DOFCommandResult(String out, String error) {
     this.out = out;
+    this.error = error;
+  }
+
+  public String getOut() {
+    return out;
   }
 
   public String getOutput() {

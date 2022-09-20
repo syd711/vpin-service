@@ -27,6 +27,9 @@ public class AsyncServlet extends HttpServlet {
   private final static String PATH_LAUNCH = "/gameLaunch";
   private final static String PATH_EXIT = "/gameExit";
 
+  public final static String PATH_SYSTEM_EXIT = "/systemExit";
+  public final static String PATH_PING = "/ping";
+
   private final PopperManager popperManager;
 
   public AsyncServlet(PopperManager popperManager) {
@@ -57,6 +60,18 @@ public class AsyncServlet extends HttpServlet {
     }
 
     writeResponse(request, response, STATUS_OK);
+  }
+
+  @Override
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String contextPath = request.getPathInfo();
+    if (contextPath.equals(PATH_SYSTEM_EXIT)) {
+      LOG.info("Received system exit command.");
+      System.exit(0);
+    }
+    else if(contextPath.equals(PATH_PING)) {
+      writeResponse(request, response, STATUS_OK);
+    }
   }
 
   private void writeResponse(HttpServletRequest request, HttpServletResponse response, String msg) throws IOException {

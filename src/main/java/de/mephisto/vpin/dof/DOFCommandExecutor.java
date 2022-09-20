@@ -67,19 +67,26 @@ public class DOFCommandExecutor {
       value = 0;
     }
 
-    List<String> commands = Arrays.asList(getTesterExe().getAbsolutePath(), String.valueOf(command.getUnit()), String.valueOf(command.getPortNumber()), String.valueOf(value));
-    LOG.error("Executing DOF command '" + String.join(" ", commands) + "'.");
+    List<String> commands = Arrays.asList(String.valueOf(command.getUnit()), String.valueOf(command.getPortNumber()), String.valueOf(value));
+    return executeDOFTester(commands);
+  }
+
+  public static DOFCommandResult executeDOFTester(List<String> commands) {
+    List<String> params = new ArrayList<>();
+    params.addAll(commands);
+    params.add(0, getTesterExe().getAbsolutePath());
+    LOG.error("Executing DOF command '" + String.join(" ", params) + "'.");
     try {
-      SystemCommandExecutor executor = new SystemCommandExecutor(commands, false);
+      SystemCommandExecutor executor = new SystemCommandExecutor(params, false);
       executor.setDir(getTesterExe().getParentFile());
       executor.executeCommand();
 
       StringBuilder standardOutputFromCommand = executor.getStandardOutputFromCommand();
       StringBuilder standardErrorFromCommand = executor.getStandardErrorFromCommand();
       if (!StringUtils.isEmpty(standardErrorFromCommand.toString())) {
-        LOG.error("DOF command '" + String.join(" ", commands) + "' failed: {}", standardErrorFromCommand);
+        LOG.error("DOF command '" + String.join(" ", params) + "' failed: {}", standardErrorFromCommand);
       }
-      return new DOFCommandResult(standardOutputFromCommand.toString());
+      return new DOFCommandResult(standardOutputFromCommand.toString(), standardOutputFromCommand.toString());
     } catch (Exception e) {
       LOG.info("Failed execute DOF command: " + e.getMessage(), e);
     }
@@ -116,6 +123,7 @@ public class DOFCommandExecutor {
         units.add(unit);
       }
     }
+    units.add(new Unit(1, UnitType.Pinscape, "Pinscape"));
     return units;
   }
 

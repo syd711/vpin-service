@@ -1,6 +1,5 @@
 package de.mephisto.vpin.http;
 
-import de.mephisto.vpin.dof.DOFManager;
 import de.mephisto.vpin.popper.PopperManager;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -29,7 +28,7 @@ public class HttpServer {
     try {
       server = new Server();
       ServerConnector connector = new ServerConnector(server);
-      connector.setPort(8088);
+      connector.setPort(PORT);
       server.setConnectors(new Connector[]{connector});
       ServletHandler handler = new ServletHandler();
       server.setHandler(handler);

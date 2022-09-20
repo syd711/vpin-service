@@ -15,15 +15,18 @@ public class PropertiesStore {
 
   private File propertiesFile;
 
-  public static PropertiesStore create(String name) {
+  public static PropertiesStore createInMemory() {
+    return new PropertiesStore();
+  }
+
+  public static PropertiesStore create(File file) {
     PropertiesStore store = new PropertiesStore();
     try {
-      File folder = new File(SystemInfo.RESOURCES);
-      store.propertiesFile = new File(SystemInfo.RESOURCES,name);
-      if(!folder.exists()) {
-        folder.mkdirs();
+      if(!file.getParentFile().exists()) {
+        file.getParentFile().mkdirs();
       }
 
+      store.propertiesFile = file;
       if(!store.propertiesFile.exists()) {
         FileOutputStream fileOutputStream = new FileOutputStream(store.propertiesFile);
         store.properties.store(fileOutputStream, null);
@@ -35,9 +38,14 @@ public class PropertiesStore {
       store.properties.load(fileInputStream);
       fileInputStream.close();
     } catch (Exception e) {
-     LOG.error("Failed to load data store: " + e.getMessage(), e);
+      LOG.error("Failed to load data store: " + e.getMessage(), e);
     }
     return store;
+  }
+
+  public static PropertiesStore create(String name) {
+    File file = new File(SystemInfo.RESOURCES,name);
+    return create(file);
   }
 
   public boolean containsKey(String key) {
@@ -113,9 +121,11 @@ public class PropertiesStore {
   public void set(String key, String value) {
     properties.setProperty(key ,value);
     try {
-      FileOutputStream fileOutputStream = new FileOutputStream(propertiesFile);
-      properties.store(fileOutputStream, null);
-      fileOutputStream.close();
+      if(propertiesFile != null) {
+        FileOutputStream fileOutputStream = new FileOutputStream(propertiesFile);
+        properties.store(fileOutputStream, null);
+        fileOutputStream.close();
+      }
     } catch (Exception e) {
       LOG.error("Failed to store data store: " + e.getMessage(), e);
     }

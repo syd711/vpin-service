@@ -46,6 +46,7 @@ public class VPinService {
   private final DOFCommandData dofCommandData;
 
   private final List<GameInfo> gameInfos = new ArrayList<>();
+  private final boolean headless;
 
   public static VPinService create(boolean headless) {
     if (instance == null) {
@@ -55,6 +56,7 @@ public class VPinService {
   }
 
   private VPinService(boolean headless) {
+    this.headless = headless;
     this.romManager = new RomManager();
     this.sqliteConnector = new SqliteConnector(romManager);
     this.highscoreManager = new HighscoreManager(this);
@@ -63,8 +65,8 @@ public class VPinService {
     dofCommandData = DOFCommandData.create();
     this.dofManager = new DOFManager(dofCommandData);
 
-    if(headless) {
-      if(!SystemInfo.isAvailable(HttpServer.PORT)) {
+    if (headless) {
+      if (!SystemInfo.isAvailable(HttpServer.PORT)) {
         LOG.warn("VPinService already running, exiting.");
         System.exit(0);
       }
@@ -73,7 +75,7 @@ public class VPinService {
       this.dofManager.startRuleEngine();
     }
 
-    if(headless) {
+    if (headless) {
       LOG.info("VPinService created [headless-mode]");
     }
     else {
@@ -145,7 +147,7 @@ public class VPinService {
   }
 
   public List<GameInfo> getGameInfos() {
-    if(this.gameInfos.isEmpty()) {
+    if (this.gameInfos.isEmpty()) {
       this.gameInfos.addAll(sqliteConnector.getGames(this));
       LOG.info("Loading of all GameInfo finished, loaded " + this.gameInfos.size() + " games.");
     }
