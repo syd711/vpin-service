@@ -123,7 +123,7 @@ public class DOFCommandExecutor {
         units.add(unit);
       }
     }
-    units.add(new Unit(1, UnitType.Pinscape, "Pinscape"));
+//    units.add(new Unit(1, UnitType.Pinscape, "Pinscape"));
     return units;
   }
 
