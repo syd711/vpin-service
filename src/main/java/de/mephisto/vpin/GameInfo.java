@@ -83,10 +83,15 @@ public class GameInfo {
   }
 
   public Date getLastPlayed() {
-    if(this.lastPlayed == null) {
-      return new Date();
-    }
     return lastPlayed;
+  }
+
+  public long getLastPlayedTime() {
+    if(this.lastPlayed == null) {
+      return 0;
+    }
+
+    return this.lastPlayed.getTime();
   }
 
   public void setLastPlayed(Date lastPlayed) {
