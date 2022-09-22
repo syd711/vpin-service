@@ -142,6 +142,11 @@ class HighscoreResolver {
    * @param vpRegFolderFile the VPReg file to expand
    */
   private void updateUserScores(File vpRegFolderFile) {
+    if(!SystemInfo.getInstance().getVPRegFile().exists()) {
+      LOG.info("Skipped VPReg extraction, file does not exists yet.");
+      return;
+    }
+
     String unzipCommand = SystemInfo.getInstance().get7ZipCommand();
     List<String> commands = Arrays.asList("\"" + unzipCommand + "\"", "-aoa", "x", "\"" + SystemInfo.getInstance().getVPRegFile().getAbsolutePath() + "\"", "-o\"" + vpRegFolderFile.getAbsolutePath() + "\"");
     try {

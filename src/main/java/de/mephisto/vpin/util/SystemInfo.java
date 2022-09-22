@@ -15,10 +15,8 @@ import java.net.ServerSocket;
 public class SystemInfo {
   private final static Logger LOG = LoggerFactory.getLogger(SystemInfo.class);
 
-  private final static String REG_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Applications\\VPinballX.exe\\shell\\open\\command";
   private final static String POPPER_REG_KEY = "HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Control\\Session Manager\\Environment";
-  public static final String VPREG_STG = "VPReg.stg";
-  public static final String VPREG = "VPReg";
+  private final static String VPREG_STG = "VPReg.stg";
 
   public static final String RESOURCES = "./resources/";
 

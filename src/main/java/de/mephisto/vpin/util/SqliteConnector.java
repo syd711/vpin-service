@@ -336,7 +336,7 @@ public class SqliteConnector {
 
     File vpxFile = new File(systemInfo.getVPXTablesFolder(), gameFileName);
     if (!vpxFile.exists()) {
-//      LOG.warn("No vpx file " + vpxFile.getAbsolutePath() + " found, ignoring game.");
+      LOG.warn("No vpx file " + vpxFile.getAbsolutePath() + " found, ignoring game.");
       return null;
     }
 
