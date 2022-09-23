@@ -13,7 +13,7 @@ public class VPinServiceTest {
   private final static Logger LOG = LoggerFactory.getLogger(VPinServiceTest.class);
 
   @Test
-  public void testTableRepository() {
+  public void testTableRepository() throws VPinServiceException {
     VPinService service = VPinService.create(true);
     List<GameInfo> tables = service.getGameInfos();
     for (GameInfo table : tables) {
@@ -22,7 +22,7 @@ public class VPinServiceTest {
   }
 
   @Test
-  public void testTableRepositoryWithoutReset() {
+  public void testTableRepositoryWithoutReset() throws VPinServiceException {
     VPinService service = VPinService.create(true);
     assertFalse(service.getGameInfos().isEmpty());
 
@@ -40,7 +40,7 @@ public class VPinServiceTest {
   }
 
   @Test
-  public void testTableRepositoryGetGamesWithoutRoms() {
+  public void testTableRepositoryGetGamesWithoutRoms() throws VPinServiceException {
     VPinService service = VPinService.create(true);
     List<GameInfo> tables = service.getGamesWithEmptyRoms();
     for (GameInfo table : tables) {
@@ -49,7 +49,7 @@ public class VPinServiceTest {
   }
 
   @Test
-  public void testTableInvalidate() {
+  public void testTableInvalidate() throws VPinServiceException {
     VPinService service = VPinService.create(true);
     List<GameInfo> tables = service.getGamesWithEmptyRoms();
     for (GameInfo table : tables) {

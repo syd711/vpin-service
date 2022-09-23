@@ -2,6 +2,7 @@ package de.mephisto.vpin.highscores;
 
 import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.VPinService;
+import de.mephisto.vpin.VPinServiceException;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,7 @@ public class HighscoreResolverTest {
 
 
   @Test
-  public void testHighscore() {
+  public void testHighscore() throws VPinServiceException {
     HighscoreResolver highscoreResolver = new HighscoreResolver();
     highscoreResolver.refresh();
 

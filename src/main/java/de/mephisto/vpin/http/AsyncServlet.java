@@ -2,6 +2,7 @@ package de.mephisto.vpin.http;
 
 import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.VPinService;
+import de.mephisto.vpin.VPinServiceException;
 import de.mephisto.vpin.popper.PopperManager;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 public class AsyncServlet extends HttpServlet {
   private final static Logger LOG = LoggerFactory.getLogger(AsyncServlet.class);
 
+  private final static String STATUS_ERROR = "ERROR";
   private final static String STATUS_OK = "OK";
   private final static String STATUS_TABLE_NOT_FOUND = "Table not found";
 
@@ -37,29 +39,34 @@ public class AsyncServlet extends HttpServlet {
   }
 
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String contextPath = request.getPathInfo();
-    String table = request.getParameter("table");
-    File tableFile = new File(table);
-    if (!StringUtils.isEmpty(table)) {
-      VPinService service = VPinService.create(true);
-      GameInfo game = service.getGameByFile(tableFile);
-      if(game == null) {
-        LOG.warn("No game found for name '" + tableFile.getName() + "' [" + request.getRequestURI() + "]");
-        this.writeResponse(request, response, STATUS_TABLE_NOT_FOUND);
-        return;
+    try {
+      String contextPath = request.getPathInfo();
+      String table = request.getParameter("table");
+      File tableFile = new File(table);
+      if (!StringUtils.isEmpty(table)) {
+        VPinService service = VPinService.create(true);
+        GameInfo game = service.getGameByFile(tableFile);
+        if(game == null) {
+          LOG.warn("No game found for name '" + tableFile.getName() + "' [" + request.getRequestURI() + "]");
+          this.writeResponse(request, response, STATUS_TABLE_NOT_FOUND);
+          return;
+        }
+
+        if (contextPath.equals(PATH_LAUNCH)) {
+          LOG.info("Received table launch cmd for '" + tableFile.getName() + "'");
+          popperManager.notifyTableStatusChange(game, true);
+        }
+        else if (contextPath.equals(PATH_EXIT)) {
+          LOG.info("Received table exit cmd for '" + tableFile.getName() + "'");
+          popperManager.notifyTableStatusChange(game, false);
+        }
       }
 
-      if (contextPath.equals(PATH_LAUNCH)) {
-        LOG.info("Received table launch cmd for '" + tableFile.getName() + "'");
-        popperManager.notifyTableStatusChange(game, true);
-      }
-      else if (contextPath.equals(PATH_EXIT)) {
-        LOG.info("Received table exit cmd for '" + tableFile.getName() + "'");
-        popperManager.notifyTableStatusChange(game, false);
-      }
+      writeResponse(request, response, STATUS_OK);
+    } catch (VPinServiceException e) {
+      LOG.error("Failed to execute POST: " + e.getMessage());
+      writeResponse(request, response, STATUS_ERROR);
     }
-
-    writeResponse(request, response, STATUS_OK);
   }
 
   @Override

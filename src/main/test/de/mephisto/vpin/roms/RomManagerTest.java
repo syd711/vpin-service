@@ -5,11 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
+
 public class RomManagerTest {
   private final static Logger LOG = LoggerFactory.getLogger(RomManagerTest.class);
 
   @Test
-  public void testRoms() {
+  public void testRoms() throws FileNotFoundException {
     SqliteConnector connector = new SqliteConnector(new RomManager());
     connector.resetRomNames();
   }

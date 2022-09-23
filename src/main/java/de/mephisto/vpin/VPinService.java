@@ -46,40 +46,46 @@ public class VPinService {
   private final DOFCommandData dofCommandData;
 
   private final List<GameInfo> gameInfos = new ArrayList<>();
+
   private final boolean headless;
 
-  public static VPinService create(boolean headless) {
+  public static VPinService create(boolean headless) throws VPinServiceException {
     if (instance == null) {
       instance = new VPinService(headless);
     }
     return instance;
   }
 
-  private VPinService(boolean headless) {
-    this.headless = headless;
-    this.romManager = new RomManager();
-    this.sqliteConnector = new SqliteConnector(romManager);
-    this.highscoreManager = new HighscoreManager(this);
-    this.popperManager = new PopperManager(sqliteConnector, highscoreManager);
+  private VPinService(boolean headless) throws VPinServiceException {
+    try {
+      this.headless = headless;
+      this.romManager = new RomManager();
+      this.sqliteConnector = new SqliteConnector(romManager);
+      this.highscoreManager = new HighscoreManager(this);
+      this.popperManager = new PopperManager(sqliteConnector, highscoreManager);
 
-    dofCommandData = DOFCommandData.create();
-    this.dofManager = new DOFManager(dofCommandData);
+      dofCommandData = DOFCommandData.create();
+      this.dofManager = new DOFManager(dofCommandData);
 
-    if (headless) {
-      if (!SystemInfo.isAvailable(HttpServer.PORT)) {
-        LOG.warn("VPinService already running, exiting.");
-        System.exit(0);
+      if (headless) {
+        if (!SystemInfo.isAvailable(HttpServer.PORT)) {
+          LOG.warn("VPinService already running, exiting.");
+          System.exit(0);
+        }
+
+        this.httpServer = new HttpServer(popperManager);
+        this.dofManager.startRuleEngine();
       }
 
-      this.httpServer = new HttpServer(popperManager);
-      this.dofManager.startRuleEngine();
-    }
-
-    if (headless) {
-      LOG.info("VPinService created [headless-mode]");
-    }
-    else {
-      LOG.info("VPinService created [config-mode]");
+      if (headless) {
+        LOG.info("VPinService created [headless-mode]");
+      }
+      else {
+        LOG.info("VPinService created [config-mode]");
+      }
+    } catch (Exception e) {
+      LOG.error("VPin Service failed to start: " + e.getMessage(), e);
+      throw new VPinServiceException(e);
     }
   }
 

@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -27,12 +28,12 @@ public class SqliteConnector {
   private final SystemInfo systemInfo;
   private final RomManager romManager;
 
-  public SqliteConnector(RomManager romManager) {
+  public SqliteConnector(RomManager romManager) throws FileNotFoundException {
     this.romManager = romManager;
     this.systemInfo = SystemInfo.getInstance();
     File dbFile = new File(systemInfo.getPinUPSystemFolder(), "PUPDatabase.db");
     if (!dbFile.exists()) {
-      throw new IllegalArgumentException("Wrong PUPDatabase.db folder: " + dbFile.getAbsolutePath());
+      throw new FileNotFoundException("Wrong PUPDatabase.db folder: " + dbFile.getAbsolutePath());
     }
     dbFilePath = dbFile.getAbsolutePath().replaceAll("\\\\", "/");
   }
