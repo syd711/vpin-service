@@ -290,14 +290,14 @@ public class SqliteConnector {
 
   public void updateScript(String emuName, String scriptName, String content) {
     this.connect();
+    String sql = "UPDATE Emulators SET '" + scriptName + "'='" + content + "' WHERE EmuName = '" + emuName + "';";
     try {
       Statement stmt = conn.createStatement();
-      String sql = "UPDATE Emulators SET '" + scriptName + "'='" + content + "' WHERE EmuName = '" + emuName + "';";
       stmt.executeUpdate(sql);
       stmt.close();
       LOG.info("Update of " + scriptName + " successful.");
     } catch (Exception e) {
-      LOG.error("Failed to update script script " + scriptName + ": " + e.getMessage(), e);
+      LOG.error("Failed to update script script " + scriptName + " [" + sql + "]: " + e.getMessage(), e);
     } finally {
       this.disconnect();
     }

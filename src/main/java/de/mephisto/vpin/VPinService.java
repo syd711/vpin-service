@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -78,10 +79,10 @@ public class VPinService {
       }
 
       if (headless) {
-        LOG.info("VPinService created [headless-mode]");
+        LOG.info("VPinService created [headless-mode][" + Charset.defaultCharset().displayName() + "]");
       }
       else {
-        LOG.info("VPinService created [config-mode]");
+        LOG.info("VPinService created [config-mode][" + Charset.defaultCharset().displayName() + "]");
       }
     } catch (Exception e) {
       LOG.error("VPin Service failed to start: " + e.getMessage(), e);

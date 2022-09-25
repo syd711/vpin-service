@@ -51,8 +51,9 @@ public class StateManager {
   }
 
   public void install() throws IOException {
-    String script = "cd /D " + new File("./").getAbsolutePath()  +
-        "\nstart jdk/bin/javaw -jar vpin-extensions.jar";
+    File root = new File("./");
+    String script = "cd /D " + root.getAbsolutePath()  +
+        "\nstart jdk/bin/javaw -jar " + new File(root, "vpin-extensions.jar").getAbsolutePath();
     FileUtils.writeStringToFile(getAutostartFile(), script, Charset.forName("UTF-8"));
     LOG.info("Written autostart file " + getAutostartFile().getAbsolutePath());
   }

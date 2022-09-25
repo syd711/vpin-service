@@ -142,7 +142,7 @@ class HighscoreResolver {
    * @param vpRegFolderFile the VPReg file to expand
    */
   private void updateUserScores(File vpRegFolderFile) {
-    if(!SystemInfo.getInstance().getVPRegFile().exists()) {
+    if (!SystemInfo.getInstance().getVPRegFile().exists()) {
       LOG.info("Skipped VPReg extraction, file does not exists yet.");
       return;
     }
@@ -186,9 +186,11 @@ class HighscoreResolver {
       }
 
       String output = executePINemHi(nvRam.getName());
-      highscore = parser.parseHighscore(gameInfo, nvRam, output);
-      if (highscore == null || highscore.getScores().isEmpty()) {
-        return null;
+      if(output != null) {
+        highscore = parser.parseHighscore(gameInfo, nvRam, output);
+        if (highscore == null || highscore.getScores().isEmpty()) {
+          return null;
+        }
       }
     } catch (Exception e) {
       LOG.error("Failed to parse highscore: " + e.getMessage(), e);
@@ -201,19 +203,28 @@ class HighscoreResolver {
     if (!commandFile.exists()) {
       commandFile = new File("../" + PINEMHI_FOLDER, PINEMHI_COMMAND);
     }
-
-    List<String> commands = Arrays.asList(commandFile.getName(), param);
-    SystemCommandExecutor executor = new SystemCommandExecutor(commands);
-    executor.setDir(commandFile.getParentFile());
-    executor.executeCommand();
-    StringBuilder standardOutputFromCommand = executor.getStandardOutputFromCommand();
-    StringBuilder standardErrorFromCommand = executor.getStandardErrorFromCommand();
-    if (!StringUtils.isEmpty(standardErrorFromCommand.toString())) {
-      String error = "Pinemhi command (" + commandFile.getAbsolutePath() + ") failed: " + standardErrorFromCommand;
-      LOG.error(error);
-      throw new Exception(error);
+    if(!commandFile.exists()) {
+      LOG.error("Failed to resolve " + PINEMHI_COMMAND + ": " + commandFile.getAbsolutePath() + " not found");
+      return null;
     }
-    return standardOutputFromCommand.toString();
+
+    try {
+      List<String> commands = Arrays.asList(commandFile.getName(), param);
+      SystemCommandExecutor executor = new SystemCommandExecutor(commands);
+      executor.setDir(commandFile.getParentFile());
+      executor.executeCommand();
+      StringBuilder standardOutputFromCommand = executor.getStandardOutputFromCommand();
+      StringBuilder standardErrorFromCommand = executor.getStandardErrorFromCommand();
+      if (!StringUtils.isEmpty(standardErrorFromCommand.toString())) {
+        String error = "Pinemhi command (" + commandFile.getAbsolutePath() + ") failed: " + standardErrorFromCommand;
+        LOG.error(error);
+        throw new Exception(error);
+      }
+      return standardOutputFromCommand.toString();
+    } catch (Exception e) {
+      LOG.error(PINEMHI_COMMAND + " command failed for directory " + commandFile.getAbsolutePath() + ": " + e.getMessage());
+      throw e;
+    }
   }
 
   /**
