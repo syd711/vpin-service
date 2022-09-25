@@ -18,14 +18,34 @@ public class SystemInfo {
   private final static String POPPER_REG_KEY = "HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Control\\Session Manager\\Environment";
   private final static String VPREG_STG = "VPReg.stg";
 
+  private final static String PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR = "pinupSystem.installationDir";
+  private final static String VISUAL_PINBALL_INST_DIR = "visualPinball.installationDir";
+
   public static final String RESOURCES = "./resources/";
 
-  private File popperInstallationFolder;
+  private File pinUPSystenInstallationFolder;
+  private File visualPinballInstallationFolder;
 
   private static SystemInfo instance;
 
   private SystemInfo() {
-    this.popperInstallationFolder = this.getPopperInstallationFolder();
+    PropertiesStore store = PropertiesStore.create("env");
+
+    this.pinUPSystenInstallationFolder = this.getPinUPSystemInstallationFolder();
+    if(!store.containsKey(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR)) {
+      store.set(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR, pinUPSystenInstallationFolder.getAbsolutePath().replaceAll("\\\\", "/"));
+    }
+    else {
+      this.pinUPSystenInstallationFolder = new File(store.get(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR));
+    }
+
+    this.visualPinballInstallationFolder = this.resolveVisualPinballInstallationFolder();
+    if(!store.containsKey(VISUAL_PINBALL_INST_DIR)) {
+      store.set(VISUAL_PINBALL_INST_DIR, visualPinballInstallationFolder.getAbsolutePath().replaceAll("\\\\", "/"));
+    }
+    else {
+      this.visualPinballInstallationFolder = new File(store.get(VISUAL_PINBALL_INST_DIR));
+    }
   }
 
   public static SystemInfo getInstance() {
@@ -35,24 +55,26 @@ public class SystemInfo {
     return instance;
   }
 
+  @SuppressWarnings("unused")
   public Dimension getScreenSize() {
     return Toolkit.getDefaultToolkit().getScreenSize();
   }
 
   public File getVPRegFile() {
-    return new File(this.getVPXInstallationFolder() + "/User/", VPREG_STG);
+    return new File(this.getVisualPinballInstallationFolder() + "/User/", VPREG_STG);
   }
 
   public File getMameRomFolder() {
-    return new File(getVPXInstallationFolder(), "VPinMAME/roms/");
+    return new File(getVisualPinballInstallationFolder(), "VPinMAME/roms/");
   }
 
+  @SuppressWarnings("unused")
   public File getNvramFolder() {
     return new File(getMameFolder(), "nvram/");
   }
 
   public File getMameFolder() {
-    return new File(getVPXInstallationFolder(), "VPinMAME/");
+    return new File(getVisualPinballInstallationFolder(), "VPinMAME/");
   }
 
   public File getExtractedVPRegFolder() {
@@ -60,9 +82,13 @@ public class SystemInfo {
   }
 
   public File[] getVPXTables() {
-    File vpxInstallationFolder = this.getVPXInstallationFolder();
+    File vpxInstallationFolder = this.getVisualPinballInstallationFolder();
     File folder = new File(vpxInstallationFolder, "Tables/");
     return folder.listFiles((dir, name) -> name.endsWith(".vpx"));
+  }
+
+  public File getVisualPinballInstallationFolder() {
+    return visualPinballInstallationFolder;
   }
 
   public String get7ZipCommand() {
@@ -70,15 +96,15 @@ public class SystemInfo {
   }
 
   public File getVPXTablesFolder() {
-    return new File(getVPXInstallationFolder(), "Tables/");
+    return new File(getVisualPinballInstallationFolder(), "Tables/");
   }
 
-  File getVPXInstallationFolder() {
-    return new File(popperInstallationFolder, "VisualPinball");
+  File resolveVisualPinballInstallationFolder() {
+    return new File(pinUPSystenInstallationFolder.getParent(), "VisualPinball");
   }
 
   public File getPinUPSystemFolder() {
-    return new File(popperInstallationFolder, "PinUPSystem");
+    return pinUPSystenInstallationFolder;
   }
 
   public File getPinUPMediaFolder() {
@@ -117,17 +143,17 @@ public class SystemInfo {
     return false;
   }
 
-  File getPopperInstallationFolder() {
+  File getPinUPSystemInstallationFolder() {
     try {
       String popperInstDir = System.getenv("PopperInstDir");
       if(!StringUtils.isEmpty(popperInstDir)) {
-        return new File(popperInstDir);
+        return new File(popperInstDir, "PinUPSystem");
       }
 
       String output = readRegistry(POPPER_REG_KEY, "PopperInstDir");
       if (output != null && output.trim().length() > 0) {
         String path = extractRegistryValue(output);
-        File folder = new File(path);
+        File folder = new File(path, "PinUPSystem");
         if (folder.exists()) {
           return folder;
         }
@@ -139,17 +165,7 @@ public class SystemInfo {
     return null;
   }
 
-  static String extractStandardKeyValue(String output) throws Exception {
-    String result = output;
-    result = result.replace("\n", "").replace("\r", "").trim();
-
-    String[] value = result.split("    ");
-    String[] values = value[3].split(" ");
-    String path = values[0];
-    return path.replaceAll("\"", "");
-  }
-
-  static String extractRegistryValue(String output) throws Exception {
+  static String extractRegistryValue(String output) {
     String result = output;
     result = result.replace("\n", "").replace("\r", "").trim();
 
@@ -169,8 +185,7 @@ public class SystemInfo {
       reader.start();
       process.waitFor();
       reader.join();
-      String output = reader.getResult();
-      return output;
+      return reader.getResult();
     } catch (Exception e) {
       LOG.error("Failed to read registry key " + location);
       return null;
@@ -178,8 +193,8 @@ public class SystemInfo {
   }
 
   static class StreamReader extends Thread {
-    private InputStream is;
-    private StringWriter sw = new StringWriter();
+    private InputStream is = null;
+    private final StringWriter sw = new StringWriter();
 
     public StreamReader(InputStream is) {
       this.is = is;
@@ -191,6 +206,7 @@ public class SystemInfo {
         while ((c = is.read()) != -1)
           sw.write(c);
       } catch (IOException e) {
+        LOG.error("Failed to execute stream reader: " + e.getMessage(), e);
       }
     }
 

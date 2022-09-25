@@ -22,12 +22,12 @@ public class PropertiesStore {
   public static PropertiesStore create(File file) {
     PropertiesStore store = new PropertiesStore();
     try {
-      if(!file.getParentFile().exists()) {
+      if (!file.getParentFile().exists()) {
         file.getParentFile().mkdirs();
       }
 
       store.propertiesFile = file;
-      if(!store.propertiesFile.exists()) {
+      if (!store.propertiesFile.exists()) {
         FileOutputStream fileOutputStream = new FileOutputStream(store.propertiesFile);
         store.properties.store(fileOutputStream, null);
         LOG.info("Created " + store.propertiesFile.getAbsolutePath());
@@ -44,7 +44,10 @@ public class PropertiesStore {
   }
 
   public static PropertiesStore create(String name) {
-    File file = new File(SystemInfo.RESOURCES,name);
+    if (!name.endsWith(".properties")) {
+      name = name + ".properties";
+    }
+    File file = new File(SystemInfo.RESOURCES, name);
     return create(file);
   }
 
@@ -53,9 +56,9 @@ public class PropertiesStore {
   }
 
   public int getInt(String key, int defaultValue) {
-    if(properties.containsKey(key)) {
+    if (properties.containsKey(key)) {
       String value = properties.getProperty(key).trim();
-      if(value.length() > 0) {
+      if (value.length() > 0) {
         return Integer.parseInt(value);
       }
     }
@@ -66,9 +69,9 @@ public class PropertiesStore {
   }
 
   public boolean getBoolean(String key) {
-    if(properties.containsKey(key)) {
+    if (properties.containsKey(key)) {
       String value = properties.getProperty(key).trim();
-      if(value.length() > 0) {
+      if (value.length() > 0) {
         return Boolean.parseBoolean(value);
       }
     }
@@ -77,9 +80,9 @@ public class PropertiesStore {
 
 
   public int getInt(String key) {
-    if(properties.containsKey(key)) {
+    if (properties.containsKey(key)) {
       String value = properties.getProperty(key).trim();
-      if(value.length() > 0) {
+      if (value.length() > 0) {
         return Integer.parseInt(value);
       }
     }
@@ -87,9 +90,9 @@ public class PropertiesStore {
   }
 
   public float getFloat(String key) {
-    if(properties.containsKey(key)) {
+    if (properties.containsKey(key)) {
       String value = properties.getProperty(key).trim();
-      if(value.length() > 0){
+      if (value.length() > 0) {
         return Float.parseFloat(value);
       }
     }
@@ -105,7 +108,7 @@ public class PropertiesStore {
   }
 
   public String getString(String key, String defaultValue) {
-    if(properties.containsKey(key)) {
+    if (properties.containsKey(key)) {
       return properties.getProperty(key);
     }
     else {
@@ -119,9 +122,9 @@ public class PropertiesStore {
   }
 
   public void set(String key, String value) {
-    properties.setProperty(key ,value);
+    properties.setProperty(key, value);
     try {
-      if(propertiesFile != null) {
+      if (propertiesFile != null) {
         FileOutputStream fileOutputStream = new FileOutputStream(propertiesFile);
         properties.store(fileOutputStream, null);
         fileOutputStream.close();

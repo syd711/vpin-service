@@ -33,7 +33,7 @@ public class SqliteConnector {
     this.systemInfo = SystemInfo.getInstance();
     File dbFile = new File(systemInfo.getPinUPSystemFolder(), "PUPDatabase.db");
     if (!dbFile.exists()) {
-      throw new FileNotFoundException("Wrong PUPDatabase.db folder: " + dbFile.getAbsolutePath());
+      throw new FileNotFoundException("Wrong PUPDatabase.db folder: " + dbFile.getAbsolutePath() + " Please fix the PinUP Popper installation path in file ./resources/env.properties");
     }
     dbFilePath = dbFile.getAbsolutePath().replaceAll("\\\\", "/");
   }
