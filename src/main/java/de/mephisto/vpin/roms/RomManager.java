@@ -34,6 +34,18 @@ public class RomManager {
     });
   }
 
+  public String scanRom(GameInfo gameInfo) {
+    String romName = scanRomName(gameInfo.getGameFile());
+    gameInfo.setRom(romName);
+    writeGameInfo(gameInfo);
+    if (!StringUtils.isEmpty(romName)) {
+      LOG.info("Finished scan of table " + gameInfo + ", found ROM '" + romName + "'.");
+      return romName;
+    }
+    LOG.info("Finished scan of table " + gameInfo + ", no ROM found.");
+    return null;
+  }
+
   private void writeGameInfo(GameInfo game) {
     String romName = game.getRom();
     if (romName != null && romName.length() > 0) {
@@ -61,21 +73,8 @@ public class RomManager {
     return "gameId." + id;
   }
 
-  private boolean wasScanned(int id) {
+  public boolean wasScanned(int id) {
     return store.containsKey(formatGameKey(id) + ".rom");
-  }
-
-  public String scanRom(GameInfo gameInfo) {
-    String romName = scanRomName(gameInfo.getGameFile());
-    gameInfo.setRom(romName);
-    if (!StringUtils.isEmpty(romName)) {
-      writeGameInfo(gameInfo);
-      LOG.info("Finished re-scan of table " + gameInfo + ", found ROM '" + romName + "'.");
-      return romName;
-    }
-
-    LOG.info("Finished re-scan of table " + gameInfo + ", no ROM found.");
-    return null;
   }
 
   /**
@@ -86,7 +85,7 @@ public class RomManager {
    * @param gameFile the table file which contains the rom that is searched.
    * @return the ROM name or null
    */
-  public String scanRomName(File gameFile) {
+  private String scanRomName(File gameFile) {
     String romName = null;
     BufferedReader bufferedReader = null;
     ReverseLineInputStream reverseLineInputStream = null;

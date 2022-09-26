@@ -30,13 +30,7 @@ public class VPinServiceTest {
     for (GameInfo table : tables) {
       assertTrue(table.getGameFile().exists());
     }
-    try {
-      Thread.sleep(100000);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
     LOG.info("Loaded " + tables.size() + " tables.");
-
   }
 
   @Test
@@ -45,18 +39,6 @@ public class VPinServiceTest {
     List<GameInfo> tables = service.getGamesWithEmptyRoms();
     for (GameInfo table : tables) {
       LOG.info(table.getId() + ": " + table.getGameFile().getAbsolutePath());
-    }
-  }
-
-  @Test
-  public void testTableInvalidate() throws VPinServiceException {
-    VPinService service = VPinService.create(true);
-    List<GameInfo> tables = service.getGamesWithEmptyRoms();
-    for (GameInfo table : tables) {
-      if(table.getId() == 372) {
-        LOG.info(table.getId() + ": " + table.getGameFile().getAbsolutePath());
-        service.rescanRom(table);
-      }
     }
   }
 }

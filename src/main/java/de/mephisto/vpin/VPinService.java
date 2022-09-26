@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,13 @@ public class VPinService {
 
   private VPinService(boolean headless) throws VPinServiceException {
     try {
+      if (!SystemInfo.getInstance().getPinUPSystemFolder().exists()) {
+        throw new FileNotFoundException("Wrong PinUP Popper installation folder: " + SystemInfo.getInstance().getPinUPSystemFolder().getAbsolutePath() + ".\nPlease fix the PinUP Popper installation path in file ./resources/env.properties");
+      }
+      if (!SystemInfo.getInstance().getVisualPinballInstallationFolder().exists()) {
+        throw new FileNotFoundException("Wrong Visual Pinball installation folder: " + SystemInfo.getInstance().getVisualPinballInstallationFolder().getAbsolutePath() + ".\nPlease fix the Visual Pinball installation path in file ./resources/env.properties");
+      }
+
       this.headless = headless;
       this.romManager = new RomManager();
       this.sqliteConnector = new SqliteConnector(romManager);
@@ -90,6 +98,10 @@ public class VPinService {
       LOG.error("VPin Service failed to start: " + e.getMessage(), e);
       throw new VPinServiceException(e);
     }
+  }
+
+  public boolean isHeadless() {
+    return this.headless;
   }
 
   @SuppressWarnings("unused")

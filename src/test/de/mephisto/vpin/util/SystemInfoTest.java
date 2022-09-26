@@ -14,6 +14,10 @@ public class SystemInfoTest {
     assertNotNull(info.getMameRomFolder());
     assertTrue(info.getMameRomFolder().exists());
     assertTrue(info.getVPXTables().length > 0);
+    assertTrue(info.getPinUPSystemFolder().exists());
+    assertTrue(info.getVisualPinballInstallationFolder().exists());
+
+
   }
 
 }

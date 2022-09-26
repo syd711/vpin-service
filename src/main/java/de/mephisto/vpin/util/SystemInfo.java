@@ -15,6 +15,7 @@ import java.net.ServerSocket;
 public class SystemInfo {
   private final static Logger LOG = LoggerFactory.getLogger(SystemInfo.class);
 
+  private final static String VPX_REG_KEY = "HKEY_CURRENT_USER\\SOFTWARE\\Visual Pinball\\VP10\\RecentDir";
   private final static String POPPER_REG_KEY = "HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Control\\Session Manager\\Environment";
   private final static String VPREG_STG = "VPReg.stg";
 
@@ -23,7 +24,7 @@ public class SystemInfo {
 
   public static final String RESOURCES = "./resources/";
 
-  private File pinUPSystenInstallationFolder;
+  private File pinUPSystemInstallationFolder;
   private File visualPinballInstallationFolder;
 
   private static SystemInfo instance;
@@ -31,12 +32,12 @@ public class SystemInfo {
   private SystemInfo() {
     PropertiesStore store = PropertiesStore.create("env");
 
-    this.pinUPSystenInstallationFolder = this.getPinUPSystemInstallationFolder();
+    this.pinUPSystemInstallationFolder = this.resolvePinUPSystemInstallationFolder();
     if(!store.containsKey(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR)) {
-      store.set(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR, pinUPSystenInstallationFolder.getAbsolutePath().replaceAll("\\\\", "/"));
+      store.set(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR, pinUPSystemInstallationFolder.getAbsolutePath().replaceAll("\\\\", "/"));
     }
     else {
-      this.pinUPSystenInstallationFolder = new File(store.get(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR));
+      this.pinUPSystemInstallationFolder = new File(store.get(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR));
     }
 
     this.visualPinballInstallationFolder = this.resolveVisualPinballInstallationFolder();
@@ -46,6 +47,44 @@ public class SystemInfo {
     else {
       this.visualPinballInstallationFolder = new File(store.get(VISUAL_PINBALL_INST_DIR));
     }
+  }
+
+  private File resolvePinUPSystemInstallationFolder() {
+    try {
+      String popperInstDir = System.getenv("PopperInstDir");
+      if(!StringUtils.isEmpty(popperInstDir)) {
+        return new File(popperInstDir, "PinUPSystem");
+      }
+
+      String output = readRegistry(POPPER_REG_KEY, "PopperInstDir");
+      if (output != null && output.trim().length() > 0) {
+        String path = extractRegistryValue(output);
+        File folder = new File(path, "PinUPSystem");
+        if (folder.exists()) {
+          return folder;
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to read installation folder: " + e.getMessage(), e);
+    }
+    return new File("C:/vPinball/Visual Pinball");
+  }
+
+  private File resolveVisualPinballInstallationFolder() {
+    File file = new File(pinUPSystemInstallationFolder.getParent(), "VisualPinball");
+    if(!file.exists()) {
+      LOG.info("The system info could not derive the Visual Pinball installation folder from the PinUP Popper installation, checking windows registry next.");
+      String tablesDir = readRegistry(VPX_REG_KEY, "LoadDir");
+      if(tablesDir != null) {
+        tablesDir = extractRegistryValue(tablesDir);
+        LOG.info("Resolve Visual Pinball tables folder " + tablesDir);
+        file = new File(tablesDir);
+        if(file.exists()) {
+          return file.getParentFile();
+        }
+      }
+    }
+    return file;
   }
 
   public static SystemInfo getInstance() {
@@ -99,12 +138,8 @@ public class SystemInfo {
     return new File(getVisualPinballInstallationFolder(), "Tables/");
   }
 
-  File resolveVisualPinballInstallationFolder() {
-    return new File(pinUPSystenInstallationFolder.getParent(), "VisualPinball");
-  }
-
   public File getPinUPSystemFolder() {
-    return pinUPSystenInstallationFolder;
+    return pinUPSystemInstallationFolder;
   }
 
   public File getPinUPMediaFolder() {
@@ -141,28 +176,6 @@ public class SystemInfo {
     }
 
     return false;
-  }
-
-  File getPinUPSystemInstallationFolder() {
-    try {
-      String popperInstDir = System.getenv("PopperInstDir");
-      if(!StringUtils.isEmpty(popperInstDir)) {
-        return new File(popperInstDir, "PinUPSystem");
-      }
-
-      String output = readRegistry(POPPER_REG_KEY, "PopperInstDir");
-      if (output != null && output.trim().length() > 0) {
-        String path = extractRegistryValue(output);
-        File folder = new File(path, "PinUPSystem");
-        if (folder.exists()) {
-          return folder;
-        }
-      }
-    } catch (Exception e) {
-      LOG.error("Failed to read installation folder: " + e.getMessage(), e);
-    }
-    System.exit(-1);
-    return null;
   }
 
   static String extractRegistryValue(String output) {

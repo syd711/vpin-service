@@ -32,9 +32,6 @@ public class SqliteConnector {
     this.romManager = romManager;
     this.systemInfo = SystemInfo.getInstance();
     File dbFile = new File(systemInfo.getPinUPSystemFolder(), "PUPDatabase.db");
-    if (!dbFile.exists()) {
-      throw new FileNotFoundException("Wrong PUPDatabase.db folder: " + dbFile.getAbsolutePath() + ".\nPlease fix the PinUP Popper installation path in file ./resources/env.properties");
-    }
     dbFilePath = dbFile.getAbsolutePath().replaceAll("\\\\", "/");
   }
 
@@ -243,8 +240,7 @@ public class SqliteConnector {
       statement.close();
     } catch (SQLException e) {
       LOG.error("Failed to read startup script or " + emuName + ": " + e.getMessage(), e);
-    }
-    finally {
+    } finally {
       this.disconnect();
     }
     return script;
@@ -262,8 +258,7 @@ public class SqliteConnector {
       statement.close();
     } catch (SQLException e) {
       LOG.error("Failed to read exit script or " + emuName + ": " + e.getMessage(), e);
-    }
-    finally {
+    } finally {
       this.disconnect();
     }
     return script;
@@ -319,34 +314,40 @@ public class SqliteConnector {
 
   private GameInfo createGameInfo(VPinService service, ResultSet rs) throws SQLException {
     GameInfo info = new GameInfo(service);
+
     int id = rs.getInt("GameID");
-    String rom = romManager.getRomName(id);
+    info.setId(id);
 
     String gameFileName = rs.getString("GameFileName");
+    info.setGameFileName(gameFileName);
+
     String gameDisplayName = rs.getString("GameDisplay");
+    info.setGameDisplayName(gameDisplayName);
 
     File wheelIconFile = new File(systemInfo.getPinUPSystemFolder() + "/POPMedia/Visual Pinball X/Wheel/", FilenameUtils.getBaseName(gameFileName) + ".png");
-    File nvRamFolder = new File(systemInfo.getMameFolder(), "nvram");
-
-    File romFile = null;
-    File nvRamFile = null;
-    if(!StringUtils.isEmpty(rom)) {
-      romFile = new File(systemInfo.getMameRomFolder(), rom + ".zip");
-      nvRamFile = new File(nvRamFolder, rom + ".nv");
-    }
+    info.setWheelIconFile(wheelIconFile);
 
     File vpxFile = new File(systemInfo.getVPXTablesFolder(), gameFileName);
     if (!vpxFile.exists()) {
       LOG.warn("No vpx file " + vpxFile.getAbsolutePath() + " found, ignoring game.");
       return null;
     }
-
-    info.setId(id);
-    info.setRom(rom);
-    info.setGameFileName(gameFileName);
-    info.setGameDisplayName(gameDisplayName);
-    info.setWheelIconFile(wheelIconFile);
     info.setGameFile(vpxFile);
+
+
+    String rom = romManager.getRomName(id);
+    File romFile = null;
+    File nvRamFile = null;
+    File nvRamFolder = new File(systemInfo.getMameFolder(), "nvram");
+    if (!StringUtils.isEmpty(rom)) {
+      romFile = new File(systemInfo.getMameRomFolder(), rom + ".zip");
+      nvRamFile = new File(nvRamFolder, rom + ".nv");
+    }
+    else if (!romManager.wasScanned(id)) {
+      rom = romManager.scanRom(info);
+    }
+
+    info.setRom(rom);
     info.setNvRamFile(nvRamFile);
     info.setRomFile(romFile);
 
