@@ -17,8 +17,9 @@ import java.util.List;
 class HighscoreResolver {
   private final static Logger LOG = LoggerFactory.getLogger(HighscoreResolver.class);
 
-  private static final String PINEMHI_FOLDER = "pinemhi";
-  private static final String PINEMHI_COMMAND = "PINemHi.exe";
+  static final String PINEMHI_FOLDER = "pinemhi";
+  static final String PINEMHI_COMMAND = "PINemHi.exe";
+  static final String PINEMHI_INI = "pinemhi.ini";
 
   private final HighscoreParser parser;
   private List<String> supportedRoms;

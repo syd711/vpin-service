@@ -84,6 +84,8 @@ public class VPinService {
       else {
         LOG.info("VPinService created [config-mode][" + Charset.defaultCharset().displayName() + "]");
       }
+    } catch (VPinServiceException vpe) {
+      throw vpe;
     } catch (Exception e) {
       LOG.error("VPin Service failed to start: " + e.getMessage(), e);
       throw new VPinServiceException(e);
