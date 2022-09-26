@@ -2,7 +2,7 @@ package de.mephisto.vpin.util;
 
 import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.VPinService;
-import de.mephisto.vpin.popper.PinUPFunction;
+import de.mephisto.vpin.popper.PinUPControl;
 import de.mephisto.vpin.roms.RomManager;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -117,14 +117,14 @@ public class SqliteConnector {
     return info;
   }
 
-  public PinUPFunction getFunction(String description) {
-    PinUPFunction f = null;
+  public PinUPControl getFunction(String description) {
+    PinUPControl f = null;
     this.connect();
     try {
       Statement statement = conn.createStatement();
       ResultSet rs = statement.executeQuery("SELECT * FROM PinUPFunctions WHERE Descript = '" + description + "';");
       while (rs.next()) {
-        f = new PinUPFunction();
+        f = new PinUPControl();
         f.setActive(rs.getInt("Active") == 1);
         f.setDescription(rs.getString("Descript"));
         f.setCtrlKey(rs.getInt("CntrlCodes"));
@@ -142,14 +142,14 @@ public class SqliteConnector {
     return f;
   }
 
-  public List<PinUPFunction> getFunctions() {
+  public List<PinUPControl> getControls() {
     this.connect();
-    List<PinUPFunction> results = new ArrayList<>();
+    List<PinUPControl> results = new ArrayList<>();
     try {
       Statement statement = conn.createStatement();
       ResultSet rs = statement.executeQuery("SELECT * FROM PinUPFunctions;");
       while (rs.next()) {
-        PinUPFunction f = new PinUPFunction();
+        PinUPControl f = new PinUPControl();
         f.setActive(rs.getInt("Active") == 1);
         f.setDescription(rs.getString("Descript"));
         f.setCtrlKey(rs.getInt("CntrlCodes"));
@@ -293,20 +293,6 @@ public class SqliteConnector {
       LOG.info("Update of " + scriptName + " successful.");
     } catch (Exception e) {
       LOG.error("Failed to update script script " + scriptName + " [" + sql + "]: " + e.getMessage(), e);
-    } finally {
-      this.disconnect();
-    }
-  }
-
-  public void resetRomNames() {
-    this.connect();
-    try {
-      Statement stmt = conn.createStatement();
-      String sql = "UPDATE Games SET 'ROM'='';";
-      stmt.executeUpdate(sql);
-      stmt.close();
-    } catch (Exception e) {
-      LOG.error("Failed to update reset ROM names: " + e.getMessage(), e);
     } finally {
       this.disconnect();
     }

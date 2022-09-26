@@ -1,6 +1,6 @@
 package de.mephisto.vpin.popper;
 
-public class PinUPFunction {
+public class PinUPControl {
   public static String FUNCTION_SHOW_OTHER = "Show Other";
   public static String FUNCTION_SHOW_HELP = "Game Help";
   public static String FUNCTION_SHOW_FLYER = "Game Info/Flyer";

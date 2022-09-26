@@ -87,18 +87,18 @@ public class PopperManager {
   }
 
   public String validateScreenConfiguration(PopperScreen screen) {
-    PinUPFunction fn = null;
+    PinUPControl fn = null;
     switch (screen) {
       case Other2: {
-        fn = connector.getFunction(PinUPFunction.FUNCTION_SHOW_OTHER);
+        fn = connector.getFunction(PinUPControl.FUNCTION_SHOW_OTHER);
         break;
       }
       case GameHelp: {
-        fn = connector.getFunction(PinUPFunction.FUNCTION_SHOW_HELP);
+        fn = connector.getFunction(PinUPControl.FUNCTION_SHOW_HELP);
         break;
       }
       case GameInfo: {
-        fn = connector.getFunction(PinUPFunction.FUNCTION_SHOW_FLYER);
+        fn = connector.getFunction(PinUPControl.FUNCTION_SHOW_FLYER);
         break;
       }
       default: {

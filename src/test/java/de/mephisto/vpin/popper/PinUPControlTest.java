@@ -10,19 +10,19 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class FunctionsTest {
+public class PinUPControlTest {
 
   @Test
   public void testFunctions() throws FileNotFoundException {
     SqliteConnector connector = new SqliteConnector(new RomManager());
-    List<PinUPFunction> functions = connector.getFunctions();
+    List<PinUPControl> functions = connector.getControls();
     assertFalse(functions.isEmpty());
   }
 
   @Test
   public void testFunction() throws FileNotFoundException {
     SqliteConnector connector = new SqliteConnector(new RomManager());
-    PinUPFunction function = connector.getFunction(PinUPFunction.FUNCTION_SHOW_FLYER);
+    PinUPControl function = connector.getFunction(PinUPControl.FUNCTION_SHOW_FLYER);
     assertNotNull(function);
   }
 

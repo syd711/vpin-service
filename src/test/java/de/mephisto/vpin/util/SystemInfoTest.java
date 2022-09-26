@@ -16,8 +16,6 @@ public class SystemInfoTest {
     assertTrue(info.getVPXTables().length > 0);
     assertTrue(info.getPinUPSystemFolder().exists());
     assertTrue(info.getVisualPinballInstallationFolder().exists());
-
-
   }
 
 }
