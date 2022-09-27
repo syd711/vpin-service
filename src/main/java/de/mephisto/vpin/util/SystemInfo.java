@@ -126,7 +126,7 @@ public class SystemInfo {
     LOG.info(formatPathLog("Charset", Charset.defaultCharset().displayName()));
     LOG.info(formatPathLog("PinUP System Folder", this.getPinUPSystemFolder()));
     LOG.info(formatPathLog("PinUP Media Folder", this.getPinUPMediaFolder()));
-    LOG.info(formatPathLog("PinUP Database File", this.getPUPDatabaseFile()));
+    LOG.info(formatPathLog("PinUP Database File", this.getPinUPDatabaseFile()));
     LOG.info(formatPathLog("Visual Pinball Folder", this.getVisualPinballInstallationFolder()));
     LOG.info(formatPathLog("Visual Pinball Tables Folder", this.getVPXTablesFolder()));
     LOG.info(formatPathLog("Visual Pinball DirectB2S Folder", this.getDirectB2SFolder()));
@@ -138,6 +138,9 @@ public class SystemInfo {
     LOG.info(formatPathLog("Extracted VPReg Folder", this.getExtractedVPRegFolder()));
     LOG.info(formatPathLog("B2S Extraction Folder", this.getB2SImageExtractionFolder()));
     LOG.info(formatPathLog("VPX Files", String.valueOf(this.getVPXTables().length)));
+    if(this.getPinUPDatabaseFile().exists()) {
+      LOG.info(formatPathLog("Database Game Count (VPX)", String.valueOf(new SqliteConnector(this.getPinUPDatabaseFile()).getGameCount())));
+    }
     LOG.info("*******************************************************************************************************");
   }
 
@@ -340,7 +343,7 @@ public class SystemInfo {
     }
   }
 
-  public File getPUPDatabaseFile() {
+  public File getPinUPDatabaseFile() {
     return new File(getPinUPSystemFolder(), "PUPDatabase.db");
   }
 

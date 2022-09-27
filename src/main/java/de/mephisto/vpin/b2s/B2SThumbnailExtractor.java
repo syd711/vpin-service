@@ -33,15 +33,14 @@ public class B2SThumbnailExtractor extends DefaultHandler {
         SAXParser saxParser = factory.newSAXParser();
         saxParser.parse(file.getAbsolutePath(), this);
 
-        String baseName = FilenameUtils.getBaseName(game.getGameFileName());
-        File target = new File(SystemInfo.getInstance().getB2SImageExtractionFolder(), baseName + ".png");
+        File target = File.createTempFile("vpin-extension", ".png");
+        target.deleteOnExit();
 
         byte[] bytes = DatatypeConverter.parseBase64Binary(imageData);
         FileOutputStream out = new FileOutputStream(target);
         IOUtils.write(bytes, out);
         out.close();
         LOG.info("Written uncropped directb2s image " + target.getAbsolutePath());
-
         return target;
       }
     } catch (Exception e) {

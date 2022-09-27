@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -25,14 +24,15 @@ public class SqliteConnector {
   private final String dbFilePath;
 
   private Connection conn;
-  private final SystemInfo systemInfo;
-  private final RomManager romManager;
+  private RomManager romManager;
 
-  public SqliteConnector(RomManager romManager) throws FileNotFoundException {
+  public SqliteConnector(RomManager romManager) {
+    this(SystemInfo.getInstance().getPinUPDatabaseFile());
     this.romManager = romManager;
-    this.systemInfo = SystemInfo.getInstance();
-    File dbFile = SystemInfo.getInstance().getPUPDatabaseFile();
-    dbFilePath = dbFile.getAbsolutePath().replaceAll("\\\\", "/");
+  }
+
+  public SqliteConnector(File file) {
+    dbFilePath = file.getAbsolutePath().replaceAll("\\\\", "/");
   }
 
   /**
@@ -165,6 +165,25 @@ public class SqliteConnector {
       this.disconnect();
     }
     return results;
+  }
+
+  public int getGameCount() {
+    int count = 0;
+    this.connect();
+    try {
+      Statement statement = conn.createStatement();
+      ResultSet rs = statement.executeQuery("SELECT count(*) as count FROM Games WHERE EMUID = 1;");
+      while (rs.next()) {
+        count = rs.getInt("count");
+      }
+      rs.close();
+      statement.close();
+    } catch (SQLException e) {
+      LOG.error("Failed to read game count: " + e.getMessage(), e);
+    } finally {
+      this.disconnect();
+    }
+    return count;
   }
 
 
@@ -309,10 +328,10 @@ public class SqliteConnector {
     String gameDisplayName = rs.getString("GameDisplay");
     info.setGameDisplayName(gameDisplayName);
 
-    File wheelIconFile = new File(systemInfo.getPinUPSystemFolder() + "/POPMedia/Visual Pinball X/Wheel/", FilenameUtils.getBaseName(gameFileName) + ".png");
+    File wheelIconFile = new File(SystemInfo.getInstance().getPinUPSystemFolder() + "/POPMedia/Visual Pinball X/Wheel/", FilenameUtils.getBaseName(gameFileName) + ".png");
     info.setWheelIconFile(wheelIconFile);
 
-    File vpxFile = new File(systemInfo.getVPXTablesFolder(), gameFileName);
+    File vpxFile = new File(SystemInfo.getInstance().getVPXTablesFolder(), gameFileName);
     if (!vpxFile.exists()) {
       LOG.warn("No vpx file " + vpxFile.getAbsolutePath() + " found, ignoring game.");
       return null;
@@ -323,9 +342,9 @@ public class SqliteConnector {
     String rom = romManager.getRomName(id);
     File romFile = null;
     File nvRamFile = null;
-    File nvRamFolder = new File(systemInfo.getMameFolder(), "nvram");
+    File nvRamFolder = new File(SystemInfo.getInstance().getMameFolder(), "nvram");
     if (!StringUtils.isEmpty(rom)) {
-      romFile = new File(systemInfo.getMameRomFolder(), rom + ".zip");
+      romFile = new File(SystemInfo.getInstance().getMameRomFolder(), rom + ".zip");
       nvRamFile = new File(nvRamFolder, rom + ".nv");
     }
     else if (!romManager.wasScanned(id)) {
