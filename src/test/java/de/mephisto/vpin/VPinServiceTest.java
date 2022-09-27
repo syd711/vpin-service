@@ -15,6 +15,7 @@ public class VPinServiceTest {
     for (GameInfo table : tables) {
       assertTrue(table.getGameFile().exists());
     }
+    service.shutdown();
   }
 
   @Test
@@ -22,5 +23,6 @@ public class VPinServiceTest {
     VPinService service = VPinService.create(true);
     List<GameInfo> tables = service.getGamesWithEmptyRoms();
     assertFalse(tables.isEmpty());
+    service.shutdown();
   }
 }

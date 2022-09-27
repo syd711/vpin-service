@@ -31,7 +31,7 @@ public class SqliteConnector {
   public SqliteConnector(RomManager romManager) throws FileNotFoundException {
     this.romManager = romManager;
     this.systemInfo = SystemInfo.getInstance();
-    File dbFile = new File(systemInfo.getPinUPSystemFolder(), "PUPDatabase.db");
+    File dbFile = SystemInfo.getInstance().getPUPDatabaseFile();
     dbFilePath = dbFile.getAbsolutePath().replaceAll("\\\\", "/");
   }
 
@@ -180,7 +180,6 @@ public class SqliteConnector {
           results.add(info);
         }
       }
-
       rs.close();
       statement.close();
     } catch (SQLException e) {

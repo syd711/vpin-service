@@ -162,6 +162,11 @@ public class GameInfo {
     this.romFile = romFile;
   }
 
+  public File getDirectB2SFile() {
+    String baseName = FilenameUtils.getBaseName(this.getGameFileName());
+    return new File(SystemInfo.getInstance().getVPXTablesFolder(), baseName + ".directb2s");
+  }
+
   @Override
   public String toString() {
     return this.getGameDisplayName();

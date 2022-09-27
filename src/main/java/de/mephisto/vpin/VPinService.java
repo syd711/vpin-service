@@ -1,5 +1,7 @@
 package de.mephisto.vpin;
 
+import de.mephisto.vpin.b2s.B2SImageRatio;
+import de.mephisto.vpin.b2s.DirectB2SManager;
 import de.mephisto.vpin.dof.DOFCommand;
 import de.mephisto.vpin.dof.DOFCommandData;
 import de.mephisto.vpin.dof.DOFManager;
@@ -19,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -39,6 +40,7 @@ public class VPinService {
 
   private static VPinService instance;
 
+
   private HttpServer httpServer;
 
   private final DOFManager dofManager;
@@ -46,6 +48,8 @@ public class VPinService {
   private final PopperManager popperManager;
 
   private final DOFCommandData dofCommandData;
+
+  private final DirectB2SManager directB2SManager;
 
   private final List<GameInfo> gameInfos = new ArrayList<>();
 
@@ -71,6 +75,7 @@ public class VPinService {
       this.romManager = new RomManager();
       this.sqliteConnector = new SqliteConnector(romManager);
       this.highscoreManager = new HighscoreManager(this);
+      this.directB2SManager = new DirectB2SManager(this);
       this.popperManager = new PopperManager(sqliteConnector, highscoreManager);
 
       dofCommandData = DOFCommandData.create();
@@ -87,13 +92,11 @@ public class VPinService {
       }
 
       if (headless) {
-        LOG.info("VPinService created [headless-mode][" + Charset.defaultCharset().displayName() + "]");
+        LOG.info("VPinService created [headless-mode]");
       }
       else {
-        LOG.info("VPinService created [config-mode][" + Charset.defaultCharset().displayName() + "]");
+        LOG.info("VPinService created [config-mode]");
       }
-    } catch (VPinServiceException vpe) {
-      throw vpe;
     } catch (Exception e) {
       LOG.error("VPin Service failed to start: " + e.getMessage(), e);
       throw new VPinServiceException(e);
@@ -108,6 +111,10 @@ public class VPinService {
   public void shutdown() {
     this.executor.shutdown();
     this.httpServer.stop();
+  }
+
+  public File getB2SImage(GameInfo info, B2SImageRatio ratio) throws VPinServiceException {
+    return directB2SManager.getB2SImage(info, ratio);
   }
 
   @SuppressWarnings("unused")

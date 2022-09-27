@@ -17,10 +17,6 @@ import java.util.List;
 class HighscoreResolver {
   private final static Logger LOG = LoggerFactory.getLogger(HighscoreResolver.class);
 
-  static final String PINEMHI_FOLDER = "pinemhi";
-  static final String PINEMHI_COMMAND = "PINemHi.exe";
-  static final String PINEMHI_INI = "pinemhi.ini";
-
   private final HighscoreParser parser;
   private List<String> supportedRoms;
 
@@ -200,15 +196,7 @@ class HighscoreResolver {
   }
 
   private String executePINemHi(String param) throws Exception {
-    File commandFile = new File(PINEMHI_FOLDER, PINEMHI_COMMAND);
-    if (!commandFile.exists()) {
-      commandFile = new File("../" + PINEMHI_FOLDER, PINEMHI_COMMAND);
-    }
-    if(!commandFile.exists()) {
-      LOG.error("Failed to resolve " + PINEMHI_COMMAND + ": " + commandFile.getAbsolutePath() + " not found");
-      return null;
-    }
-
+    File commandFile = SystemInfo.getInstance().getPinemhiCommandFile();
     try {
       List<String> commands = Arrays.asList(commandFile.getName(), param);
       SystemCommandExecutor executor = new SystemCommandExecutor(commands);
@@ -223,7 +211,7 @@ class HighscoreResolver {
       }
       return standardOutputFromCommand.toString();
     } catch (Exception e) {
-      LOG.error(PINEMHI_COMMAND + " command failed for directory " + commandFile.getAbsolutePath() + ": " + e.getMessage());
+      LOG.error(commandFile.getAbsolutePath() + " command failed for directory " + commandFile.getAbsolutePath() + ": " + e.getMessage());
       throw e;
     }
   }

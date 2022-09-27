@@ -1,16 +1,19 @@
 package de.mephisto.vpin.util;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public class SystemInfo {
   private final static Logger LOG = LoggerFactory.getLogger(SystemInfo.class);
@@ -22,18 +25,31 @@ public class SystemInfo {
   private final static String PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR = "pinupSystem.installationDir";
   private final static String VISUAL_PINBALL_INST_DIR = "visualPinball.installationDir";
 
+  private final static String PINEMHI_FOLDER = "pinemhi";
+  private final static String PINEMHI_COMMAND = "PINemHi.exe";
+  private final static String PINEMHI_INI = "pinemhi.ini";
+
+
   public static final String RESOURCES = "./resources/";
 
   private File pinUPSystemInstallationFolder;
   private File visualPinballInstallationFolder;
 
+  private File pinemhiNvRamFolder;
+
   private static SystemInfo instance;
 
   private SystemInfo() {
+    initBaseFolders();
+    initPinemHiFolders();
+    logSystemInfo();
+  }
+
+  private void initBaseFolders() {
     PropertiesStore store = PropertiesStore.create("env");
 
     this.pinUPSystemInstallationFolder = this.resolvePinUPSystemInstallationFolder();
-    if(!store.containsKey(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR)) {
+    if (!store.containsKey(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR)) {
       store.set(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR, pinUPSystemInstallationFolder.getAbsolutePath().replaceAll("\\\\", "/"));
     }
     else {
@@ -41,18 +57,117 @@ public class SystemInfo {
     }
 
     this.visualPinballInstallationFolder = this.resolveVisualPinballInstallationFolder();
-    if(!store.containsKey(VISUAL_PINBALL_INST_DIR)) {
+    if (!store.containsKey(VISUAL_PINBALL_INST_DIR)) {
       store.set(VISUAL_PINBALL_INST_DIR, visualPinballInstallationFolder.getAbsolutePath().replaceAll("\\\\", "/"));
     }
     else {
       this.visualPinballInstallationFolder = new File(store.get(VISUAL_PINBALL_INST_DIR));
     }
+
+    getB2SImageExtractionFolder().mkdirs();
+  }
+
+  private void initPinemHiFolders() {
+    try {
+      File file = new File(PINEMHI_FOLDER, PINEMHI_INI);
+      if (!file.exists()) {
+        throw new FileNotFoundException("pinemhi.ini file (" + file.getAbsolutePath() + ") not found.");
+      }
+
+      FileInputStream fileInputStream = new FileInputStream(file);
+      java.util.List<String> lines = IOUtils.readLines(fileInputStream, StandardCharsets.UTF_8);
+      fileInputStream.close();
+
+      boolean writeUpdates = false;
+      List<String> updatedLines = new ArrayList<>();
+      for (String line : lines) {
+        if (line.startsWith("VP=")) {
+          String vpValue = line.split("=")[1];
+          pinemhiNvRamFolder = new File(vpValue);
+          if (!pinemhiNvRamFolder.exists()) {
+            pinemhiNvRamFolder = SystemInfo.getInstance().getNvramFolder();
+            line = "VP=" + pinemhiNvRamFolder.getAbsolutePath() + "\\";
+            writeUpdates = true;
+          }
+        }
+        updatedLines.add(line);
+      }
+
+      if (writeUpdates) {
+        FileOutputStream out = new FileOutputStream(file);
+        IOUtils.writeLines(updatedLines, "\n", out, StandardCharsets.UTF_8);
+        out.close();
+        LOG.info("Written updates to " + file.getAbsolutePath());
+      }
+
+      LOG.info("Finished pinemhi installation check.");
+    } catch (Exception e) {
+      String msg = "Failed to run installation for pinemhi: " + e.getMessage();
+      LOG.error(msg, e);
+    }
+  }
+
+  private void logSystemInfo() {
+    LOG.info("********************************* Installation Overview ***********************************************");
+    LOG.info(formatPathLog("Locale", Locale.getDefault().getDisplayName()));
+    LOG.info(formatPathLog("Charset", Charset.defaultCharset().displayName()));
+    LOG.info(formatPathLog("PinUP System Folder", this.getPinUPSystemFolder()));
+    LOG.info(formatPathLog("PinUP Media Folder", this.getPinUPMediaFolder()));
+    LOG.info(formatPathLog("PinUP Database File", this.getPUPDatabaseFile()));
+    LOG.info(formatPathLog("Visual Pinball Folder", this.getVisualPinballInstallationFolder()));
+    LOG.info(formatPathLog("Visual Pinball Tables Folder", this.getVPXTablesFolder()));
+    LOG.info(formatPathLog("Mame Folder", this.getMameFolder()));
+    LOG.info(formatPathLog("ROM Folder", this.getMameRomFolder()));
+    LOG.info(formatPathLog("NVRam Folder", this.getNvramFolder()));
+    LOG.info(formatPathLog("Pinemhi NVRam Folder", this.pinemhiNvRamFolder));
+    LOG.info(formatPathLog("Pinemhi Command", this.getPinemhiCommandFile()));
+    LOG.info(formatPathLog("Extracted VPReg Folder", this.getExtractedVPRegFolder()));
+    LOG.info(formatPathLog("B2S Extraction Folder", this.getB2SImageExtractionFolder()));
+    LOG.info(formatPathLog("VPX Files", String.valueOf(this.getVPXTables().length)));
+    LOG.info("*******************************************************************************************************");
+  }
+
+  private String formatPathLog(String label, String value) {
+    return formatPathLog(label, value, null, null);
+  }
+
+  private String formatPathLog(String label, File file) {
+    return formatPathLog(label, file.getAbsolutePath(), file.exists(), file.canRead());
+  }
+
+  public File getB2SImageExtractionFolder() {
+    return new File(RESOURCES, "b2s/");
+  }
+
+  private String formatPathLog(String label, String value, Boolean exists, Boolean readable) {
+    StringBuilder b = new StringBuilder(label);
+    b.append(":");
+    while (b.length() < 33) {
+      b.append(" ");
+    }
+    b.append(value);
+
+    if (exists != null) {
+      while (b.length() < 89) {
+        b.append(" ");
+      }
+      if(!exists) {
+        b.append("   [NOT FOUND]");
+      }
+      else if(!readable){
+        b.append("[NOT READABLE]");
+      }
+      else {
+        b.append("          [OK]");
+      }
+    }
+    return b.toString();
   }
 
   private File resolvePinUPSystemInstallationFolder() {
     try {
       String popperInstDir = System.getenv("PopperInstDir");
-      if(!StringUtils.isEmpty(popperInstDir)) {
+      if (!StringUtils.isEmpty(popperInstDir)) {
         return new File(popperInstDir, "PinUPSystem");
       }
 
@@ -72,14 +187,14 @@ public class SystemInfo {
 
   private File resolveVisualPinballInstallationFolder() {
     File file = new File(pinUPSystemInstallationFolder.getParent(), "VisualPinball");
-    if(!file.exists()) {
+    if (!file.exists()) {
       LOG.info("The system info could not derive the Visual Pinball installation folder from the PinUP Popper installation, checking windows registry next.");
       String tablesDir = readRegistry(VPX_REG_KEY, "LoadDir");
-      if(tablesDir != null) {
+      if (tablesDir != null) {
         tablesDir = extractRegistryValue(tablesDir);
         LOG.info("Resolve Visual Pinball tables folder " + tablesDir);
         file = new File(tablesDir);
-        if(file.exists()) {
+        if (file.exists()) {
           return file.getParentFile();
         }
       }
@@ -88,10 +203,14 @@ public class SystemInfo {
   }
 
   public static SystemInfo getInstance() {
-    if(instance == null) {
+    if (instance == null) {
       instance = new SystemInfo();
     }
     return instance;
+  }
+
+  public File getPinemhiCommandFile() {
+    return new File(PINEMHI_FOLDER, PINEMHI_COMMAND);
   }
 
   @SuppressWarnings("unused")
@@ -121,9 +240,7 @@ public class SystemInfo {
   }
 
   public File[] getVPXTables() {
-    File vpxInstallationFolder = this.getVisualPinballInstallationFolder();
-    File folder = new File(vpxInstallationFolder, "Tables/");
-    return folder.listFiles((dir, name) -> name.endsWith(".vpx"));
+    return getVPXTablesFolder().listFiles((dir, name) -> name.endsWith(".vpx"));
   }
 
   public File getVisualPinballInstallationFolder() {
@@ -203,6 +320,10 @@ public class SystemInfo {
       LOG.error("Failed to read registry key " + location);
       return null;
     }
+  }
+
+  public File getPUPDatabaseFile() {
+    return new File(getPinUPSystemFolder(), "PUPDatabase.db");
   }
 
   static class StreamReader extends Thread {
