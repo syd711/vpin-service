@@ -164,7 +164,7 @@ public class GameInfo {
 
   public File getDirectB2SFile() {
     String baseName = FilenameUtils.getBaseName(this.getGameFileName());
-    return new File(SystemInfo.getInstance().getVPXTablesFolder(), baseName + ".directb2s");
+    return new File(SystemInfo.getInstance().getDirectB2SFolder(), baseName + ".directb2s");
   }
 
   @Override

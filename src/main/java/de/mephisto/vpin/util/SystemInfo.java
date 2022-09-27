@@ -24,6 +24,7 @@ public class SystemInfo {
 
   private final static String PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR = "pinupSystem.installationDir";
   private final static String VISUAL_PINBALL_INST_DIR = "visualPinball.installationDir";
+  private final static String DIRECTB2S_DIR = "directb2s.directory";
 
   private final static String PINEMHI_FOLDER = "pinemhi";
   private final static String PINEMHI_COMMAND = "PINemHi.exe";
@@ -34,6 +35,7 @@ public class SystemInfo {
 
   private File pinUPSystemInstallationFolder;
   private File visualPinballInstallationFolder;
+  private File directB2SFolder;
 
   private File pinemhiNvRamFolder;
 
@@ -48,6 +50,7 @@ public class SystemInfo {
   private void initBaseFolders() {
     PropertiesStore store = PropertiesStore.create("env");
 
+    //PinUP Popper Folder
     this.pinUPSystemInstallationFolder = this.resolvePinUPSystemInstallationFolder();
     if (!store.containsKey(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR)) {
       store.set(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR, pinUPSystemInstallationFolder.getAbsolutePath().replaceAll("\\\\", "/"));
@@ -56,12 +59,22 @@ public class SystemInfo {
       this.pinUPSystemInstallationFolder = new File(store.get(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR));
     }
 
+    //Visual Pinball Folder
     this.visualPinballInstallationFolder = this.resolveVisualPinballInstallationFolder();
     if (!store.containsKey(VISUAL_PINBALL_INST_DIR)) {
       store.set(VISUAL_PINBALL_INST_DIR, visualPinballInstallationFolder.getAbsolutePath().replaceAll("\\\\", "/"));
     }
     else {
       this.visualPinballInstallationFolder = new File(store.get(VISUAL_PINBALL_INST_DIR));
+    }
+
+    //directb2s folder, provide possibility to change the default folder if they are only used for background generation
+    this.directB2SFolder = new File(getVisualPinballInstallationFolder(), "Tables/");
+    if (!store.containsKey(DIRECTB2S_DIR)) {
+      store.set(DIRECTB2S_DIR, directB2SFolder.getAbsolutePath().replaceAll("\\\\", "/"));
+    }
+    else {
+      this.directB2SFolder = new File(store.get(DIRECTB2S_DIR));
     }
 
     getB2SImageExtractionFolder().mkdirs();
@@ -116,6 +129,7 @@ public class SystemInfo {
     LOG.info(formatPathLog("PinUP Database File", this.getPUPDatabaseFile()));
     LOG.info(formatPathLog("Visual Pinball Folder", this.getVisualPinballInstallationFolder()));
     LOG.info(formatPathLog("Visual Pinball Tables Folder", this.getVPXTablesFolder()));
+    LOG.info(formatPathLog("Visual Pinball DirectB2S Folder", this.getDirectB2SFolder()));
     LOG.info(formatPathLog("Mame Folder", this.getMameFolder()));
     LOG.info(formatPathLog("ROM Folder", this.getMameRomFolder()));
     LOG.info(formatPathLog("NVRam Folder", this.getNvramFolder()));
@@ -253,6 +267,10 @@ public class SystemInfo {
 
   public File getVPXTablesFolder() {
     return new File(getVisualPinballInstallationFolder(), "Tables/");
+  }
+
+  public File getDirectB2SFolder() {
+    return directB2SFolder;
   }
 
   public File getPinUPSystemFolder() {
