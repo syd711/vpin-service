@@ -36,11 +36,11 @@ public class GameInfo {
   }
 
   public boolean hasHighscore() {
-    if(this.getNvRamFile() != null && this.getNvRamFile().exists()) {
+    if (this.getNvRamFile() != null && this.getNvRamFile().exists()) {
       return true;
     }
 
-    if(this.getVPRegFolder() != null && this.getVPRegFolder().exists()) {
+    if (this.getVPRegFolder() != null && this.getVPRegFolder().exists()) {
       return true;
     }
     return false;
@@ -54,17 +54,17 @@ public class GameInfo {
 
   public String getEmulatorName() {
     File gameFile = getGameFile();
-    if(gameFile.getName().endsWith(".vpx")) {
+    if (gameFile.getName().endsWith(".vpx")) {
       return "Visual Pinball X";
     }
-    else if(gameFile.getName().endsWith(".fp")) {
+    else if (gameFile.getName().endsWith(".fp")) {
       return "Future Pinball";
     }
     return null;
   }
 
   public File getVPRegFolder() {
-    if(!StringUtils.isEmpty(this.getRom())) {
+    if (!StringUtils.isEmpty(this.getRom())) {
       return new File(SystemInfo.getInstance().getExtractedVPRegFolder(), getRom());
     }
     return null;
@@ -87,7 +87,7 @@ public class GameInfo {
   }
 
   public long getLastPlayedTime() {
-    if(this.lastPlayed == null) {
+    if (this.lastPlayed == null) {
       return 0;
     }
 

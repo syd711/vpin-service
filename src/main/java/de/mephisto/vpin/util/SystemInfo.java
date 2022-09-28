@@ -138,7 +138,7 @@ public class SystemInfo {
     LOG.info(formatPathLog("Extracted VPReg Folder", this.getExtractedVPRegFolder()));
     LOG.info(formatPathLog("B2S Extraction Folder", this.getB2SImageExtractionFolder()));
     LOG.info(formatPathLog("VPX Files", String.valueOf(this.getVPXTables().length)));
-    if(this.getPinUPDatabaseFile().exists()) {
+    if (this.getPinUPDatabaseFile().exists()) {
       LOG.info(formatPathLog("Database Game Count (VPX)", String.valueOf(new SqliteConnector(this.getPinUPDatabaseFile()).getGameCount())));
     }
     LOG.info("*******************************************************************************************************");
@@ -168,10 +168,10 @@ public class SystemInfo {
       while (b.length() < 89) {
         b.append(" ");
       }
-      if(!exists) {
+      if (!exists) {
         b.append("   [NOT FOUND]");
       }
-      else if(!readable){
+      else if (!readable) {
         b.append("[NOT READABLE]");
       }
       else {

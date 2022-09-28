@@ -23,7 +23,7 @@ public class JSON {
       }
       File file = new File(SystemInfo.RESOURCES, filename);
       FileWriter fileWriter = new FileWriter(file);
-      gson.toJson(object,fileWriter);
+      gson.toJson(object, fileWriter);
       fileWriter.flush();
       LOG.info("Written " + file.getAbsolutePath());
     } catch (IOException e) {

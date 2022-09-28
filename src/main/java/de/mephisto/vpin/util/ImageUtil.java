@@ -19,16 +19,36 @@ public class ImageUtil {
     return Scalr.resize(originalImage, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, targetWidth, targetHeight, Scalr.OP_ANTIALIAS);
   }
 
+  public static BufferedImage crop(BufferedImage image, int xRatio, int yRatio) {
+    int width = image.getWidth();
+    int height = image.getHeight();
+
+    int targetWidth = width;
+    int targetHeight = width / xRatio * yRatio;
+    if (targetHeight > height) {
+      targetWidth = image.getHeight() / yRatio * xRatio;
+      targetHeight = height;
+    }
+
+    int x = 0;
+    int y = 0;
+    if (targetWidth < width) {
+      x = (width / 2) - (targetWidth / 2);
+    }
+
+    return image.getSubimage(x, y, targetWidth, targetHeight);
+  }
+
   public static BufferedImage blurImage(BufferedImage originalImage, int radius) {
     GaussianFilter filter = new GaussianFilter(radius);
     return filter.filter(originalImage, null);
   }
 
   public static void write(BufferedImage image, File file) throws IOException {
-    if(file.getName().endsWith(".png")) {
+    if (file.getName().endsWith(".png")) {
       writePNG(image, file);
     }
-    if(file.getName().endsWith(".jpg") || file.getName().endsWith(".jpeg")) {
+    if (file.getName().endsWith(".jpg") || file.getName().endsWith(".jpeg")) {
       writeJPG(image, file);
     }
   }

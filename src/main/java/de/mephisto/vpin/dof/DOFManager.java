@@ -74,7 +74,7 @@ public class DOFManager implements TableStatusChangeListener, NativeKeyListener 
     List<DOFCommand> rules = this.dofCommandData.getCommandsFor(Trigger.KeyEvent);
     for (DOFCommand rule : rules) {
       String keyBinding = rule.getKeyBinding();
-      if(!StringUtils.isEmpty(keyBinding)) {
+      if (!StringUtils.isEmpty(keyBinding)) {
         KeyChecker checker = new KeyChecker(keyBinding);
         if (checker.matches(nativeKeyEvent)) {
           rule.execute();

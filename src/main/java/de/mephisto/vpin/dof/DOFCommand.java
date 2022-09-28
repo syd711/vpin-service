@@ -117,8 +117,8 @@ public class DOFCommand {
 
   @Override
   public boolean equals(Object obj) {
-    if(obj instanceof DOFCommand) {
-      return this.id == ((DOFCommand)obj).getId();
+    if (obj instanceof DOFCommand) {
+      return this.id == ((DOFCommand) obj).getId();
     }
     return false;
   }

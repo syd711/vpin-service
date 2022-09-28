@@ -23,7 +23,7 @@ public class StateManager {
   }
 
   public boolean isRunning() {
-    return RequestUtil.doGet("http://localhost:"+ HttpServer.PORT + "/service" + AsyncServlet.PATH_PING);
+    return RequestUtil.doGet("http://localhost:" + HttpServer.PORT + "/service" + AsyncServlet.PATH_PING);
   }
 
   public void start() throws Exception {
@@ -47,12 +47,12 @@ public class StateManager {
   }
 
   public boolean shutdown() {
-    return RequestUtil.doGet("http://localhost:"+ HttpServer.PORT + "/service" + AsyncServlet.PATH_SYSTEM_EXIT);
+    return RequestUtil.doGet("http://localhost:" + HttpServer.PORT + "/service" + AsyncServlet.PATH_SYSTEM_EXIT);
   }
 
   public void install() throws IOException {
     File root = new File("./");
-    String script = "cd /D " + root.getAbsolutePath()  +
+    String script = "cd /D " + root.getAbsolutePath() +
         "\nstart jdk/bin/javaw -jar " + new File(root, "vpin-extensions.jar").getAbsolutePath();
     FileUtils.writeStringToFile(getAutostartFile(), script, Charset.forName("UTF-8"));
     LOG.info("Written autostart file " + getAutostartFile().getAbsolutePath());
@@ -62,7 +62,7 @@ public class StateManager {
     try {
       shutdown();
       Thread.sleep(1000);
-      if(!getAutostartFile().delete()) {
+      if (!getAutostartFile().delete()) {
         throw new Exception("Failed to delete autostart file " + getAutostartFile().getAbsolutePath());
       }
       LOG.info("Deleted " + getAutostartFile().getAbsolutePath());

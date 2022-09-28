@@ -40,7 +40,7 @@ import java.io.*;
  */
 class ThreadedStreamHandler extends Thread {
   private final static Logger LOG = LoggerFactory.getLogger(ThreadedStreamHandler.class);
-  
+
   InputStream inputStream;
   String adminPassword;
   OutputStream outputStream;
@@ -66,6 +66,7 @@ class ThreadedStreamHandler extends Thread {
    * The outputStream must not be null. If it is, you'll regret it. :)
    * <p/>
    * TODO this currently hangs if the admin password given for the sudo command is wrong.
+   *
    * @param name
    * @param inputStream
    * @param outputStream
@@ -84,7 +85,7 @@ class ThreadedStreamHandler extends Thread {
     // on mac os x 10.5.x, when i run a 'sudo' command, i need to write
     // the admin password out immediately; that's why this code is
     // here.
-    if(sudoIsRequested) {
+    if (sudoIsRequested) {
       //doSleep(500);
       printWriter.println(adminPassword);
       printWriter.flush();
@@ -94,9 +95,9 @@ class ThreadedStreamHandler extends Thread {
     try {
       bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
       String line = null;
-      while((line = bufferedReader.readLine()) != null) {
+      while ((line = bufferedReader.readLine()) != null) {
         outputBuffer.append(line + "\n");
-        if(enableLog) {
+        if (enableLog) {
           LOG.info("System Command Output: " + line);
         }
       }
@@ -118,9 +119,9 @@ class ThreadedStreamHandler extends Thread {
       // ignore
     }
   }
-  
+
   public void enableLog(boolean b) {
-    enableLog = b;    
+    enableLog = b;
   }
 
   public StringBuilder getOutputBuffer() {

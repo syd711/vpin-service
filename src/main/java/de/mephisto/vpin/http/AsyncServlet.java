@@ -46,7 +46,7 @@ public class AsyncServlet extends HttpServlet {
       if (!StringUtils.isEmpty(table)) {
         VPinService service = VPinService.create(true);
         GameInfo game = service.getGameByFile(tableFile);
-        if(game == null) {
+        if (game == null) {
           LOG.warn("No game found for name '" + tableFile.getName() + "' [" + request.getRequestURI() + "]");
           this.writeResponse(request, response, STATUS_TABLE_NOT_FOUND);
           return;
@@ -76,7 +76,7 @@ public class AsyncServlet extends HttpServlet {
       LOG.info("Received system exit command.");
       System.exit(0);
     }
-    else if(contextPath.equals(PATH_PING)) {
+    else if (contextPath.equals(PATH_PING)) {
       writeResponse(request, response, STATUS_OK);
     }
   }

@@ -13,7 +13,7 @@ public class DOFCommandData {
 
   public static DOFCommandData create() {
     DOFCommandData data = JSON.read(DOFCommandData.class, DOFCommandData.DOF_COMMANDS);
-    if(data == null) {
+    if (data == null) {
       data = new DOFCommandData();
     }
     return data;

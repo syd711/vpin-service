@@ -183,7 +183,7 @@ class HighscoreResolver {
       }
 
       String output = executePINemHi(nvRam.getName());
-      if(output != null) {
+      if (output != null) {
         highscore = parser.parseHighscore(gameInfo, nvRam, output);
         if (highscore == null || highscore.getScores().isEmpty()) {
           return null;

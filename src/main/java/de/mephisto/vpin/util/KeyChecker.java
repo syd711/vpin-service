@@ -17,7 +17,7 @@ public class KeyChecker {
   private String letter = null;
 
   public KeyChecker(String hotkey) {
-    if(hotkey != null) {
+    if (hotkey != null) {
       if (hotkey.contains("+")) {
         this.modifier = Integer.parseInt(hotkey.split("\\+")[0]);
         this.letter = hotkey.split("\\+")[1];
@@ -30,7 +30,7 @@ public class KeyChecker {
 
   public boolean matches(NativeKeyEvent event) {
     String keyText = NativeKeyEvent.getKeyText(event.getKeyCode());
-    if(StringUtils.isEmpty(keyText)) {
+    if (StringUtils.isEmpty(keyText)) {
       LOG.error("No key binding configured, ignoring key event.");
       return false;
     }

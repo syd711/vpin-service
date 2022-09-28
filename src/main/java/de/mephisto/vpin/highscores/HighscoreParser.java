@@ -37,7 +37,7 @@ public class HighscoreParser {
     try {
       LOG.debug("Parsing Highscore text for " + game.getGameDisplayName() + "\n" + cmdOutput);
       String[] lines = cmdOutput.split("\\n");
-      if(lines.length == 2) {
+      if (lines.length == 2) {
         return parseTwoLineOutput(highscore, lines[1]);
       }
 
@@ -49,12 +49,12 @@ public class HighscoreParser {
           index++;
         }
 
-        if(highscore.getScores().size() == 3) {
+        if (highscore.getScores().size() == 3) {
           break;
         }
       }
 
-      if(!highscore.getScores().isEmpty()) {
+      if (!highscore.getScores().isEmpty()) {
         Score score = highscore.getScores().get(0);
         highscore.setScore(score.getScore());
         highscore.setUserInitials(score.getUserInitials());

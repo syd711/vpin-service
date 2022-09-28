@@ -2,13 +2,13 @@ package de.mephisto.vpin.b2s;
 
 import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.VPinServiceException;
-import de.mephisto.vpin.util.ImageCropper;
 import de.mephisto.vpin.util.ImageUtil;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -31,8 +31,8 @@ public class DirectB2SManager {
         B2SThumbnailExtractor extractor = new B2SThumbnailExtractor(game);
         File file = extractor.extractImage(game.getDirectB2SFile());
         if (file != null) {
-          ImageCropper cropper = new ImageCropper(file);
-          BufferedImage crop = cropper.crop(ratio.getXRatio(), ratio.getYRatio());
+          BufferedImage image = ImageIO.read(file);
+          BufferedImage crop = ImageUtil.crop(image, ratio.getXRatio(), ratio.getYRatio());
           BufferedImage resized = ImageUtil.resizeImage(crop, cropWidth, cropWidth / ratio.getXRatio() * ratio.getYRatio());
           ImageUtil.write(resized, game.getDirectB2SImage());
           file.delete();

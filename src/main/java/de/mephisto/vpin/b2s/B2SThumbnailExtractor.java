@@ -2,7 +2,6 @@ package de.mephisto.vpin.b2s;
 
 import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.VPinServiceException;
-import de.mephisto.vpin.util.SystemInfo;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
