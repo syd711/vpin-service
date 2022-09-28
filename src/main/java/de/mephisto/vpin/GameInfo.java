@@ -167,6 +167,11 @@ public class GameInfo {
     return new File(SystemInfo.getInstance().getDirectB2SFolder(), baseName + ".directb2s");
   }
 
+  public File getDirectB2SImage() {
+    String targetName = FilenameUtils.getBaseName(getGameFileName()) + ".png";
+    return new File(SystemInfo.getInstance().getB2SImageExtractionFolder(), targetName);
+  }
+
   @Override
   public String toString() {
     return this.getGameDisplayName();

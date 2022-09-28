@@ -33,7 +33,7 @@ public class B2SThumbnailExtractor extends DefaultHandler {
         SAXParser saxParser = factory.newSAXParser();
         saxParser.parse(file.getAbsolutePath(), this);
 
-        File target = File.createTempFile("vpin-extension", ".png");
+        File target = File.createTempFile(FilenameUtils.getBaseName(file.getName()), ".png");
         target.deleteOnExit();
 
         byte[] bytes = DatatypeConverter.parseBase64Binary(imageData);

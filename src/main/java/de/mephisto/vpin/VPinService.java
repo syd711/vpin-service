@@ -15,6 +15,8 @@ import de.mephisto.vpin.popper.TableStatusChangeListener;
 import de.mephisto.vpin.roms.RomManager;
 import de.mephisto.vpin.util.SqliteConnector;
 import de.mephisto.vpin.util.SystemInfo;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +77,7 @@ public class VPinService {
       this.romManager = new RomManager();
       this.sqliteConnector = new SqliteConnector(romManager);
       this.highscoreManager = new HighscoreManager(this);
-      this.directB2SManager = new DirectB2SManager(this);
+      this.directB2SManager = new DirectB2SManager();
       this.popperManager = new PopperManager(sqliteConnector, highscoreManager);
 
       dofCommandData = DOFCommandData.create();
@@ -113,12 +115,22 @@ public class VPinService {
     this.httpServer.stop();
   }
 
-  public File getB2SImage(GameInfo info, B2SImageRatio ratio) throws VPinServiceException {
-    return directB2SManager.getB2SImage(info, ratio);
+  @SuppressWarnings("unused")
+  @NonNull
+  public File createDirectB2SImage(@NonNull GameInfo info, @NonNull B2SImageRatio ratio, int cropWidth) throws VPinServiceException {
+    directB2SManager.generateB2SImage(info, ratio, cropWidth);
+    return info.getDirectB2SImage();
   }
 
   @SuppressWarnings("unused")
-  public String validateScreenConfiguration(PopperScreen screen) {
+  @Nullable
+  public File extractDirectB2SBackgroundImage(@NonNull GameInfo info) throws VPinServiceException {
+    return directB2SManager.extractDirectB2SBackgroundImage(info);
+  }
+
+  @SuppressWarnings("unused")
+  @NonNull
+  public String validateScreenConfiguration(@NonNull PopperScreen screen) {
     return popperManager.validateScreenConfiguration(screen);
   }
 

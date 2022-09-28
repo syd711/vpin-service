@@ -23,8 +23,9 @@ public class ImageCropper {
 
     int targetWidth = width;
     int targetHeight = width / xRatio * yRatio;
-    if (targetHeight > image.getHeight()) {
+    if (targetHeight > height) {
       targetWidth = image.getHeight() / yRatio * xRatio;
+      targetHeight = height;
     }
 
     int x = 0;

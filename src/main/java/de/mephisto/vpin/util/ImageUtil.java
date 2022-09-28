@@ -1,5 +1,6 @@
 package de.mephisto.vpin.util;
 
+import com.jhlabs.image.GaussianFilter;
 import org.imgscalr.Scalr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +15,13 @@ import java.io.IOException;
 public class ImageUtil {
   private final static Logger LOG = LoggerFactory.getLogger(ImageUtil.class);
 
-  public static BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) throws Exception {
+  public static BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
     return Scalr.resize(originalImage, Scalr.Method.QUALITY, Scalr.Mode.AUTOMATIC, targetWidth, targetHeight, Scalr.OP_ANTIALIAS);
+  }
+
+  public static BufferedImage blurImage(BufferedImage originalImage, int radius) {
+    GaussianFilter filter = new GaussianFilter(radius);
+    return filter.filter(originalImage, null);
   }
 
   public static void write(BufferedImage image, File file) throws IOException {
