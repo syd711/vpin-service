@@ -17,6 +17,7 @@ import java.util.List;
 
 public class StateManager {
   private final static Logger LOG = LoggerFactory.getLogger(StateManager.class);
+  private static final String VPIN_EXTENSIONS_JAR = "vpin-extensions.jar";
 
   public boolean isInstalled() {
     return getAutostartFile().exists();
@@ -27,7 +28,7 @@ public class StateManager {
   }
 
   public void start() throws Exception {
-    List<String> commands = Arrays.asList("jdk/bin/java -jar vpin-extensions.jar".split(" "));
+    List<String> commands = Arrays.asList(("jdk/bin/java -jar " + VPIN_EXTENSIONS_JAR).split(" "));
     try {
       SystemCommandExecutor executor = new SystemCommandExecutor(commands, false);
       executor.setDir(new File("./"));
@@ -53,7 +54,7 @@ public class StateManager {
   public void install() throws IOException {
     File root = new File("./");
     String script = "cd /D " + root.getAbsolutePath() +
-        "\nstart jdk/bin/javaw -jar " + new File(root, "vpin-extensions.jar").getAbsolutePath();
+        "\nstart jdk/bin/javaw -jar " + new File(root, VPIN_EXTENSIONS_JAR).getAbsolutePath();
     FileUtils.writeStringToFile(getAutostartFile(), script, Charset.forName("UTF-8"));
     LOG.info("Written autostart file " + getAutostartFile().getAbsolutePath());
   }

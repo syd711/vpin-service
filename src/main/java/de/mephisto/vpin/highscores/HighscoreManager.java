@@ -2,6 +2,8 @@ package de.mephisto.vpin.highscores;
 
 import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.VPinService;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,14 +17,12 @@ public class HighscoreManager {
   private final Map<Integer, Highscore> cache = new HashMap<>();
   private final HighscoreResolver highscoreResolver;
 
-  private final VPinService VPinService;
-
-  public HighscoreManager(VPinService service) {
-    this.VPinService = service;
+  public HighscoreManager() {
     this.highscoreResolver = new HighscoreResolver();
   }
 
-  public Highscore getHighscore(GameInfo game) {
+  @Nullable
+  public Highscore getHighscore(@NonNull GameInfo game) {
     if (StringUtils.isEmpty(game.getRom())) {
       return null;
     }
@@ -35,7 +35,7 @@ public class HighscoreManager {
     return cache.get(game.getId());
   }
 
-  public void invalidateHighscore(GameInfo game) {
+  public void invalidateHighscore(@NonNull GameInfo game) {
     highscoreResolver.refresh();
     cache.remove(game.getId());
     LOG.info("Invalidated cached highscore of " + game);

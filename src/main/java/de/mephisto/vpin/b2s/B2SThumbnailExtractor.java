@@ -2,6 +2,8 @@ package de.mephisto.vpin.b2s;
 
 import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.VPinServiceException;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -25,7 +27,8 @@ public class B2SThumbnailExtractor extends DefaultHandler {
     this.game = game;
   }
 
-  public File extractImage(File file) throws VPinServiceException {
+  @Nullable
+  public File extractImage(@NonNull File file) throws VPinServiceException {
     try {
       if (file.exists()) {
         SAXParserFactory factory = SAXParserFactory.newInstance();

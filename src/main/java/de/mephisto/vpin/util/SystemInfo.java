@@ -77,7 +77,35 @@ public class SystemInfo {
       this.directB2SFolder = new File(store.get(DIRECTB2S_DIR));
     }
 
-    getB2SImageExtractionFolder().mkdirs();
+    boolean mkdirs = getB2SImageExtractionFolder().mkdirs();
+    if(!mkdirs) {
+      LOG.error("Failed to create image directory " + getB2SImageExtractionFolder().getAbsolutePath());
+    }
+  }
+
+  private void logSystemInfo() {
+    LOG.info("********************************* Installation Overview ***********************************************");
+    LOG.info(formatPathLog("Locale", Locale.getDefault().getDisplayName()));
+    LOG.info(formatPathLog("Charset", Charset.defaultCharset().displayName()));
+    LOG.info(formatPathLog("PinUP System Folder", this.getPinUPSystemFolder()));
+    LOG.info(formatPathLog("PinUP Media Folder", this.getPinUPMediaFolder()));
+    LOG.info(formatPathLog("PinUP Database File", this.getPinUPDatabaseFile()));
+    LOG.info(formatPathLog("Visual Pinball Folder", this.getVisualPinballInstallationFolder()));
+    LOG.info(formatPathLog("Visual Pinball Tables Folder", this.getVPXTablesFolder()));
+    LOG.info(formatPathLog("Visual Pinball DirectB2S Folder", this.getDirectB2SFolder()));
+    LOG.info(formatPathLog("Mame Folder", this.getMameFolder()));
+    LOG.info(formatPathLog("ROM Folder", this.getMameRomFolder()));
+    LOG.info(formatPathLog("NVRam Folder", this.getNvramFolder()));
+    LOG.info(formatPathLog("Pinemhi NVRam Folder", this.pinemhiNvRamFolder));
+    LOG.info(formatPathLog("Pinemhi Command", this.getPinemhiCommandFile()));
+    LOG.info(formatPathLog("VPReg File", this.getVPRegFile()));
+    LOG.info(formatPathLog("Extracted VPReg Folder", this.getExtractedVPRegFolder()));
+    LOG.info(formatPathLog("B2S Extraction Folder", this.getB2SImageExtractionFolder()));
+    LOG.info(formatPathLog("VPX Files", String.valueOf(this.getVPXTables().length)));
+    if (this.getPinUPDatabaseFile().exists()) {
+      LOG.info(formatPathLog("Database Game Count (VPX)", String.valueOf(new SqliteConnector(this.getPinUPDatabaseFile()).getGameCount())));
+    }
+    LOG.info("*******************************************************************************************************");
   }
 
   private void initPinemHiFolders() {
@@ -118,30 +146,6 @@ public class SystemInfo {
       String msg = "Failed to run installation for pinemhi: " + e.getMessage();
       LOG.error(msg, e);
     }
-  }
-
-  private void logSystemInfo() {
-    LOG.info("********************************* Installation Overview ***********************************************");
-    LOG.info(formatPathLog("Locale", Locale.getDefault().getDisplayName()));
-    LOG.info(formatPathLog("Charset", Charset.defaultCharset().displayName()));
-    LOG.info(formatPathLog("PinUP System Folder", this.getPinUPSystemFolder()));
-    LOG.info(formatPathLog("PinUP Media Folder", this.getPinUPMediaFolder()));
-    LOG.info(formatPathLog("PinUP Database File", this.getPinUPDatabaseFile()));
-    LOG.info(formatPathLog("Visual Pinball Folder", this.getVisualPinballInstallationFolder()));
-    LOG.info(formatPathLog("Visual Pinball Tables Folder", this.getVPXTablesFolder()));
-    LOG.info(formatPathLog("Visual Pinball DirectB2S Folder", this.getDirectB2SFolder()));
-    LOG.info(formatPathLog("Mame Folder", this.getMameFolder()));
-    LOG.info(formatPathLog("ROM Folder", this.getMameRomFolder()));
-    LOG.info(formatPathLog("NVRam Folder", this.getNvramFolder()));
-    LOG.info(formatPathLog("Pinemhi NVRam Folder", this.pinemhiNvRamFolder));
-    LOG.info(formatPathLog("Pinemhi Command", this.getPinemhiCommandFile()));
-    LOG.info(formatPathLog("Extracted VPReg Folder", this.getExtractedVPRegFolder()));
-    LOG.info(formatPathLog("B2S Extraction Folder", this.getB2SImageExtractionFolder()));
-    LOG.info(formatPathLog("VPX Files", String.valueOf(this.getVPXTables().length)));
-    if (this.getPinUPDatabaseFile().exists()) {
-      LOG.info(formatPathLog("Database Game Count (VPX)", String.valueOf(new SqliteConnector(this.getPinUPDatabaseFile()).getGameCount())));
-    }
-    LOG.info("*******************************************************************************************************");
   }
 
   private String formatPathLog(String label, String value) {

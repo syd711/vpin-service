@@ -55,8 +55,6 @@ public class VPinService {
 
   private final List<GameInfo> gameInfos = new ArrayList<>();
 
-  private final boolean headless;
-
   public static VPinService create(boolean headless) throws VPinServiceException {
     if (instance == null) {
       instance = new VPinService(headless);
@@ -73,10 +71,9 @@ public class VPinService {
         throw new FileNotFoundException("Wrong Visual Pinball installation folder: " + SystemInfo.getInstance().getVisualPinballInstallationFolder().getAbsolutePath() + ".\nPlease fix the Visual Pinball installation path in file ./resources/env.properties");
       }
 
-      this.headless = headless;
       this.romManager = new RomManager();
       this.sqliteConnector = new SqliteConnector(romManager);
-      this.highscoreManager = new HighscoreManager(this);
+      this.highscoreManager = new HighscoreManager();
       this.directB2SManager = new DirectB2SManager();
       this.popperManager = new PopperManager(sqliteConnector, highscoreManager);
 
@@ -105,10 +102,6 @@ public class VPinService {
     }
   }
 
-  public boolean isHeadless() {
-    return this.headless;
-  }
-
   @SuppressWarnings("unused")
   public void shutdown() {
     this.executor.shutdown();
@@ -135,12 +128,12 @@ public class VPinService {
   }
 
   @SuppressWarnings("unused")
-  public void addTableStatusChangeListener(TableStatusChangeListener listener) {
+  public void addTableStatusChangeListener(@NonNull TableStatusChangeListener listener) {
     this.popperManager.addTableStatusChangeListener(listener);
   }
 
   @SuppressWarnings("unused")
-  public void removeTableStatusChangeListener(TableStatusChangeListener listener) {
+  public void removeTableStatusChangeListener(@NonNull TableStatusChangeListener listener) {
     this.popperManager.removeTableStatusChangeListener(listener);
   }
 
@@ -150,26 +143,28 @@ public class VPinService {
   }
 
   @SuppressWarnings("unused")
-  public void updateDOFCommand(DOFCommand command) {
+  public void updateDOFCommand(@NonNull DOFCommand command) {
     this.dofCommandData.updateDOFCommand(command);
   }
 
   @SuppressWarnings("unused")
-  public void addDOFCommand(DOFCommand command) {
+  public void addDOFCommand(@NonNull DOFCommand command) {
     this.dofCommandData.addDOFCommand(command);
   }
 
   @SuppressWarnings("unused")
-  public void removeDOFCommand(DOFCommand command) {
+  public void removeDOFCommand(@NonNull DOFCommand command) {
     this.dofCommandData.removeDOFCommand(command);
   }
 
   @SuppressWarnings("unused")
+  @NonNull
   public List<DOFCommand> getDOFCommands() {
     return dofCommandData.getCommands();
   }
 
   @SuppressWarnings("unused")
+  @NonNull
   public List<Unit> getUnits() {
     return dofManager.getUnits();
   }
@@ -201,12 +196,14 @@ public class VPinService {
   }
 
   @SuppressWarnings("unused")
+  @Nullable
   public String rescanRom(GameInfo gameInfo) {
     return this.romManager.scanRom(gameInfo);
   }
 
   @SuppressWarnings("unused")
-  public GameInfo getGameByVpxFilename(String filename) {
+  @Nullable
+  public GameInfo getGameByVpxFilename(@NonNull String filename) {
     List<GameInfo> games = sqliteConnector.getGames(this);
     for (GameInfo gameInfo : games) {
       if (gameInfo.getGameFile().getName().equals(filename)) {
@@ -216,6 +213,7 @@ public class VPinService {
     return null;
   }
 
+  @NonNull
   public List<GameInfo> getGamesWithEmptyRoms() {
     List<GameInfo> games = sqliteConnector.getGames(this);
     List<GameInfo> result = new ArrayList<>();
@@ -227,7 +225,8 @@ public class VPinService {
     return result;
   }
 
-  public GameInfo getGameByRom(String romName) {
+  @Nullable
+  public GameInfo getGameByRom(@NonNull String romName) {
     List<GameInfo> games = sqliteConnector.getGames(this);
     for (GameInfo gameInfo : games) {
       if (gameInfo.getRom() != null && gameInfo.getRom().equals(romName)) {
@@ -237,6 +236,7 @@ public class VPinService {
     return null;
   }
 
+  @Nullable
   public Highscore getHighscore(GameInfo gameInfo) {
     return highscoreManager.getHighscore(gameInfo);
   }

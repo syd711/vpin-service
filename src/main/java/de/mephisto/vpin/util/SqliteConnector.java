@@ -4,6 +4,8 @@ import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.VPinService;
 import de.mephisto.vpin.popper.PinUPControl;
 import de.mephisto.vpin.roms.RomManager;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -57,7 +59,8 @@ public class SqliteConnector {
     }
   }
 
-  public GameInfo getGame(VPinService service, int id) {
+  @Nullable
+  public GameInfo getGame(@NonNull VPinService service, int id) {
     this.connect();
     GameInfo info = null;
     try {
@@ -77,7 +80,8 @@ public class SqliteConnector {
     return info;
   }
 
-  public GameInfo getGameByFilename(VPinService service, String table) {
+  @Nullable
+  public GameInfo getGameByFilename(@NonNull VPinService service, String table) {
     this.connect();
     GameInfo info = null;
     try {
@@ -97,7 +101,8 @@ public class SqliteConnector {
     return info;
   }
 
-  public GameInfo getGameByName(VPinService service, String table) {
+  @Nullable
+  public GameInfo getGameByName(@NonNull VPinService service, String table) {
     this.connect();
     GameInfo info = null;
     try {
@@ -117,7 +122,8 @@ public class SqliteConnector {
     return info;
   }
 
-  public PinUPControl getFunction(String description) {
+  @Nullable
+  public PinUPControl getFunction(@NonNull String description) {
     PinUPControl f = null;
     this.connect();
     try {
@@ -142,6 +148,7 @@ public class SqliteConnector {
     return f;
   }
 
+  @NonNull
   public List<PinUPControl> getControls() {
     this.connect();
     List<PinUPControl> results = new ArrayList<>();
@@ -186,8 +193,8 @@ public class SqliteConnector {
     return count;
   }
 
-
-  public List<GameInfo> getGames(VPinService service) {
+  @NonNull
+  public List<GameInfo> getGames(@NonNull VPinService service) {
     this.connect();
     List<GameInfo> results = new ArrayList<>();
     try {
@@ -211,6 +218,7 @@ public class SqliteConnector {
     return results;
   }
 
+  @NonNull
   public List<Integer> getGameIdsFromPlaylists() {
     List<Integer> result = new ArrayList<>();
     connect();
@@ -230,23 +238,8 @@ public class SqliteConnector {
     return result;
   }
 
-  private void loadStats(GameInfo game) {
-    try {
-      Statement statement = conn.createStatement();
-      ResultSet rs = statement.executeQuery("SELECT * FROM GamesStats where GameID = " + game.getId() + ";");
-      while (rs.next()) {
-        int numberPlays = rs.getInt("NumberPlays");
-        Date lastPlayed = rs.getDate("LastPlayed");
-
-        game.setLastPlayed(lastPlayed);
-        game.setNumberPlays(numberPlays);
-      }
-    } catch (SQLException e) {
-      LOG.error("Failed to read game info: " + e.getMessage(), e);
-    }
-  }
-
-  public String getEmulatorStartupScript(String emuName) {
+  @Nullable
+  public String getEmulatorStartupScript(@NonNull String emuName) {
     String script = null;
     this.connect();
     try {
@@ -264,7 +257,8 @@ public class SqliteConnector {
     return script;
   }
 
-  public String getEmulatorExitScript(String emuName) {
+  @Nullable
+  public String getEmulatorExitScript(@NonNull String emuName) {
     String script = null;
     this.connect();
     try {
@@ -282,26 +276,7 @@ public class SqliteConnector {
     return script;
   }
 
-  public String getRomName(String tableFileName) {
-    String rom = null;
-    this.connect();
-    try {
-      Statement statement = conn.createStatement();
-      ResultSet rs = statement.executeQuery("SELECT * FROM Games where GameFileName = '" + tableFileName + "';");
-      if (rs.next()) {
-        rom = rs.getString(ROM);
-      }
-      rs.close();
-      statement.close();
-    } catch (SQLException e) {
-      LOG.error("Failed to read rom info for " + tableFileName + ": " + e.getMessage(), e);
-    } finally {
-      this.disconnect();
-    }
-    return rom;
-  }
-
-  public void updateScript(String emuName, String scriptName, String content) {
+  public void updateScript(@NonNull String emuName, @NonNull String scriptName, @NonNull String content) {
     this.connect();
     String sql = "UPDATE Emulators SET '" + scriptName + "'='" + content + "' WHERE EmuName = '" + emuName + "';";
     try {
@@ -316,7 +291,24 @@ public class SqliteConnector {
     }
   }
 
-  private GameInfo createGameInfo(VPinService service, ResultSet rs) throws SQLException {
+  private void loadStats(@NonNull GameInfo game) {
+    try {
+      Statement statement = conn.createStatement();
+      ResultSet rs = statement.executeQuery("SELECT * FROM GamesStats where GameID = " + game.getId() + ";");
+      while (rs.next()) {
+        int numberPlays = rs.getInt("NumberPlays");
+        Date lastPlayed = rs.getDate("LastPlayed");
+
+        game.setLastPlayed(lastPlayed);
+        game.setNumberPlays(numberPlays);
+      }
+    } catch (SQLException e) {
+      LOG.error("Failed to read game info: " + e.getMessage(), e);
+    }
+  }
+
+  @Nullable
+  private GameInfo createGameInfo(@NonNull VPinService service, @NonNull ResultSet rs) throws SQLException {
     GameInfo info = new GameInfo(service);
 
     int id = rs.getInt("GameID");

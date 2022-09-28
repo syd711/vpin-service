@@ -4,6 +4,7 @@ import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.util.PropertiesStore;
 import de.mephisto.vpin.util.ReverseLineInputStream;
 import de.mephisto.vpin.util.SystemInfo;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,11 +30,10 @@ public class RomManager {
 
   public RomManager() {
     this.store = PropertiesStore.create("repository.properties");
-    PATTERNS.forEach(p -> {
-      patternList.add(Pattern.compile(".*" + p + ".*=.*\".*\".*"));
-    });
+    PATTERNS.forEach(p -> patternList.add(Pattern.compile(".*" + p + ".*=.*\".*\".*")));
   }
 
+  @Nullable
   public String scanRom(GameInfo gameInfo) {
     String romName = scanRomName(gameInfo.getGameFile());
     gameInfo.setRom(romName);
@@ -117,8 +117,13 @@ public class RomManager {
       LOG.error("Failed to read rom line '" + romName + "' for  " + gameFile.getAbsolutePath() + ": " + e.getMessage(), e);
     } finally {
       try {
-        reverseLineInputStream.close();
-        bufferedReader.close();
+        if(reverseLineInputStream != null) {
+          reverseLineInputStream.close();
+        }
+
+        if(bufferedReader != null) {
+          bufferedReader.close();
+        }
       } catch (Exception e) {
         LOG.error("Failed to close vpx file stream: " + e.getMessage(), e);
       }

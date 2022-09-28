@@ -3,6 +3,8 @@ package de.mephisto.vpin;
 import de.mephisto.vpin.highscores.Highscore;
 import de.mephisto.vpin.popper.PopperScreen;
 import de.mephisto.vpin.util.SystemInfo;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,10 +24,9 @@ public class GameInfo {
   private File wheelIconFile;
 
   private Date lastPlayed;
+  private int numberPlays;
 
   private final VPinService service;
-
-  private int numberPlays;
 
   public GameInfo(VPinService service) {
     this.service = service;
@@ -35,6 +36,7 @@ public class GameInfo {
     return this.service.getHighscore(this);
   }
 
+  @SuppressWarnings("unused")
   public boolean hasHighscore() {
     if (this.getNvRamFile() != null && this.getNvRamFile().exists()) {
       return true;
@@ -46,12 +48,15 @@ public class GameInfo {
     return false;
   }
 
-  public File getPopperScreenMedia(PopperScreen screen) {
+  @SuppressWarnings("unused")
+  @NonNull
+  public File getPopperScreenMedia(@NonNull PopperScreen screen) {
     File emuMedia = new File(SystemInfo.getInstance().getPinUPMediaFolder(), getEmulatorName());
     File mediaFolder = new File(emuMedia, screen.name());
     return new File(mediaFolder, FilenameUtils.getBaseName(this.getGameFile().getName()) + ".png");
   }
 
+  @NonNull
   public String getEmulatorName() {
     File gameFile = getGameFile();
     if (gameFile.getName().endsWith(".vpx")) {
@@ -60,9 +65,10 @@ public class GameInfo {
     else if (gameFile.getName().endsWith(".fp")) {
       return "Future Pinball";
     }
-    return null;
+    return "Visual Pinball X";
   }
 
+  @Nullable
   public File getVPRegFolder() {
     if (!StringUtils.isEmpty(this.getRom())) {
       return new File(SystemInfo.getInstance().getExtractedVPRegFolder(), getRom());
@@ -70,6 +76,7 @@ public class GameInfo {
     return null;
   }
 
+  @SuppressWarnings("unused")
   public int getNumberPlays() {
     return numberPlays;
   }
@@ -78,10 +85,7 @@ public class GameInfo {
     this.numberPlays = numberPlays;
   }
 
-  public void rescanRom() {
-    service.rescanRom(this);
-  }
-
+  @SuppressWarnings("unused")
   public Date getLastPlayed() {
     return lastPlayed;
   }
@@ -98,27 +102,31 @@ public class GameInfo {
     this.lastPlayed = lastPlayed;
   }
 
+  @SuppressWarnings("unused")
+  @NonNull
   public File getWheelIconFile() {
     return wheelIconFile;
   }
 
-  public void setWheelIconFile(File wheelIconFile) {
+  public void setWheelIconFile(@NonNull File wheelIconFile) {
     this.wheelIconFile = wheelIconFile;
   }
 
+  @Nullable
   public File getNvRamFile() {
     return nvRamFile;
   }
 
-  public void setNvRamFile(File nvRamFile) {
+  public void setNvRamFile(@Nullable File nvRamFile) {
     this.nvRamFile = nvRamFile;
   }
 
+  @NonNull
   public File getGameFile() {
     return gameFile;
   }
 
-  public void setGameFile(File gameFile) {
+  public void setGameFile(@NonNull File gameFile) {
     this.gameFile = gameFile;
   }
 
@@ -154,6 +162,8 @@ public class GameInfo {
     this.id = id;
   }
 
+  @SuppressWarnings("unused")
+  @Nullable
   public File getRomFile() {
     return romFile;
   }
@@ -162,11 +172,13 @@ public class GameInfo {
     this.romFile = romFile;
   }
 
+  @NonNull
   public File getDirectB2SFile() {
     String baseName = FilenameUtils.getBaseName(this.getGameFileName());
     return new File(SystemInfo.getInstance().getDirectB2SFolder(), baseName + ".directb2s");
   }
 
+  @NonNull
   public File getDirectB2SImage() {
     String targetName = FilenameUtils.getBaseName(getGameFileName()) + ".png";
     return new File(SystemInfo.getInstance().getB2SImageExtractionFolder(), targetName);

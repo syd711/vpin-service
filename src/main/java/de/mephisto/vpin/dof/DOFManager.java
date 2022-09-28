@@ -3,6 +3,8 @@ package de.mephisto.vpin.dof;
 import de.mephisto.vpin.popper.TableStatusChangeListener;
 import de.mephisto.vpin.popper.TableStatusChangedEvent;
 import de.mephisto.vpin.util.KeyChecker;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.keyboard.NativeKeyEvent;
@@ -33,10 +35,12 @@ public class DOFManager implements TableStatusChangeListener, NativeKeyListener 
     }
   }
 
+  @NonNull
   public List<Unit> getUnits() {
     return units;
   }
 
+  @Nullable
   public Unit getUnit(int id) {
     List<Unit> units = this.getUnits();
     for (Unit unit : units) {
