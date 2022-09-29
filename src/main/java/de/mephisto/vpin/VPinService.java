@@ -183,6 +183,7 @@ public class VPinService {
 
   public List<GameInfo> getGameInfos() {
     if (this.gameInfos.isEmpty()) {
+      LOG.info("Starting Game Scan...");
       this.gameInfos.addAll(sqliteConnector.getGames(this));
       LOG.info("Loading of all GameInfo finished, loaded " + this.gameInfos.size() + " games.");
     }

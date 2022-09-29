@@ -26,7 +26,6 @@ public class HighscoreResolverTest {
     }
 
     assertFalse(valid.isEmpty());
-    assertTrue(valid.get(0).getLastPlayedTime() > valid.get(1).getLastPlayedTime());
   }
 
 
