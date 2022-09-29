@@ -62,6 +62,14 @@ public class VPinService {
     return instance;
   }
 
+  public static VPinService restart() throws VPinServiceException {
+    if(instance != null) {
+      instance.shutdown();
+    }
+    instance = create(true);
+    return instance;
+  }
+
   private VPinService(boolean headless) throws VPinServiceException {
     try {
       if (!SystemInfo.getInstance().getPinUPSystemFolder().exists()) {
