@@ -27,6 +27,22 @@ public class StateManager {
     return RequestUtil.doGet("http://localhost:" + HttpServer.PORT + "/service" + AsyncServlet.PATH_PING);
   }
 
+  public void waitForRunState() {
+    try {
+      int attempts = 0;
+      while(!isRunning()) {
+        Thread.sleep(1000);
+        attempts++;
+
+        if(attempts > 30) {
+          break;
+        }
+      }
+    } catch (InterruptedException e) {
+      //ignore
+    }
+  }
+
   public void start() throws Exception {
     List<String> commands = Arrays.asList(("jdk/bin/java -jar " + VPIN_EXTENSIONS_JAR).split(" "));
     try {
@@ -39,7 +55,6 @@ public class StateManager {
       if (!StringUtils.isEmpty(standardErrorFromCommand.toString())) {
         throw new Exception(standardErrorFromCommand.toString());
       }
-      Thread.sleep(5000);
     } catch (Exception e) {
       String message = "Failed start service via command: " + e.getMessage();
       LOG.info(message, e);

@@ -32,28 +32,28 @@ import java.util.stream.Collectors;
 public class VPinService {
   private final static Logger LOG = LoggerFactory.getLogger(VPinService.class);
 
-  private final SqliteConnector sqliteConnector;
+  private SqliteConnector sqliteConnector;
 
-  private final RomManager romManager;
+  private RomManager romManager;
 
-  private final HighscoreManager highscoreManager;
+  private HighscoreManager highscoreManager;
 
-  private final ExecutorService executor = Executors.newSingleThreadExecutor();
+  private ExecutorService executor = Executors.newSingleThreadExecutor();
 
   private static VPinService instance;
 
 
   private HttpServer httpServer;
 
-  private final DOFManager dofManager;
+  private DOFManager dofManager;
 
-  private final PopperManager popperManager;
+  private PopperManager popperManager;
 
-  private final DOFCommandData dofCommandData;
+  private DOFCommandData dofCommandData;
 
-  private final DirectB2SManager directB2SManager;
+  private DirectB2SManager directB2SManager;
 
-  private final List<GameInfo> gameInfos = new ArrayList<>();
+  private List<GameInfo> gameInfos = new ArrayList<>();
 
   public static VPinService create(boolean headless) throws VPinServiceException {
     if (instance == null) {
@@ -62,15 +62,7 @@ public class VPinService {
     return instance;
   }
 
-  public static VPinService restart() throws VPinServiceException {
-    if(instance != null) {
-      instance.shutdown();
-    }
-    instance = create(true);
-    return instance;
-  }
-
-  private VPinService(boolean headless) throws VPinServiceException {
+  private void init(boolean headless) throws VPinServiceException {
     try {
       if (!SystemInfo.getInstance().getPinUPSystemFolder().exists()) {
         throw new FileNotFoundException("Wrong PinUP Popper installation folder: " + SystemInfo.getInstance().getPinUPSystemFolder().getAbsolutePath() + ".\nPlease fix the PinUP Popper installation path in file ./resources/env.properties");
@@ -110,8 +102,18 @@ public class VPinService {
     }
   }
 
+  private VPinService(boolean headless) throws VPinServiceException {
+    init(headless);
+  }
+
+  public void restart() throws VPinServiceException {
+    this.shutdown();
+    this.init(true);
+  }
+
   @SuppressWarnings("unused")
   public void shutdown() {
+    gameInfos.clear();
     this.executor.shutdown();
     this.httpServer.stop();
   }
