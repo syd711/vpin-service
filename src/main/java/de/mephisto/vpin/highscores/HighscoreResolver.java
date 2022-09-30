@@ -3,6 +3,7 @@ package de.mephisto.vpin.highscores;
 import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.util.SystemCommandExecutor;
 import de.mephisto.vpin.util.SystemInfo;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -168,11 +169,12 @@ class HighscoreResolver {
    * @param gameInfo the game to parse the highscore for
    * @return the Highscore object or null if no highscore could be parsed.
    */
+  @Nullable
   private Highscore parseNvHighscore(GameInfo gameInfo) {
     Highscore highscore = null;
     try {
       File nvRam = gameInfo.getNvRamFile();
-      if (!nvRam.exists()) {
+      if (nvRam == null || !nvRam.exists()) {
         return null;
       }
 

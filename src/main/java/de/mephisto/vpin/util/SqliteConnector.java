@@ -84,8 +84,9 @@ public class SqliteConnector {
     this.connect();
     GameInfo info = null;
     try {
+      String gameName = filename.replaceAll("'", "''");
       Statement statement = conn.createStatement();
-      ResultSet rs = statement.executeQuery("SELECT * FROM Games where GameFileName = '" + filename + "';");
+      ResultSet rs = statement.executeQuery("SELECT * FROM Games where GameFileName = '" + gameName + "';");
       while (rs.next()) {
         info = createGameInfo(service, rs);
       }
@@ -105,8 +106,9 @@ public class SqliteConnector {
     this.connect();
     GameInfo info = null;
     try {
+      String gameName = table.replaceAll("'", "''");
       Statement statement = conn.createStatement();
-      ResultSet rs = statement.executeQuery("SELECT * FROM Games where GameDisplay = '" + table + "';");
+      ResultSet rs = statement.executeQuery("SELECT * FROM Games where GameDisplay = '" + gameName + "';");
       while (rs.next()) {
         info = createGameInfo(service, rs);
       }
@@ -127,6 +129,7 @@ public class SqliteConnector {
     this.connect();
     try {
       Statement statement = conn.createStatement();
+      description = description.replaceAll("'", "''");
       ResultSet rs = statement.executeQuery("SELECT * FROM PinUPFunctions WHERE Descript = '" + description + "';");
       while (rs.next()) {
         f = new PinUPControl();
@@ -242,6 +245,7 @@ public class SqliteConnector {
     String script = null;
     this.connect();
     try {
+      emuName = emuName.replaceAll("'", "''");
       Statement statement = conn.createStatement();
       ResultSet rs = statement.executeQuery("SELECT * FROM Emulators where EmuName = '" + emuName + "';");
       rs.next();
@@ -261,6 +265,7 @@ public class SqliteConnector {
     String script = null;
     this.connect();
     try {
+      emuName = emuName.replaceAll("'", "''");
       Statement statement = conn.createStatement();
       ResultSet rs = statement.executeQuery("SELECT * FROM Emulators where EmuName = '" + emuName + "';");
       rs.next();

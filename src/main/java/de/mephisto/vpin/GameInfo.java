@@ -85,17 +85,14 @@ public class GameInfo {
     this.numberPlays = numberPlays;
   }
 
-  @SuppressWarnings("unused")
-  public Date getLastPlayed() {
-    return lastPlayed;
+  public void rescanRom() {
+    service.rescanRom(this);
   }
 
-  public long getLastPlayedTime() {
-    if (this.lastPlayed == null) {
-      return 0;
-    }
-
-    return this.lastPlayed.getTime();
+  @SuppressWarnings("unused")
+  @Nullable
+  public Date getLastPlayed() {
+    return lastPlayed;
   }
 
   public void setLastPlayed(Date lastPlayed) {
