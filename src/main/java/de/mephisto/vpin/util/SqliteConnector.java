@@ -69,11 +69,10 @@ public class SqliteConnector {
       while (rs.next()) {
         info = createGameInfo(service, rs);
       }
-
       rs.close();
       statement.close();
     } catch (SQLException e) {
-      LOG.error("Failed to read game info: " + e.getMessage(), e);
+      LOG.error("Failed to get game for id '" + id + "': " + e.getMessage(), e);
     } finally {
       this.disconnect();
     }
@@ -81,12 +80,12 @@ public class SqliteConnector {
   }
 
   @Nullable
-  public GameInfo getGameByFilename(@NonNull VPinService service, String table) {
+  public GameInfo getGameByFilename(@NonNull VPinService service, String filename) {
     this.connect();
     GameInfo info = null;
     try {
       Statement statement = conn.createStatement();
-      ResultSet rs = statement.executeQuery("SELECT * FROM Games where GameFileName = '" + table + "';");
+      ResultSet rs = statement.executeQuery("SELECT * FROM Games where GameFileName = '" + filename + "';");
       while (rs.next()) {
         info = createGameInfo(service, rs);
       }
@@ -94,7 +93,7 @@ public class SqliteConnector {
       rs.close();
       statement.close();
     } catch (SQLException e) {
-      LOG.error("Failed to read game info: " + e.getMessage(), e);
+      LOG.error("Failed to read game by filename '" + filename + "': " + e.getMessage(), e);
     } finally {
       this.disconnect();
     }
@@ -115,7 +114,7 @@ public class SqliteConnector {
       rs.close();
       statement.close();
     } catch (SQLException e) {
-      LOG.error("Failed to read game info: " + e.getMessage(), e);
+      LOG.error("Failed to get game by name '" + table + "': " + e.getMessage(), e);
     } finally {
       this.disconnect();
     }
@@ -209,7 +208,7 @@ public class SqliteConnector {
       rs.close();
       statement.close();
     } catch (SQLException e) {
-      LOG.error("Failed to read game info: " + e.getMessage(), e);
+      LOG.error("Failed to get games: " + e.getMessage(), e);
     } finally {
       this.disconnect();
     }
