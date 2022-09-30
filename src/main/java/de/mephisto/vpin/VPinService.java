@@ -62,6 +62,10 @@ public class VPinService {
     return instance;
   }
 
+  private VPinService(boolean headless) throws VPinServiceException {
+    init(headless);
+  }
+
   private void init(boolean headless) throws VPinServiceException {
     try {
       if (!SystemInfo.getInstance().getPinUPSystemFolder().exists()) {
@@ -100,10 +104,6 @@ public class VPinService {
       LOG.error("VPin Service failed to start: " + e.getMessage(), e);
       throw new VPinServiceException(e);
     }
-  }
-
-  private VPinService(boolean headless) throws VPinServiceException {
-    init(headless);
   }
 
   public void restart() throws VPinServiceException {

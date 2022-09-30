@@ -1,5 +1,6 @@
 package de.mephisto.vpin.util;
 
+import de.mephisto.vpin.VPinServiceException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -41,47 +42,53 @@ public class SystemInfo {
 
   private static SystemInfo instance;
 
-  private SystemInfo() {
+  private SystemInfo() throws VPinServiceException {
     initBaseFolders();
     initPinemHiFolders();
     logSystemInfo();
   }
 
-  private void initBaseFolders() {
-    PropertiesStore store = PropertiesStore.create("env");
+  private void initBaseFolders() throws VPinServiceException {
+    try {
+      PropertiesStore store = PropertiesStore.create("env");
 
-    //PinUP Popper Folder
-    this.pinUPSystemInstallationFolder = this.resolvePinUPSystemInstallationFolder();
-    if (!store.containsKey(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR)) {
-      store.set(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR, pinUPSystemInstallationFolder.getAbsolutePath().replaceAll("\\\\", "/"));
-    }
-    else {
-      this.pinUPSystemInstallationFolder = new File(store.get(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR));
-    }
-
-    //Visual Pinball Folder
-    this.visualPinballInstallationFolder = this.resolveVisualPinballInstallationFolder();
-    if (!store.containsKey(VISUAL_PINBALL_INST_DIR)) {
-      store.set(VISUAL_PINBALL_INST_DIR, visualPinballInstallationFolder.getAbsolutePath().replaceAll("\\\\", "/"));
-    }
-    else {
-      this.visualPinballInstallationFolder = new File(store.get(VISUAL_PINBALL_INST_DIR));
-    }
-
-    //directb2s folder, provide possibility to change the default folder if they are only used for background generation
-    this.directB2SFolder = new File(getVisualPinballInstallationFolder(), "Tables/");
-    if (!store.containsKey(DIRECTB2S_DIR)) {
-      store.set(DIRECTB2S_DIR, directB2SFolder.getAbsolutePath().replaceAll("\\\\", "/"));
-    }
-    else {
-      this.directB2SFolder = new File(store.get(DIRECTB2S_DIR));
-    }
-
-    if(!getB2SImageExtractionFolder().exists()) {
-      boolean mkdirs = getB2SImageExtractionFolder().mkdirs();
-      if(!mkdirs) {
-        LOG.error("Failed to create image directory " + getB2SImageExtractionFolder().getAbsolutePath());
+      //PinUP Popper Folder
+      this.pinUPSystemInstallationFolder = this.resolvePinUPSystemInstallationFolder();
+      if (!store.containsKey(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR)) {
+        store.set(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR, pinUPSystemInstallationFolder.getAbsolutePath().replaceAll("\\\\", "/"));
       }
+      else {
+        this.pinUPSystemInstallationFolder = new File(store.get(PINUP_SYSTEM_INSTALLATION_DIR_INST_DIR));
+      }
+
+      //Visual Pinball Folder
+      this.visualPinballInstallationFolder = this.resolveVisualPinballInstallationFolder();
+      if (!store.containsKey(VISUAL_PINBALL_INST_DIR)) {
+        store.set(VISUAL_PINBALL_INST_DIR, visualPinballInstallationFolder.getAbsolutePath().replaceAll("\\\\", "/"));
+      }
+      else {
+        this.visualPinballInstallationFolder = new File(store.get(VISUAL_PINBALL_INST_DIR));
+      }
+
+      //directb2s folder, provide possibility to change the default folder if they are only used for background generation
+      this.directB2SFolder = new File(getVisualPinballInstallationFolder(), "Tables/");
+      if (!store.containsKey(DIRECTB2S_DIR)) {
+        store.set(DIRECTB2S_DIR, directB2SFolder.getAbsolutePath().replaceAll("\\\\", "/"));
+      }
+      else {
+        this.directB2SFolder = new File(store.get(DIRECTB2S_DIR));
+      }
+
+      if(!getB2SImageExtractionFolder().exists()) {
+        boolean mkdirs = getB2SImageExtractionFolder().mkdirs();
+        if(!mkdirs) {
+          LOG.error("Failed to create image directory " + getB2SImageExtractionFolder().getAbsolutePath());
+        }
+      }
+    } catch (Exception e) {
+      String msg = "Failed to initialize base folders: " + e.getMessage();
+      LOG.error(msg, e);
+      throw new VPinServiceException(msg, e);
     }
   }
 
@@ -110,7 +117,7 @@ public class SystemInfo {
     LOG.info("*******************************************************************************************************");
   }
 
-  private void initPinemHiFolders() {
+  private void initPinemHiFolders() throws VPinServiceException {
     try {
       File file = new File(PINEMHI_FOLDER, PINEMHI_INI);
       if (!file.exists()) {
@@ -147,6 +154,7 @@ public class SystemInfo {
     } catch (Exception e) {
       String msg = "Failed to run installation for pinemhi: " + e.getMessage();
       LOG.error(msg, e);
+      throw new VPinServiceException(msg, e);
     }
   }
 
@@ -227,7 +235,11 @@ public class SystemInfo {
 
   public static SystemInfo getInstance() {
     if (instance == null) {
-      instance = new SystemInfo();
+      try {
+        instance = new SystemInfo();
+      } catch (VPinServiceException e) {
+        System.exit(0);
+      }
     }
     return instance;
   }
