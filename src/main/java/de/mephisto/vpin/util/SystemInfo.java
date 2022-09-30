@@ -77,9 +77,11 @@ public class SystemInfo {
       this.directB2SFolder = new File(store.get(DIRECTB2S_DIR));
     }
 
-    boolean mkdirs = getB2SImageExtractionFolder().mkdirs();
-    if(!mkdirs) {
-      LOG.error("Failed to create image directory " + getB2SImageExtractionFolder().getAbsolutePath());
+    if(!getB2SImageExtractionFolder().exists()) {
+      boolean mkdirs = getB2SImageExtractionFolder().mkdirs();
+      if(!mkdirs) {
+        LOG.error("Failed to create image directory " + getB2SImageExtractionFolder().getAbsolutePath());
+      }
     }
   }
 
