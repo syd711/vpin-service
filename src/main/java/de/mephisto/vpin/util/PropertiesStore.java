@@ -51,6 +51,10 @@ public class PropertiesStore {
     return create(file);
   }
 
+  public boolean isEmpty() {
+    return this.properties.isEmpty();
+  }
+
   public boolean containsKey(String key) {
     return this.properties.containsKey(key);
   }

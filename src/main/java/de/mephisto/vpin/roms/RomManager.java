@@ -85,7 +85,7 @@ public class RomManager {
    * @param gameFile the table file which contains the rom that is searched.
    * @return the ROM name or null
    */
-  private String scanRomName(File gameFile) {
+  String scanRomName(File gameFile) {
     String romName = null;
     BufferedReader bufferedReader = null;
     ReverseLineInputStream reverseLineInputStream = null;
@@ -99,8 +99,11 @@ public class RomManager {
       while ((line = bufferedReader.readLine()) != null || count < 1000) {
         count++;
         if (line != null) {
-          if (matchesPatterns(line)) {
-            if (line.indexOf("'") != 0) {
+          int patternMatch = matchesPatterns(line);
+          if (patternMatch != -1) {
+            String pattern = PATTERNS.get(0);
+            if (line.trim().indexOf("'") != 0) {
+              line = line.substring(line.indexOf(pattern) + pattern.length()+1);
               int start = line.indexOf("\"") + 1;
               romName = line.substring(start);
               int end = romName.indexOf("\"");
@@ -131,12 +134,13 @@ public class RomManager {
     return romName;
   }
 
-  private boolean matchesPatterns(String line) {
-    for (Pattern pattern : patternList) {
+  private int matchesPatterns(String line) {
+    for (int i=0; i< patternList.size(); i++) {
+      Pattern pattern = patternList.get(i);
       if (pattern.matcher(line).matches()) {
-        return true;
+        return i;
       }
     }
-    return false;
+    return -1;
   }
 }
