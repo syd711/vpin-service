@@ -2,41 +2,62 @@ package de.mephisto.vpin.roms;
 
 import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.util.PropertiesStore;
-import de.mephisto.vpin.util.ReverseLineInputStream;
 import de.mephisto.vpin.util.SystemInfo;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Map;
 
 public class RomManager {
   private final static Logger LOG = LoggerFactory.getLogger(RomManager.class);
 
-  private final static int MAX_ROM_FILENAME_LENGTH = 16;
-
-  private final static List<String> PATTERNS = Arrays.asList("cGameName", "cgamename", "RomSet1", "GameName");
-
   private final PropertiesStore store;
 
-  private final List<Pattern> patternList = new ArrayList<>();
+  private Map<String, String> aliasMapping = new HashMap<>();
 
   public RomManager() {
     this.store = PropertiesStore.create("repository.properties");
-    PATTERNS.forEach(p -> patternList.add(Pattern.compile(".*" + p + ".*=.*\".*\".*")));
+    loadAliasMapping();
+  }
+
+  private void loadAliasMapping() {
+    File vpmAliasFile = SystemInfo.getInstance().getVPMAliasFile();
+    try {
+      if (vpmAliasFile.exists()) {
+        FileInputStream fileInputStream = new FileInputStream(vpmAliasFile);
+        List<String> mappings = IOUtils.readLines(fileInputStream, "utf8");
+        fileInputStream.close();
+
+        for (String mapping : mappings) {
+          if (mapping.contains(",")) {
+            String[] split = mapping.split(",");
+            String[] aliases = Arrays.copyOfRange(split, 0, split.length - 1);
+            String rom = split[split.length - 1];
+
+            for (String alias : aliases) {
+              aliasMapping.put(alias, rom);
+            }
+          }
+        }
+      }
+    } catch (IOException e) {
+      LOG.error("Error loading " + vpmAliasFile.getAbsolutePath() + ": " + e.getMessage(), e);
+    }
   }
 
   @Nullable
   public String scanRom(GameInfo gameInfo) {
-    String romName = scanRomName(gameInfo.getGameFile());
-    gameInfo.setRom(romName);
+    scanRomName(gameInfo);
+    String romName = gameInfo.getRom();
     writeGameInfo(gameInfo);
     if (!StringUtils.isEmpty(romName)) {
       LOG.info("Finished scan of table " + gameInfo + ", found ROM '" + romName + "'.");
@@ -49,9 +70,7 @@ public class RomManager {
   private void writeGameInfo(GameInfo game) {
     String romName = game.getRom();
     if (romName != null && romName.length() > 0) {
-      game.setRom(romName);
       LOG.info("Update of " + game.getGameFile().getName() + " successful, written ROM name '" + romName + "'");
-
       File romFile = new File(SystemInfo.getInstance().getMameRomFolder(), romName + ".zip");
       if (romFile.exists()) {
         game.setRomFile(romFile);
@@ -61,6 +80,7 @@ public class RomManager {
       LOG.info("Skipped Update of " + game.getGameFile().getName() + ", no rom name found.");
     }
     this.store.set(formatGameKey(game.getId()) + ".rom", romName != null ? romName : "");
+    this.store.set(formatGameKey(game.getId()) + ".nvOffset", game.getNvOffset());
     this.store.set(formatGameKey(game.getId()) + ".displayName", game.getGameDisplayName());
   }
 
@@ -68,6 +88,18 @@ public class RomManager {
     return this.store.getString(formatGameKey(id) + ".rom");
   }
 
+  public String getOriginalRom(int id) {
+    String rom = this.store.getString(formatGameKey(id) + ".rom");
+    if (rom != null && aliasMapping.containsValue(rom)) {
+      String alias = aliasMapping
+          .entrySet()
+          .stream()
+          .filter(entry -> rom.equals(entry.getValue()))
+          .map(Map.Entry::getKey).findFirst().get();
+      return alias;
+    }
+    return null;
+  }
 
   private String formatGameKey(int id) {
     return "gameId." + id;
@@ -82,65 +114,14 @@ public class RomManager {
    * Usually the variable not does differ that much.
    * We read the file from the end to save time.
    *
-   * @param gameFile the table file which contains the rom that is searched.
-   * @return the ROM name or null
+   * @param game the game to search the rom for
    */
-  String scanRomName(File gameFile) {
-    String romName = null;
-    BufferedReader bufferedReader = null;
-    ReverseLineInputStream reverseLineInputStream = null;
-    try {
-      reverseLineInputStream = new ReverseLineInputStream(gameFile);
-      bufferedReader = new BufferedReader(new InputStreamReader(reverseLineInputStream));
+  void scanRomName(GameInfo game) {
+    ScanResult result = VPXFileScanner.scan(game.getGameFile());
+    game.setRom(result.getRom());
+    game.setNvOffset(result.getNvOffset());
 
-      String line;
-      bufferedReader.readLine();//skip last line if empty
-      int count = 0;
-      while ((line = bufferedReader.readLine()) != null || count < 1000) {
-        count++;
-        if (line != null) {
-          int patternMatch = matchesPatterns(line);
-          if (patternMatch != -1) {
-            String pattern = PATTERNS.get(0);
-            if (line.trim().indexOf("'") != 0) {
-              line = line.substring(line.indexOf(pattern) + pattern.length()+1);
-              int start = line.indexOf("\"") + 1;
-              romName = line.substring(start);
-              int end = romName.indexOf("\"");
-
-              if (end - start < MAX_ROM_FILENAME_LENGTH) {
-                romName = romName.substring(0, end).trim();
-                break;
-              }
-            }
-          }
-        }
-      }
-    } catch (Exception e) {
-      LOG.error("Failed to read rom line '" + romName + "' for  " + gameFile.getAbsolutePath() + ": " + e.getMessage(), e);
-    } finally {
-      try {
-        if(reverseLineInputStream != null) {
-          reverseLineInputStream.close();
-        }
-
-        if(bufferedReader != null) {
-          bufferedReader.close();
-        }
-      } catch (Exception e) {
-        LOG.error("Failed to close vpx file stream: " + e.getMessage(), e);
-      }
-    }
-    return romName;
-  }
-
-  private int matchesPatterns(String line) {
-    for (int i=0; i< patternList.size(); i++) {
-      Pattern pattern = patternList.get(i);
-      if (pattern.matcher(line).matches()) {
-        return i;
-      }
-    }
-    return -1;
+    game.setRom(result.getRom());
+    game.setNvOffset(result.getNvOffset());
   }
 }

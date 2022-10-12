@@ -9,6 +9,7 @@ import de.mephisto.vpin.dof.Unit;
 import de.mephisto.vpin.highscores.Highscore;
 import de.mephisto.vpin.highscores.HighscoreManager;
 import de.mephisto.vpin.http.HttpServer;
+import de.mephisto.vpin.popper.PopperLaunchListener;
 import de.mephisto.vpin.popper.PopperManager;
 import de.mephisto.vpin.popper.PopperScreen;
 import de.mephisto.vpin.popper.TableStatusChangeListener;
@@ -135,6 +136,11 @@ public class VPinService {
   @NonNull
   public String validateScreenConfiguration(@NonNull PopperScreen screen) {
     return popperManager.validateScreenConfiguration(screen);
+  }
+
+  @SuppressWarnings("unused")
+  public void addPopperLaunchListener(@NonNull PopperLaunchListener listener) {
+    this.popperManager.addPopperLaunchListener(listener);
   }
 
   @SuppressWarnings("unused")

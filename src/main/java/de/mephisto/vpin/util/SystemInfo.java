@@ -31,6 +31,8 @@ public class SystemInfo {
   private final static String PINEMHI_COMMAND = "PINemHi.exe";
   private final static String PINEMHI_INI = "pinemhi.ini";
 
+  private final static String VPM_ALIAS = "VPMAlias.txt";
+
 
   public static final String RESOURCES = "./resources/";
 
@@ -164,6 +166,10 @@ public class SystemInfo {
 
   private String formatPathLog(String label, File file) {
     return formatPathLog(label, file.getAbsolutePath(), file.exists(), file.canRead());
+  }
+
+  public File getVPMAliasFile() {
+    return new File(this.getMameFolder(), VPM_ALIAS);
   }
 
   public File getB2SImageExtractionFolder() {

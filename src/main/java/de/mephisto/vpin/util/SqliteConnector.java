@@ -280,6 +280,44 @@ public class SqliteConnector {
     return script;
   }
 
+  @NonNull
+  public String getStartupScript() {
+    String script = null;
+    this.connect();
+    try {
+      Statement statement = conn.createStatement();
+      ResultSet rs = statement.executeQuery("SELECT * FROM GlobalSettings;");
+      rs.next();
+      script = rs.getString("StartupBatch");
+      rs.close();
+      statement.close();
+    } catch (SQLException e) {
+      LOG.error("Failed to read startup script: " + e.getMessage(), e);
+    } finally {
+      this.disconnect();
+    }
+
+    if(script == null) {
+      script = "";
+    }
+    return script;
+  }
+
+  public void updateStartupScript(@NonNull String content) {
+    this.connect();
+    try {
+      PreparedStatement preparedStatement = conn.prepareStatement("UPDATE GlobalSettings SET 'StartupBatch'=?");
+      preparedStatement.setString(1, content);
+      preparedStatement.executeUpdate();
+      preparedStatement.close();
+      LOG.info("Update of startup script successful.");
+    } catch (Exception e) {
+      LOG.error("Failed to update startup script script:" + e.getMessage(), e);
+    } finally {
+      this.disconnect();
+    }
+  }
+
   public void updateScript(@NonNull String emuName, @NonNull String scriptName, @NonNull String content) {
     this.connect();
     String sql = "UPDATE Emulators SET '" + scriptName + "'='" + content + "' WHERE EmuName = '" + emuName + "';";
@@ -348,6 +386,7 @@ public class SqliteConnector {
     }
 
     info.setRom(rom);
+    info.setOriginalRom(romManager.getOriginalRom(id));
     info.setNvRamFile(nvRamFile);
     info.setRomFile(romFile);
 

@@ -1,5 +1,8 @@
 package de.mephisto.vpin.roms;
 
+import de.mephisto.vpin.GameInfo;
+import de.mephisto.vpin.VPinService;
+import de.mephisto.vpin.VPinServiceException;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -12,11 +15,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class RomManagerTest {
 
   @Test
-  public void testRomScan() {
+  public void testRomScan() throws VPinServiceException {
     RomManager romManager = new RomManager();
-    String s = romManager.scanRomName(new File("C:\\vPinball\\VisualPinball\\Tables\\Harry Potter.vpx"));
-    System.out.println(s);
-    assertNotNull(s);
+
+    GameInfo info = new GameInfo(VPinService.create(false));
+    info.setGameFile(new File("C:\\vPinball\\VisualPinball\\Tables\\Guardians of the Galaxy.vpx"));
+    romManager.scanRomName(info);
+    System.out.println(info.getRom());
+    System.out.println(info.getNvOffset());
   }
 
   @Test

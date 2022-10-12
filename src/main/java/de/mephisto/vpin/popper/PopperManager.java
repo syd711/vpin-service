@@ -13,6 +13,7 @@ import java.util.List;
 public class PopperManager {
   private final static Logger LOG = LoggerFactory.getLogger(PopperManager.class);
 
+  private final static String CURL_COMMAND_POPPER_START = "curl -X POST --data-urlencode \"system=\" http://localhost:" + HttpServer.PORT + "/service/popperLaunch";
   private final static String CURL_COMMAND_TABLE_START = "curl -X POST --data-urlencode \"table=[GAMEFULLNAME]\" http://localhost:" + HttpServer.PORT + "/service/gameLaunch";
   private final static String CURL_COMMAND_TABLE_EXIT = "curl -X POST --data-urlencode \"table=[GAMEFULLNAME]\" http://localhost:" + HttpServer.PORT + "/service/gameExit";
 
@@ -20,6 +21,7 @@ public class PopperManager {
   private final HighscoreManager highscoreManager;
 
   private final List<TableStatusChangeListener> listeners = new ArrayList<>();
+  private final List<PopperLaunchListener> launchListeners = new ArrayList<>();
 
   public PopperManager(SqliteConnector connector, HighscoreManager highscoreManager) {
     this.connector = connector;
@@ -49,6 +51,10 @@ public class PopperManager {
   }
 
   @SuppressWarnings("unused")
+  public void addPopperLaunchListener(PopperLaunchListener listener) {
+    this.launchListeners.add(listener);
+  }
+
   public void addTableStatusChangeListener(TableStatusChangeListener listener) {
     this.listeners.add(listener);
   }
@@ -72,15 +78,21 @@ public class PopperManager {
     Emulators[] values = Emulators.values();
     for (Emulators value : values) {
       String emulatorName = Emulators.getEmulatorName(value);
-      String startupScript = this.connector.getEmulatorStartupScript(emulatorName);
-      if (!startupScript.contains(CURL_COMMAND_TABLE_START)) {
-        startupScript = startupScript + "\n\n" + CURL_COMMAND_TABLE_START;
-        this.connector.updateScript(emulatorName, "LaunchScript", startupScript);
+      String emulatorLaunchScript = this.connector.getEmulatorStartupScript(emulatorName);
+      if (!emulatorLaunchScript.contains(CURL_COMMAND_TABLE_START)) {
+        emulatorLaunchScript = emulatorLaunchScript + "\n" + CURL_COMMAND_TABLE_START + "\n";
+        this.connector.updateScript(emulatorName, "LaunchScript", emulatorLaunchScript);
       }
       String emulatorExitScript = this.connector.getEmulatorExitScript(Emulators.getEmulatorName(value));
       if (!emulatorExitScript.contains(CURL_COMMAND_TABLE_EXIT)) {
-        emulatorExitScript = emulatorExitScript + "\n\n" + CURL_COMMAND_TABLE_EXIT;
+        emulatorExitScript = emulatorExitScript + "\n" + CURL_COMMAND_TABLE_EXIT + "\n";
         this.connector.updateScript(emulatorName, "PostScript", emulatorExitScript);
+      }
+
+      String startupScript = this.connector.getStartupScript();
+      if (!startupScript.contains(CURL_COMMAND_POPPER_START)) {
+        startupScript = startupScript + "\n" + CURL_COMMAND_POPPER_START + "\n";
+        this.connector.updateStartupScript(startupScript);
       }
     }
     LOG.info("Finished Popper configuration check.");
@@ -117,5 +129,11 @@ public class PopperManager {
     }
 
     return null;
+  }
+
+  public void notifyPopperLaunch() {
+    for (PopperLaunchListener launchListener : launchListeners) {
+      launchListener.popperLaunched();
+    }
   }
 }

@@ -14,6 +14,7 @@ import java.util.Date;
 public class GameInfo {
 
   private String rom;
+  private String originalRom;
   private String gameDisplayName;
   private String gameFileName;
   private int id;
@@ -25,6 +26,7 @@ public class GameInfo {
 
   private Date lastPlayed;
   private int numberPlays;
+  private int nvOffset;
 
   private final VPinService service;
 
@@ -97,6 +99,22 @@ public class GameInfo {
 
   public void setLastPlayed(Date lastPlayed) {
     this.lastPlayed = lastPlayed;
+  }
+
+  public String getOriginalRom() {
+    return originalRom;
+  }
+
+  public void setOriginalRom(String originalRom) {
+    this.originalRom = originalRom;
+  }
+
+  public int getNvOffset() {
+    return nvOffset;
+  }
+
+  public void setNvOffset(int nvOffset) {
+    this.nvOffset = nvOffset;
   }
 
   @SuppressWarnings("unused")

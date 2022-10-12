@@ -28,6 +28,7 @@ public class AsyncServlet extends HttpServlet {
 
   private final static String PATH_LAUNCH = "/gameLaunch";
   private final static String PATH_EXIT = "/gameExit";
+  private final static String PATH_POPPER_LAUNCH = "/popperLaunch";
 
   public final static String PATH_SYSTEM_EXIT = "/systemExit";
   public final static String PATH_PING = "/ping";
@@ -42,8 +43,8 @@ public class AsyncServlet extends HttpServlet {
     try {
       String contextPath = request.getPathInfo();
       String table = request.getParameter("table");
-      File tableFile = new File(table);
       if (!StringUtils.isEmpty(table)) {
+        File tableFile = new File(table);
         VPinService service = VPinService.create(true);
         GameInfo game = service.getGameByFile(tableFile);
         if (game == null) {
@@ -59,6 +60,12 @@ public class AsyncServlet extends HttpServlet {
         else if (contextPath.equals(PATH_EXIT)) {
           LOG.info("Received table exit cmd for '" + tableFile.getName() + "'");
           popperManager.notifyTableStatusChange(game, false);
+        }
+      }
+      else {
+        if(contextPath.equals(PATH_POPPER_LAUNCH)) {
+          LOG.info("Received Popper launch event.");
+          popperManager.notifyPopperLaunch();
         }
       }
 

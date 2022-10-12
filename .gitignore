@@ -25,4 +25,3 @@ target/
 hs_err_pid*
 /.idea/
 /VPReg/
-/resources/repository.properties
