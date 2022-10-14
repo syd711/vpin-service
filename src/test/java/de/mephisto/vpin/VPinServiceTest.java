@@ -27,11 +27,10 @@ public class VPinServiceTest {
     service.shutdown();
   }
 
-//  @Test
-//  public void testProcesses() {
-//    ProcessHandle.allProcesses()
-//        .forEach(process -> System.out.println(processDetails(process)));
-//  }
+  @Test
+  public void testProcesses() {
+    Optional<ProcessHandle> pinUP = ProcessHandle.allProcesses().filter(p -> p.info().command().isPresent() && p.info().command().get().contains("PinUP")).findFirst();
+  }
 
   private static String processDetails(ProcessHandle process) {
     return String.format("%8d %8s %10s %26s %-40s",

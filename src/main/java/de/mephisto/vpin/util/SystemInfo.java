@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 public class SystemInfo {
   private final static Logger LOG = LoggerFactory.getLogger(SystemInfo.class);
@@ -237,6 +238,11 @@ public class SystemInfo {
       }
     }
     return file;
+  }
+
+  public boolean isPinUPRunning() {
+    Optional<ProcessHandle> pinUP = ProcessHandle.allProcesses().filter(p -> p.info().command().isPresent() && p.info().command().get().contains("PinUP")).findFirst();
+    return pinUP.isPresent();
   }
 
   public static SystemInfo getInstance() {
