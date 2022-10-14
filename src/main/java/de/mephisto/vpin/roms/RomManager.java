@@ -41,10 +41,10 @@ public class RomManager {
           if (mapping.contains(",")) {
             String[] split = mapping.split(",");
             String[] aliases = Arrays.copyOfRange(split, 0, split.length - 1);
-            String rom = split[split.length - 1];
+            String originalName = split[split.length - 1];
 
             for (String alias : aliases) {
-              aliasMapping.put(alias, rom);
+              aliasMapping.put(alias, originalName);
             }
           }
         }
@@ -88,15 +88,14 @@ public class RomManager {
     return this.store.getString(formatGameKey(id) + ".rom");
   }
 
+  public int getNVOffset(int id) {
+    return this.store.getInt(formatGameKey(id) + ".nvOffset");
+  }
+
   public String getOriginalRom(int id) {
     String rom = this.store.getString(formatGameKey(id) + ".rom");
-    if (rom != null && aliasMapping.containsValue(rom)) {
-      String alias = aliasMapping
-          .entrySet()
-          .stream()
-          .filter(entry -> rom.equals(entry.getValue()))
-          .map(Map.Entry::getKey).findFirst().get();
-      return alias;
+    if (rom != null && aliasMapping.containsKey(rom)) {
+      return aliasMapping.get(rom);
     }
     return null;
   }
@@ -118,9 +117,6 @@ public class RomManager {
    */
   void scanVPXFile(GameInfo game) {
     ScanResult result = VPXFileScanner.scan(game.getGameFile());
-    game.setRom(result.getRom());
-    game.setNvOffset(result.getNvOffset());
-
     game.setRom(result.getRom());
     game.setNvOffset(result.getNvOffset());
   }

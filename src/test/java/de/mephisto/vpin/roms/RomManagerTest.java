@@ -18,7 +18,7 @@ public class RomManagerTest {
     RomManager romManager = new RomManager();
 
     GameInfo info = new GameInfo(VPinService.create(false));
-    info.setGameFile(new File("C:\\vPinball\\VisualPinball\\Tables\\Guardians of the Galaxy.vpx"));
+    info.setGameFile(new File("C:\\vPinball\\VisualPinball\\Tables\\Guns N Roses.vpx"));
     romManager.scanVPXFile(info);
     System.out.println(info.getRom());
     System.out.println(info.getNvOffset());

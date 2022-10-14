@@ -21,7 +21,6 @@ public class GameInfo {
 
   private File gameFile;
   private File romFile;
-  private File nvRamFile;
   private File wheelIconFile;
 
   private Date lastPlayed;
@@ -129,11 +128,27 @@ public class GameInfo {
 
   @Nullable
   public File getNvRamFile() {
-    return nvRamFile;
-  }
+    File nvRamFolder = new File(SystemInfo.getInstance().getMameFolder(), "nvram");
 
-  public void setNvRamFile(@Nullable File nvRamFile) {
-    this.nvRamFile = nvRamFile;
+    String originalRom = getOriginalRom() != null ? this.getOriginalRom() : this.getRom();
+    File defaultNVFile = new File(nvRamFolder, originalRom +  ".nv");
+    if(this.getNvOffset() == 0) {
+      return defaultNVFile;
+    }
+
+    //if the text file exists, the current nv file contains the highscore of this table
+    File versionTextFile = new File(SystemInfo.getInstance().getMameFolder(), this.getRom() + " v" + getNvOffset() + ".txt");
+    if(versionTextFile.exists()) {
+      return defaultNVFile;
+    }
+
+    //else, we can check if a nv file with the alias and version exists
+    File versionNVAliasedFile = new File(SystemInfo.getInstance().getMameFolder(), originalRom + " v" + getNvOffset() + ".nv");
+    if(versionNVAliasedFile.exists()) {
+      return versionNVAliasedFile;
+    }
+
+    return defaultNVFile;
   }
 
   @NonNull

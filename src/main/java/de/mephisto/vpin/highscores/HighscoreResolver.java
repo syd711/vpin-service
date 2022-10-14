@@ -110,23 +110,22 @@ class HighscoreResolver {
 
         int index = 1;
         tableHighscoreFile = new File(tableHighscoreFolder, "HighScore" + index);
-        while(tableHighscoreFile.exists()) {
-          tableHighscoreNameFile = new File(tableHighscoreFolder, "HighScore" + index + "Name");
-          if (tableHighscoreFile.exists() && tableHighscoreNameFile.exists()) {
-            highScoreValue = readFileString(tableHighscoreFile);
-            if (highScoreValue != null) {
-              highScoreValue = HighscoreParser.formatScore(highScoreValue);
-              initials = readFileString(tableHighscoreNameFile);
+        tableHighscoreNameFile = new File(tableHighscoreFolder, "HighScore" + index + "Name");
+        while (tableHighscoreFile.exists() && tableHighscoreNameFile.exists()) {
+          highScoreValue = readFileString(tableHighscoreFile);
+          if (highScoreValue != null) {
+            highScoreValue = HighscoreParser.formatScore(highScoreValue);
+            initials = readFileString(tableHighscoreNameFile);
 
-              Score score = new Score(initials, highScoreValue, index);
-              highscore.getScores().add(score);
+            Score score = new Score(initials, highScoreValue, index);
+            highscore.getScores().add(score);
 
-              rawBuilder.append(score);
-              rawBuilder.append("\n");
-            }
+            rawBuilder.append(score);
+            rawBuilder.append("\n");
           }
           index++;
           tableHighscoreFile = new File(tableHighscoreFolder, "HighScore" + index);
+          tableHighscoreNameFile = new File(tableHighscoreFolder, "HighScore" + index + "Name");
         }
 
         highscore.setRaw(rawBuilder.toString());
@@ -187,11 +186,15 @@ class HighscoreResolver {
       }
 
       String romName = gameInfo.getRom();
-      if (!this.supportedRoms.contains(romName)) {
-        LOG.warn("The resolved rom name '" + romName + "' of game '" + gameInfo.getGameDisplayName() + "' is not supported by PINemHi.");
+      String originalRom = gameInfo.getOriginalRom();
+
+      String pinemHiRom = originalRom != null ? originalRom : romName;
+      if (!this.supportedRoms.contains(pinemHiRom)) {
+        LOG.warn("The resolved rom name '" + originalRom + "' of game '" + gameInfo.getGameDisplayName() + "' is not supported by PINemHi.");
         return null;
       }
 
+      LOG.info("Parsing nvram file " + nvRam.getAbsolutePath());
       String output = executePINemHi(nvRam.getName());
       if (output != null) {
         highscore = parser.parseHighscore(gameInfo, nvRam, output);
