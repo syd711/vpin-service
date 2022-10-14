@@ -6,7 +6,6 @@ import de.mephisto.vpin.VPinServiceException;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,7 +19,7 @@ public class RomManagerTest {
 
     GameInfo info = new GameInfo(VPinService.create(false));
     info.setGameFile(new File("C:\\vPinball\\VisualPinball\\Tables\\Guardians of the Galaxy.vpx"));
-    romManager.scanRomName(info);
+    romManager.scanVPXFile(info);
     System.out.println(info.getRom());
     System.out.println(info.getNvOffset());
   }

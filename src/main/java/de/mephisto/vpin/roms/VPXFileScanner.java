@@ -1,6 +1,6 @@
 package de.mephisto.vpin.roms;
 
-import de.mephisto.vpin.server.util.ReverseLineInputStream;
+import de.mephisto.vpin.util.ReverseLineInputStream;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -56,7 +56,7 @@ public class RomManager {
 
   @Nullable
   public String scanRom(GameInfo gameInfo) {
-    scanRomName(gameInfo);
+    scanVPXFile(gameInfo);
     String romName = gameInfo.getRom();
     writeGameInfo(gameInfo);
     if (!StringUtils.isEmpty(romName)) {
@@ -116,7 +116,7 @@ public class RomManager {
    *
    * @param game the game to search the rom for
    */
-  void scanRomName(GameInfo game) {
+  void scanVPXFile(GameInfo game) {
     ScanResult result = VPXFileScanner.scan(game.getGameFile());
     game.setRom(result.getRom());
     game.setNvOffset(result.getNvOffset());

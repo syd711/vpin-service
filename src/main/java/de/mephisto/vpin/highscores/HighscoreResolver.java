@@ -98,34 +98,42 @@ class HighscoreResolver {
     if (tableHighscoreFolder != null && gameInfo.getVPRegFolder().exists()) {
       File tableHighscoreFile = new File(tableHighscoreFolder, "HighScore1");
       File tableHighscoreNameFile = new File(tableHighscoreFolder, "HighScore1Name");
+      StringBuilder rawBuilder = new StringBuilder();
       if (tableHighscoreFile.exists() && tableHighscoreNameFile.exists()) {
         String highScoreValue = readFileString(tableHighscoreFile);
         highScoreValue = HighscoreParser.formatScore(highScoreValue);
         String initials = readFileString(tableHighscoreNameFile);
 
-        Highscore highscore = new Highscore(highScoreValue);
+        Highscore highscore = new Highscore("");
         highscore.setUserInitials(initials);
         highscore.setScore(highScoreValue);
 
-        for (int i = 1; i <= 4; i++) {
-          tableHighscoreFile = new File(tableHighscoreFolder, "HighScore" + i);
-          tableHighscoreNameFile = new File(tableHighscoreFolder, "HighScore" + i + "Name");
+        int index = 1;
+        tableHighscoreFile = new File(tableHighscoreFolder, "HighScore" + index);
+        while(tableHighscoreFile.exists()) {
+          tableHighscoreNameFile = new File(tableHighscoreFolder, "HighScore" + index + "Name");
           if (tableHighscoreFile.exists() && tableHighscoreNameFile.exists()) {
             highScoreValue = readFileString(tableHighscoreFile);
             if (highScoreValue != null) {
               highScoreValue = HighscoreParser.formatScore(highScoreValue);
               initials = readFileString(tableHighscoreNameFile);
 
-              Score score = new Score(initials, highScoreValue, i);
+              Score score = new Score(initials, highScoreValue, index);
               highscore.getScores().add(score);
+
+              rawBuilder.append(score);
+              rawBuilder.append("\n");
             }
           }
+          index++;
+          tableHighscoreFile = new File(tableHighscoreFolder, "HighScore" + index);
         }
 
+        highscore.setRaw(rawBuilder.toString());
         return highscore;
       }
       else {
-        LOG.debug("No VPReg highscore file found: " + tableHighscoreFile.getAbsolutePath());
+        LOG.debug("No VPReg highscore file found for '" + gameInfo.getRom() + "'");
       }
     }
     else {

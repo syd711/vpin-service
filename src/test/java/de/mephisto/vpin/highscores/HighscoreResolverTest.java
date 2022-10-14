@@ -35,10 +35,12 @@ public class HighscoreResolverTest {
     highscoreResolver.refresh();
 
     VPinService service = VPinService.create(true);
-    GameInfo game = service.getGameByRom("STLE");
+    GameInfo game = service.getGameByRom("b66_orig");
     assertNotNull(game.resolveHighscore());
     assertNotNull(game.resolveHighscore().getUserInitials());
     assertFalse(game.resolveHighscore().getScores().isEmpty());
+
+    System.out.println(game.resolveHighscore().getRaw());
   }
 
 }

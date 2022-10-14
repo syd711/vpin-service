@@ -381,7 +381,7 @@ public class SqliteConnector {
       romFile = new File(SystemInfo.getInstance().getMameRomFolder(), rom + ".zip");
       nvRamFile = new File(nvRamFolder, rom + ".nv");
     }
-    else if (!romManager.wasScanned(id)) {
+    else if (!romManager.wasScanned(id) && service.isHeadless()) {
       rom = romManager.scanRom(info);
     }
 

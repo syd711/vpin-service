@@ -51,4 +51,8 @@ public class Highscore {
   public String toString() {
     return this.raw;
   }
+
+  public void setRaw(String raw) {
+    this.raw = raw;
+  }
 }

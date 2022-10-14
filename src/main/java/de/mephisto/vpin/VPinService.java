@@ -55,6 +55,7 @@ public class VPinService {
   private DirectB2SManager directB2SManager;
 
   private List<GameInfo> gameInfos = new ArrayList<>();
+  private boolean headless;
 
   public static VPinService create(boolean headless) throws VPinServiceException {
     if (instance == null) {
@@ -68,6 +69,7 @@ public class VPinService {
   }
 
   private void init(boolean headless) throws VPinServiceException {
+    this.headless =headless;
     try {
       if (!SystemInfo.getInstance().getPinUPSystemFolder().exists()) {
         throw new FileNotFoundException("Wrong PinUP Popper installation folder: " + SystemInfo.getInstance().getPinUPSystemFolder().getAbsolutePath() + ".\nPlease fix the PinUP Popper installation path in file ./resources/env.properties");
@@ -105,6 +107,10 @@ public class VPinService {
       LOG.error("VPin Service failed to start: " + e.getMessage(), e);
       throw new VPinServiceException(e);
     }
+  }
+
+  public boolean isHeadless() {
+    return headless;
   }
 
   public void restart() throws VPinServiceException {
