@@ -36,10 +36,6 @@ class HighscoreResolver {
     }
   }
 
-  public boolean isRomSupported(String rom) {
-    return this.supportedRoms.contains(rom);
-  }
-
   /**
    * Return a highscore object for the given table or null if no highscore has been achieved or created yet.
    */

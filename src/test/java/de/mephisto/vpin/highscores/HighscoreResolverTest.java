@@ -35,7 +35,7 @@ public class HighscoreResolverTest {
     highscoreResolver.refresh();
 
     VPinService service = VPinService.create(true);
-    GameInfo game = service.getGameByRom("b66_orig");
+    GameInfo game = service.getGameByRom("gnr_300");
     assertNotNull(game.resolveHighscore());
     assertNotNull(game.resolveHighscore().getUserInitials());
     assertFalse(game.resolveHighscore().getScores().isEmpty());

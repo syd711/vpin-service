@@ -5,10 +5,12 @@ import de.mephisto.vpin.popper.PopperScreen;
 import de.mephisto.vpin.util.SystemInfo;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 
 public class GameInfo {
@@ -132,21 +134,29 @@ public class GameInfo {
 
     String originalRom = getOriginalRom() != null ? this.getOriginalRom() : this.getRom();
     File defaultNVFile = new File(nvRamFolder, originalRom +  ".nv");
-    if(this.getNvOffset() == 0) {
-      return defaultNVFile;
-    }
-
-    //if the text file exists, the current nv file contains the highscore of this table
-    File versionTextFile = new File(SystemInfo.getInstance().getMameFolder(), this.getRom() + " v" + getNvOffset() + ".txt");
-    if(versionTextFile.exists()) {
-      return defaultNVFile;
-    }
-
-    //else, we can check if a nv file with the alias and version exists
-    File versionNVAliasedFile = new File(SystemInfo.getInstance().getMameFolder(), originalRom + " v" + getNvOffset() + ".nv");
-    if(versionNVAliasedFile.exists()) {
-      return versionNVAliasedFile;
-    }
+//    if(this.getNvOffset() == 0) {
+//      return defaultNVFile;
+//    }
+//
+//    //if the text file exists, the current nv file contains the highscore of this table
+//    File versionTextFile = new File(nvRamFolder, this.getRom() + " v" + getNvOffset() + ".txt");
+//    if(versionTextFile.exists()) {
+//      return defaultNVFile;
+//    }
+//
+//    //else, we can check if a nv file with the alias and version exists
+//    File versionNVAliasedFile = new File(nvRamFolder, originalRom + " v" + getNvOffset() + ".nv");
+//    if(versionNVAliasedFile.exists()) {
+//      try {
+//        File copy = new File(nvRamFolder, versionNVAliasedFile.getName().replaceAll(" ", ""));
+//        copy.delete();
+//        copy.deleteOnExit();
+//        FileUtils.copyFile(versionNVAliasedFile, copy);
+//        return copy;
+//      } catch (IOException e) {
+//        e.printStackTrace();
+//      }
+//    }
 
     return defaultNVFile;
   }
