@@ -12,6 +12,7 @@ public class VPinServiceTest {
   @Test
   public void testTableRepository() throws VPinServiceException {
     VPinService service = VPinService.create(true);
+    service.refreshGameInfos();
     List<GameInfo> tables = service.getGameInfos();
     for (GameInfo table : tables) {
       assertTrue(table.getGameFile().exists());
@@ -25,23 +26,5 @@ public class VPinServiceTest {
     List<GameInfo> tables = service.getGamesWithEmptyRoms();
     assertFalse(tables.isEmpty());
     service.shutdown();
-  }
-
-  @Test
-  public void testProcesses() {
-    Optional<ProcessHandle> pinUP = ProcessHandle.allProcesses().filter(p -> p.info().command().isPresent() && p.info().command().get().contains("PinUP")).findFirst();
-  }
-
-  private static String processDetails(ProcessHandle process) {
-    return String.format("%8d %8s %10s %26s %-40s",
-        process.pid(),
-        text(process.parent().map(ProcessHandle::pid)),
-        text(process.info().user()),
-        text(process.info().command()),
-        text(process.info().commandLine()));
-  }
-
-  private static String text(Optional<?> optional) {
-    return optional.map(Object::toString).orElse("-");
   }
 }

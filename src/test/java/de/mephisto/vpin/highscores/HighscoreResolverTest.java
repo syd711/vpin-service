@@ -35,7 +35,9 @@ public class HighscoreResolverTest {
     highscoreResolver.refresh();
 
     VPinService service = VPinService.create(true);
-    GameInfo game = service.getGameByRom("gnr_300");
+    GameInfo game = service.getGameByName("Baseball (Gottlieb 1970)");
+    service.rescanRom(game);
+
     assertNotNull(game.resolveHighscore());
     assertNotNull(game.resolveHighscore().getUserInitials());
     assertFalse(game.resolveHighscore().getScores().isEmpty());

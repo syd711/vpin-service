@@ -75,25 +75,36 @@ class HighscoreResolver {
     if (hsFile != null && hsFile.exists()) {
       List<String> lines = IOUtils.readLines(new FileInputStream(hsFile), "utf-8");
       if (lines.size() >= 15) {
+
+        Highscore highscore = new Highscore("");
         StringBuilder builder = new StringBuilder("HIGHEST SCORES\n");
 
         int index = 5;
+
         for (int i = 1; i < 6; i++) {
-          String score = lines.get(index);
+          String scoreValue = lines.get(index);
           String initials = lines.get(index + 5);
+          Score score = new Score(initials, scoreValue, i);
+          highscore.getScores().add(score);
+
+          if (i == 1) {
+            highscore.setScore(scoreValue);
+            highscore.setUserInitials(initials);
+          }
 
           builder.append("#");
           builder.append(i);
           builder.append(" ");
           builder.append(initials);
           builder.append("   ");
-          builder.append(score);
+          builder.append(scoreValue);
           builder.append("\n");
 
           index++;
         }
 
-        return new Highscore(builder.toString());
+        highscore.setRaw(builder.toString());
+        return highscore;
       }
     }
     return null;
