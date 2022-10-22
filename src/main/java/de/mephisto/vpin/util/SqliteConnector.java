@@ -385,6 +385,7 @@ public class SqliteConnector {
     info.setRom(rom);
     info.setOriginalRom(romManager.getOriginalRom(id));
     info.setNvOffset(romManager.getNVOffset(id));
+    info.setHsFileName(romManager.getHSFileName(id));
     info.setRomFile(romFile);
 
     loadStats(info);

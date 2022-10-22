@@ -82,6 +82,7 @@ public class RomManager {
     this.store.set(formatGameKey(game.getId()) + ".rom", romName != null ? romName : "");
     this.store.set(formatGameKey(game.getId()) + ".nvOffset", game.getNvOffset());
     this.store.set(formatGameKey(game.getId()) + ".displayName", game.getGameDisplayName());
+    this.store.set(formatGameKey(game.getId()) + ".hsFileName", game.getHsFileName() != null ? game.getHsFileName() : "");
   }
 
   public String getRomName(int id) {
@@ -90,6 +91,10 @@ public class RomManager {
 
   public int getNVOffset(int id) {
     return this.store.getInt(formatGameKey(id) + ".nvOffset");
+  }
+
+  public String getHSFileName(int id) {
+    return this.store.getString(formatGameKey(id) + ".hsFileName");
   }
 
   public String getOriginalRom(int id) {
@@ -119,5 +124,6 @@ public class RomManager {
     ScanResult result = VPXFileScanner.scan(game.getGameFile());
     game.setRom(result.getRom());
     game.setNvOffset(result.getNvOffset());
+    game.setHsFileName(result.getHsFileName());
   }
 }

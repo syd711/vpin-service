@@ -169,6 +169,10 @@ public class SystemInfo {
     return formatPathLog(label, file.getAbsolutePath(), file.exists(), file.canRead());
   }
 
+  public File getVisualPinballUserFolder() {
+    return new File(this.getVisualPinballInstallationFolder(), "User");
+  }
+
   public File getVPMAliasFile() {
     return new File(this.getMameFolder(), VPM_ALIAS);
   }

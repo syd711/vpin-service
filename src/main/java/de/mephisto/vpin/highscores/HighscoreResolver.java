@@ -4,14 +4,12 @@ import de.mephisto.vpin.GameInfo;
 import de.mephisto.vpin.util.SystemCommandExecutor;
 import de.mephisto.vpin.util.SystemInfo;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -53,9 +51,12 @@ class HighscoreResolver {
       if (highscore == null) {
         highscore = parseVRegHighscore(gameInfo);
       }
+      if (highscore == null) {
+        highscore = parseHSFileHighscore(gameInfo);
+      }
 
       if (highscore == null) {
-        String msg = "Reading highscore for '" + gameInfo.getGameDisplayName() + "' failed, no nvram file and no VPReg.stg entry found for rom name '" + romName + "'";
+        String msg = "Reading highscore for '" + gameInfo.getGameDisplayName() + "' failed, no nvram file, no VPReg.stg entry and no highscore file found for rom name '" + romName + "'";
         LOG.info(msg);
       }
       else {
@@ -65,6 +66,35 @@ class HighscoreResolver {
 
     } catch (Exception e) {
       LOG.error("Failed to find highscore for table {}: {}", gameInfo.getGameFileName(), e.getMessage(), e);
+    }
+    return null;
+  }
+
+  private Highscore parseHSFileHighscore(GameInfo gameInfo) throws IOException {
+    File hsFile = gameInfo.getHsFile();
+    if (hsFile != null && hsFile.exists()) {
+      List<String> lines = IOUtils.readLines(new FileInputStream(hsFile), "utf-8");
+      if (lines.size() >= 15) {
+        StringBuilder builder = new StringBuilder("HIGHEST SCORES\n");
+
+        int index = 5;
+        for (int i = 1; i < 6; i++) {
+          String score = lines.get(index);
+          String initials = lines.get(index + 5);
+
+          builder.append("#");
+          builder.append(i);
+          builder.append(" ");
+          builder.append(initials);
+          builder.append("   ");
+          builder.append(score);
+          builder.append("\n");
+
+          index++;
+        }
+
+        return new Highscore(builder.toString());
+      }
     }
     return null;
   }

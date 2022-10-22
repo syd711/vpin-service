@@ -19,6 +19,7 @@ public class GameInfo {
   private String originalRom;
   private String gameDisplayName;
   private String gameFileName;
+  private String hsFileName;
   private int id;
 
   private File gameFile;
@@ -46,6 +47,10 @@ public class GameInfo {
     }
 
     if (this.getVPRegFolder() != null && this.getVPRegFolder().exists()) {
+      return true;
+    }
+
+    if (this.getHsFile() != null && this.getHsFile().exists()) {
       return true;
     }
     return false;
@@ -77,6 +82,15 @@ public class GameInfo {
       return new File(SystemInfo.getInstance().getExtractedVPRegFolder(), getRom());
     }
     return null;
+  }
+
+  @Nullable
+  public File getHsFile() {
+    if (StringUtils.isEmpty(getHsFileName())) {
+      return null;
+    }
+
+    return new File(SystemInfo.getInstance().getVisualPinballUserFolder(), getHsFileName());
   }
 
   @SuppressWarnings("unused")
@@ -118,6 +132,18 @@ public class GameInfo {
     this.nvOffset = nvOffset;
   }
 
+  public String getHsFileName() {
+    return hsFileName;
+  }
+
+  public void setHsFileName(String hsFileName) {
+    this.hsFileName = hsFileName;
+  }
+
+  public VPinService getService() {
+    return service;
+  }
+
   @SuppressWarnings("unused")
   @NonNull
   public File getWheelIconFile() {
@@ -133,32 +159,15 @@ public class GameInfo {
     File nvRamFolder = new File(SystemInfo.getInstance().getMameFolder(), "nvram");
 
     String originalRom = getOriginalRom() != null ? this.getOriginalRom() : this.getRom();
-    File defaultNVFile = new File(nvRamFolder, originalRom +  ".nv");
-//    if(this.getNvOffset() == 0) {
-//      return defaultNVFile;
-//    }
-//
-//    //if the text file exists, the current nv file contains the highscore of this table
-//    File versionTextFile = new File(nvRamFolder, this.getRom() + " v" + getNvOffset() + ".txt");
-//    if(versionTextFile.exists()) {
-//      return defaultNVFile;
-//    }
-//
-//    //else, we can check if a nv file with the alias and version exists
-//    File versionNVAliasedFile = new File(nvRamFolder, originalRom + " v" + getNvOffset() + ".nv");
-//    if(versionNVAliasedFile.exists()) {
-//      try {
-//        File copy = new File(nvRamFolder, versionNVAliasedFile.getName().replaceAll(" ", ""));
-//        copy.delete();
-//        copy.deleteOnExit();
-//        FileUtils.copyFile(versionNVAliasedFile, copy);
-//        return copy;
-//      } catch (IOException e) {
-//        e.printStackTrace();
-//      }
-//    }
+    return new File(nvRamFolder, originalRom +  ".nv");
+  }
 
-    return defaultNVFile;
+  @Nullable
+  public File getEMHighscoreFile() {
+    if(StringUtils.isEmpty(this.getHsFileName())) {
+      return new File(SystemInfo.getInstance().getVisualPinballUserFolder(), this.getHsFileName());
+    }
+    return null;
   }
 
   @NonNull
