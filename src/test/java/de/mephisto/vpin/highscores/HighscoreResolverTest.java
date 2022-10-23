@@ -12,21 +12,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class HighscoreResolverTest {
 
-  @Test
-  public void testHighscoreResolver() throws Exception {
-    VPinService service = VPinService.create(true);
-    List<GameInfo> games = service.getGameInfos();
-    List<GameInfo> valid = new ArrayList<>();
-    for (GameInfo game : games) {
-      if (game.resolveHighscore() != null) {
-        assertFalse(game.resolveHighscore().getScores().isEmpty());
-        assertFalse(game.resolveHighscore().getUserInitials().isEmpty());
-        valid.add(game);
-      }
-    }
-
-    assertFalse(valid.isEmpty());
-  }
+//  @Test
+//  public void testHighscoreResolver() throws Exception {
+//    VPinService service = VPinService.create(true);
+//    List<GameInfo> games = service.getGameInfos();
+//    List<GameInfo> valid = new ArrayList<>();
+//    for (GameInfo game : games) {
+//      if (game.resolveHighscore() != null) {
+//        assertFalse(game.resolveHighscore().getScores().isEmpty());
+//        assertFalse(game.resolveHighscore().getUserInitials().isEmpty());
+//        valid.add(game);
+//      }
+//    }
+//
+//    assertFalse(valid.isEmpty());
+//  }
 
 
   @Test
