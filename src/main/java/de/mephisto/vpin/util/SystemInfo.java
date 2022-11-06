@@ -12,10 +12,9 @@ import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class SystemInfo {
   private final static Logger LOG = LoggerFactory.getLogger(SystemInfo.class);
@@ -45,7 +44,10 @@ public class SystemInfo {
 
   private static SystemInfo instance;
 
-  private SystemInfo() throws VPinServiceException {
+  private SystemInfo() {
+  }
+
+  public void init() throws VPinServiceException {
     initBaseFolders();
     initPinemHiFolders();
     logSystemInfo();
@@ -82,9 +84,9 @@ public class SystemInfo {
         this.directB2SFolder = new File(store.get(DIRECTB2S_DIR));
       }
 
-      if(!getB2SImageExtractionFolder().exists()) {
+      if (!getB2SImageExtractionFolder().exists()) {
         boolean mkdirs = getB2SImageExtractionFolder().mkdirs();
-        if(!mkdirs) {
+        if (!mkdirs) {
           LOG.error("Failed to create image directory " + getB2SImageExtractionFolder().getAbsolutePath());
         }
       }
@@ -249,10 +251,46 @@ public class SystemInfo {
     return pinUP.isPresent();
   }
 
+  public void restartPinUPPopper() {
+    List<ProcessHandle> pinUpProcesses = ProcessHandle
+        .allProcesses()
+        .filter(p -> p.info().command().isPresent() &&
+            (
+                p.info().command().get().contains("PinUpMenu") ||
+                p.info().command().get().contains("PinUpDisplay") ||
+                p.info().command().get().contains("PinUpPlayer") ||
+                p.info().command().get().contains("VPXStarter") ||
+                p.info().command().get().contains("VPinballX") ||
+                p.info().command().get().contains("B2SBackglassServerEXE") ||
+                p.info().command().get().contains("DOF")))
+        .collect(Collectors.toList());
+    for (ProcessHandle pinUpProcess : pinUpProcesses) {
+      String cmd = pinUpProcess.info().command().get();
+      boolean b = pinUpProcess.destroyForcibly();
+      LOG.info("Destroyed process '" + cmd + "', result: " + b);
+    }
+
+    try {
+      List<String> params = Arrays.asList("cmd", "/c", "start", "PinUpMenu.exe");
+      SystemCommandExecutor executor = new SystemCommandExecutor(params, false);
+      executor.setDir(getPinUPSystemFolder());
+      executor.executeCommandAsync();
+
+      StringBuilder standardOutputFromCommand = executor.getStandardOutputFromCommand();
+      StringBuilder standardErrorFromCommand = executor.getStandardErrorFromCommand();
+      if (!StringUtils.isEmpty(standardErrorFromCommand.toString())) {
+        LOG.error("Popper restart failed: {}", standardErrorFromCommand);
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to start PinUP Popper again: " + e.getMessage(), e);
+    }
+  }
+
   public static SystemInfo getInstance() {
     if (instance == null) {
       try {
         instance = new SystemInfo();
+        instance.init();
       } catch (VPinServiceException e) {
         System.exit(0);
       }

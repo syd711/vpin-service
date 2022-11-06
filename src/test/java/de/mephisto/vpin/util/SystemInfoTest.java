@@ -18,4 +18,9 @@ public class SystemInfoTest {
     assertTrue(info.getVisualPinballInstallationFolder().exists());
   }
 
+  @Test
+  public void testRestart() {
+//    SystemInfo.getInstance().restartPinUPPopper();
+  }
+
 }
